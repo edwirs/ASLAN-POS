@@ -1,7 +1,15 @@
 <footer class="footer mt-auto py-3 bg-light">
     <div class="container text-center">
         <span class="text-muted author">
-            Desarrollado por <a class="author" target="_blank" href="https://www.youtube.com/@AlgoriSoft">{{ dashboard.author }}</a>
+            Desarrollado por 
+            <img
+                src="{{ dashboard.get_image }}"
+                alt="AdminLTE Logo"
+                class="brand-image"
+                style="filter: grayscale(100%) brightness(50%);"
+                width="5%"
+            >
+            <a class="author" target="_blank" href="https://www.youtube.com/@AlgoriSoft">{{ dashboard.author }}</a>
         </span>
     </div>
 </footer>

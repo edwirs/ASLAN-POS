@@ -1,0 +1,47 @@
+{% extends 'form.html' %}
+{% load static %}
+{% block assets_form %}
+    <script src="{% static 'lib/select2-4.0.13/js/select2.min.js' %}"></script>
+    <script src="{% static 'lib/select2-4.0.13/js/i18n/es.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2-bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/bootstrap-touchspin-4.2.5/css/jquery.bootstrap-touchspin.css' %}"/>
+    <script src="{% static 'lib/bootstrap-touchspin-4.2.5/js/jquery.bootstrap-touchspin.js' %}"></script>
+    <script src="{% static 'lib/tempusdominus-bootstrap-4.5.37.0/js/tempusdominus-bootstrap.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'lib/tempusdominus-bootstrap-4.5.37.0/css/tempusdominus-bootstrap.css' %}"/>
+    <script src="{% static 'expenses/js/form.js' %}"></script>
+{% endblock %}
+
+{% block form_fields %}
+<div class="row g-3">
+    <div class="col-md-6 col-lg-4">
+        <label class="form-label fw-bold">{{ form.created_at.label }}</label>
+        {{ form.created_at }}
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <label class="form-label fw-bold">{{ form.source.label }}</label>
+        {{ form.source }}
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <label class="form-label fw-bold">{{ form.reason.label }}</label>
+        {{ form.reason }}
+    </div>  
+    <div class="col-md-6 col-lg-4">
+        <label class="form-label fw-bold">{{ form.amount.label }}</label>
+        {{ form.amount }}
+    </div>
+    <div class="col-md-12 col-lg-12">
+        <label class="form-label fw-bold">{{ form.description.label }}</label>
+        {{ form.description }}
+    </div>
+</div>
+{% endblock %}
+
+{% block buttons %}
+    <button type="submit" class="btn btn-primary">
+        <i class="fas fa-file-invoice-dollar"></i> Guardar Gasto
+    </button>
+    <a href="{{ list_url }}" class="btn btn-danger">
+        <i class="fas fa-times"></i> Cancelar
+    </a>
+{% endblock %}

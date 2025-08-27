@@ -44,6 +44,7 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
 ]
 
 THIRD_PARTY_APPS = [
@@ -114,7 +115,14 @@ def get_db_config(environ_var='DATABASE_URL'):
 
 
 DATABASES = {
-    'default': get_db_config()
+    'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'Aslan_pos',
+            'USER': 'postgres',
+            'PASSWORD': 'Postgres2025',
+            'HOST': 'localhost',
+            'PORT': '5432'
+            }
 }
 
 # Password validation

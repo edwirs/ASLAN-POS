@@ -35,7 +35,7 @@ var report = {
                 dataSrc: ''
             },
             order: [[0, 'asc']],
-            paging: false,
+            paging: true,
             ordering: true,
             searching: false,
             dom: 'Bfrtip',
@@ -133,6 +133,7 @@ var report = {
 
             }
         });
+        $('#tblReport thead th').css('background-color', '#ffffff');
     }
 };
 

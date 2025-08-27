@@ -29,34 +29,32 @@ var sale = {
             columns: [
                 {data: "id"},
                 {data: "client.names"},
+                {data: "employee.names"},
                 {data: "date_joined"},
-                {data: "subtotal"},
-                {data: "total_iva"},
                 {data: "total_dscto"},
-                {data: "total"},
-                {data: "cash"},
-                {data: "change"},
+                {data: "total"},    
+                {data: "paymentmethod.name"},
                 {data: "id"},
             ],
             columnDefs: [
                 {
-                    targets: [-2, -3, -4, -5, -6, -7],
+                    targets: [-3, -4],
                     class: 'text-center',
                     render: function (data, type, row) {
                         return '$' + parseFloat(data).toFixed(2);
                     }
                 },
                 {
-                    targets: [-8],
+                    targets: [-2, -5],
                     class: 'text-center',
                 },
                 {
                     targets: [-1],
                     class: 'text-center',
                     render: function (data, type, row) {
-                        var buttons = '<a rel="detail" data-bs-toggle="tooltip" title="Detalle" class="btn btn-success btn-sm"><i class="fas fa-boxes"></i></a> ';
-                        buttons += '<a href="' + pathname + 'delete/' + row.id + '/" data-bs-toggle="tooltip" title="Eliminar" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></a> ';
-                        buttons += '<a href="' + pathname + 'print/invoice/' + row.id + '/" target="_blank" data-bs-toggle="tooltip" title="Imprimir" class="btn btn-secondary btn-sm"><i class="fas fa-print"></i></a>';
+                        var buttons = '<a rel="detail" data-bs-toggle="tooltip" title="Detalle" class="btn btn-success btn-sm rounded-pill"><i class="fas fa-boxes"></i></a> ';
+                        buttons += '<a href="' + pathname + 'delete/' + row.id + '/" data-bs-toggle="tooltip" title="Eliminar" class="btn btn-danger btn-sm rounded-pill"><i class="fas fa-trash"></i></a> ';
+                        buttons += '<a href="' + pathname + 'print/invoice/' + row.id + '/" target="_blank" data-bs-toggle="tooltip" title="Imprimir" class="btn btn-secondary btn-sm rounded-pill"><i class="fas fa-print"></i></a>';
                         return buttons;
                     }
                 },
@@ -68,6 +66,7 @@ var sale = {
                 enable_tooltip();
             }
         });
+        $('#data thead th').css('background-color', '#ffffff');
     }
 };
 
@@ -147,4 +146,26 @@ $(function () {
     $('.btnSearchAll').on('click', function () {
         sale.list(true);
     });
+
+    $('#data tbody').on('change', '.delivered-switch', function () {
+        const saleId = $(this).data('id');
+        const isChecked = $(this).is(':checked');
+
+        fetch(pathname + 'delivered/' + saleId + '/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                alert('Error al actualizar el estado de entrega.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+
 });

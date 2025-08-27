@@ -11,9 +11,9 @@ from django.contrib.auth.models import Permission
 from core.pos.models import *
 
 dashboard = Dashboard()
-dashboard.name = 'INVOICE WEB'
-dashboard.icon = 'fas fa-shopping-cart'
-dashboard.author = 'William Jair Dávila Vargas'
+dashboard.name = 'ASLAN POS'
+dashboard.icon = 'fas fa-user-tie'
+dashboard.author = 'Edwin Alexis Barragan Puentes'
 dashboard.save()
 
 group = Group()
@@ -25,13 +25,13 @@ for permission in Permission.objects.filter().exclude(content_type__app_label__i
     group.permissions.add(permission)
 
 user = User()
-user.names = 'William Jair Dávila Vargas'
+user.names = 'Edwin Alexis Barragan Puentes'
 user.username = 'admin'
-user.email = 'davilawilliam93@gmail.com'
+user.email = 'edwirs964@gmail.com'
 user.is_active = True
 user.is_superuser = True
 user.is_staff = True
-user.set_password('hacker94')
+user.set_password('edwin92')
 user.save()
 user.groups.add(group)
 print(f'User {user.names} created successfully')

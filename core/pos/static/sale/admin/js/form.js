@@ -1,4 +1,6 @@
 var select_client;
+var select_paymentmethod;
+var select_transfermethods;
 var tblProducts, tblSearchProducts;
 var input_search_product, input_birthdate, input_date_joined, input_cash, input_change;
 
@@ -6,6 +8,7 @@ var sale = {
     detail: {
         subtotal_0: 0.00,
         subtotal_12: 0.00,
+        subtotal_12_sin_iva: 0.00,
         subtotal: 0.00,
         dscto: 0.00,
         total_dscto: 0.00,
@@ -32,10 +35,12 @@ var sale = {
         this.detail.dscto = parseFloat($('input[name="dscto"]').val());
         this.detail.total_dscto = this.detail.subtotal * (this.detail.dscto / 100);
         this.detail.total_iva = this.detail.products.filter(value => value.with_tax).reduce((a, b) => a + (b.total_iva || 0), 0);
-        this.detail.total = this.detail.subtotal + this.detail.total_iva - this.detail.total_dscto;
+        this.detail.total = this.detail.subtotal - this.detail.total_dscto;
+        this.detail.subtotal_12_sin_iva = this.detail.subtotal_12 - this.detail.total_iva;
 
         $('input[name="subtotal_0"]').val(this.detail.subtotal_0.toFixed(2));
         $('input[name="subtotal_12"]').val(this.detail.subtotal_12.toFixed(2));
+        $('input[name="subtotal_12_sin_iva"]').val(this.detail.subtotal_12_sin_iva.toFixed(2));
         $('input[name="iva"]').val(this.detail.iva.toFixed(2));
         $('input[name="total_iva"]').val(this.detail.total_iva.toFixed(2));
         $('input[name="total_dscto"]').val(this.detail.total_dscto.toFixed(2));
@@ -68,7 +73,6 @@ var sale = {
                 {data: "stock"},
                 {data: "cant"},
                 {data: "pvp"},
-                {data: "total_dscto"},
                 {data: "total"},
             ],
             columnDefs: [
@@ -76,9 +80,7 @@ var sale = {
                     targets: [-5],
                     class: 'text-center',
                     render: function (data, type, row) {
-                        if (row.is_service) {
-                            return '---';
-                        }
+                        
                         return data;
                     }
                 },
@@ -86,18 +88,24 @@ var sale = {
                     targets: [-4],
                     class: 'text-center',
                     render: function (data, type, row) {
+                        if (row.is_service) {
+                            return 'N/A';
+                        }
+                        if (data > 0) {
+                            return '<span class="badge bg-success rounded-pill">' + parseFloat(data).toFixed(2) + '</span>';
+                        }
+                        return '<span class="badge bg-warning rounded-pill">' + parseFloat(data).toFixed(2) + '</span>';
+                    }
+                },
+                {
+                    targets: [-3],
+                    class: 'text-center',
+                    render: function (data, type, row) {
                         return '<input type="text" class="form-control" autocomplete="off" name="cant" value="' + row.cant + '">';
                     }
                 },
                 {
-                    targets: [-2],
-                    class: 'text-center',
-                    render: function (data, type, row) {
-                        return '<input type="text" class="form-control" autocomplete="off" name="dscto_unitary" value="' + row.dscto + '">';
-                    }
-                },
-                {
-                    targets: [-1, -3],
+                    targets: [-1, -2],
                     class: 'text-center',
                     render: function (data, type, row) {
                         return '$' + data.toFixed(2);
@@ -107,7 +115,7 @@ var sale = {
                     targets: [0],
                     class: 'text-center',
                     render: function (data, type, row) {
-                        return '<a rel="remove" class="btn btn-danger btn-sm"><i class="fas fa-times"></i></a>';
+                        return '<a rel="remove" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></a>';
                     }
                 },
             ],
@@ -151,6 +159,8 @@ $(function () {
     input_search_product = $('input[name="search_product"]');
     input_birthdate = $('input[name="birthdate"]');
     input_date_joined = $('input[name="date_joined"]');
+    select_paymentmethod = $('select[name="paymentmethod"]');
+    select_transfermethods = $('select[name="transfermethods"]');
 
     // Client
 
@@ -160,6 +170,16 @@ $(function () {
         dropdownParent: $('#myModalClient')
     });
 
+    $('select[name="paymentmethod"]').select2({
+        language: 'es',
+        theme: 'bootstrap4'
+    });
+
+    $('select[name="transfermethods"]').select2({
+        language: 'es',
+        theme: 'bootstrap4'
+    });
+
     input_birthdate.datetimepicker({
         useCurrent: false,
         format: 'YYYY-MM-DD',
@@ -167,6 +187,29 @@ $(function () {
         keepOpen: false,
         maxDate: new Date()
     });
+
+    select_paymentmethod.select2({
+        theme: "bootstrap4",
+        language: 'es'
+    });
+
+    select_transfermethods.select2({
+        theme: "bootstrap4",
+        language: 'es'
+    });
+
+    select_transfermethods.parent().hide(); 
+    
+    select_paymentmethod.on('change', function(){
+        const selectedValue = $(this).val();
+        if (selectedValue === 'transfer') {
+            select_transfermethods.parent().show();
+        } else {
+            select_transfermethods.parent().hide();
+        }
+    });
+
+    select_paymentmethod.trigger('change');
 
     select_client.select2({
         theme: "bootstrap4",

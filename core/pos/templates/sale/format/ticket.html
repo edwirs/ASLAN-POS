@@ -1,4 +1,5 @@
 {% load static %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,7 +18,7 @@
             font-family: Arial, Helvetica, sans-serif;
             padding: 0;
             margin: 0;
-            font-size: 6px;
+            font-size: 7px;
             color: black !important;
             min-height: 100%;
         }
@@ -28,7 +29,7 @@
         }
 
         .head-name {
-            margin-top: 10px;
+            margin-top: 0;
             font-size: 15px;
             font-weight: bold;
             text-transform: uppercase;
@@ -67,15 +68,24 @@
         .table td, .table th {
             padding: 0;
             color: black;
-            font-size: 5px;
+            font-size: 7px;
             text-transform: uppercase;
         }
 
         .img-logo {
-            margin-top: 5px;
-            width: 20px;
-            height: 20px;
-            margin-bottom: 5px;
+            display: block;
+            margin: 0 auto 2px auto;
+            width: 60px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .dotted-separator {
+            border: none !important;
+            border-top: 1px dotted black !important;
+            margin: 5px 0;
+            color: black;
+            background-color: transparent !important;
         }
     </style>
 </head>
@@ -84,13 +94,15 @@
     <img alt="" src="{{ sale.company.get_image }}" class="img-fluid d-block mx-auto img-logo">
     <h1 class="head-name">{{ sale.company.name|upper }}</h1>
     <p class="text-center head-details">
-        Dirección matriz: {{ sale.company.address }}<br>
-        RUC: {{ sale.company.ruc }}<br>
+        Dirección: {{ sale.company.address }}<br>
+        RUT: {{ sale.company.ruc }}<br>
         Teléfono: {{ sale.company.phone }} / Celular: {{ sale.company.mobile }}<br>
         Email: {{ sale.company.email }}
     </p>
 
     <p class="text-center head-voucher-number">TICKET N° {{ sale.id }}</p>
+
+    <hr class="dotted-separator">
 
     <p class="head-data">
         <b>Fecha de registro:</b> {{ sale.date_joined|date:'c' }}<br>
@@ -99,14 +111,14 @@
         <b>Número de cédula:</b> {{ sale.client.dni }}<br>
     </p>
 
+    <hr class="dotted-separator">
+
     <table class="table table-borderless table-sm" id="details" style="margin-bottom: 0">
         <thead>
         <tr>
-            <th style="width: 15%;">Cantidad</th>
+            <th style="width: 20%;">Cant.</th>
             <th style="width: 40%;">Descripción</th>
-            <th style="width: 15%;">P./Unitario</th>
-            <th style="width: 15%;">Dscto</th>
-            <th style="width: 15%;" class="text-right">Subtotal</th>
+            <th style="width: 20%;" class="text-right">Total</th>
         </tr>
         </thead>
         <tbody>
@@ -114,60 +126,76 @@
             <tr>
                 <td>{{ detail.cant }}</td>
                 <td>{{ detail.product.name }}</td>
-                <td>{{ detail.price|floatformat:2 }}</td>
-                <td>{{ detail.total_dscto|floatformat:2 }}</td>
-                <td class="text-right">{{ detail.total|floatformat:2 }}</td>
+                <td class="text-right">$ {{ detail.total|floatformat:0|intcomma }}</td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
 
+    <hr class="dotted-separator">
+
     <table class="table table-borderless table-sm text-uppercase mt-3">
         <thead>
         <tr>
-            <th style="width: 80%;"></th>
+            <th style="width: 30%;"></th>
+            <th style="width: 50%;"></th>
             <th style="width: 20%;"></th>
         </tr>
         </thead>
         <tbody>
         <tr>
+            <td></td>
             <td class="float-right font-weight-bold">Subtotal sin impuestos</td>
-            <td class="text-right">{{ sale.get_subtotal_without_taxes|floatformat:2 }}</td>
+            <td class="text-right">$ {{ sale.get_subtotal_without_taxes|floatformat:0|intcomma }}</td>
         </tr>
         <tr>
-            <td class="float-right font-weight-bold">Descuentos</td>
-            <td class="text-right">{{ sale.total_dscto|floatformat:2 }}</td>
+            <td></td>
+            <td class="float-right font-weight-bold">Valor bruto</td>
+            <td class="text-right">$ {{ sale.subtotal_12_sin_iva|floatformat:0|intcomma }}</td>
         </tr>
         <tr>
-            <td class="float-right font-weight-bold">Subtotal 12%</td>
-            <td class="text-right">{{ sale.subtotal_12|floatformat:2 }}</td>
-        </tr>
-        <tr>
-            <td class="float-right font-weight-bold">Subtotal 0%</td>
-            <td class="text-right">{{ sale.subtotal_0|floatformat:2 }}</td>
-        </tr>
-        <tr>
+            <td></td>
             <td class="float-right font-weight-bold">IVA {{ sale.get_iva_percent }}%:</td>
-            <td class="text-right">{{ sale.total_iva|floatformat:2 }}</td>
+            <td class="text-right">$ {{ sale.total_iva|floatformat:0|intcomma }}</td>
         </tr>
         <tr>
-            <td class="float-right font-weight-bold">Descuento {{ sale.dscto|floatformat:2 }}%</td>
-            <td class="text-right">{{ sale.total_dscto|floatformat:2 }}</td>
+            <td></td>
+            <td class="float-right font-weight-bold">Descuentos</td>
+            <td class="text-right">$ {{ sale.total_dscto|floatformat:0|intcomma }}</td>
         </tr>
         <tr>
+            <td></td>
             <td class="float-right font-weight-bold">Total</td>
-            <td class="text-right">{{ sale.total|floatformat:2 }}</td>
-        </tr>
-        <tr>
-            <td class="float-right font-weight-bold">Efectivo</td>
-            <td class="text-right">{{ sale.cash|floatformat:2 }}</td>
-        </tr>
-        <tr>
-            <td class="float-right font-weight-bold">Cambio</td>
-            <td class="text-right">{{ sale.change|floatformat:2 }}</td>
+            <td class="text-right">$ {{ sale.total|floatformat:0|intcomma }}</td>
         </tr>
         </tbody>
     </table>
+    <hr class="dotted-separator">
+    <table class="table table-borderless table-sm text-uppercase mt-3">
+        <thead>
+        <tr>
+            <th style="width: 30%;"></th>
+            <th style="width: 50%;"></th>
+            <th style="width: 20%;"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td></td>
+            <td class="float-right font-weight-bold">Efectivo</td>
+            <td class="text-right">$ {{ sale.cash|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td class="float-right font-weight-bold">Cambio</td>
+            <td class="text-right">$ {{ sale.change|floatformat:0|intcomma }}</td>
+        </tr>
+        </tbody>
+    </table>
+    <p class="text-center head-details">
+        Elaborado por: ASLAN Tecnologia<br>
+        Tel: 3002308365
+    </p>
 </div>
 </body>
 </html>

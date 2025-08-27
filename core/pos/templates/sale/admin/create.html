@@ -15,96 +15,120 @@
 {% endblock %}
 
 {% block form_fields %}
-    <div class="row mb-4">
-        <div class="col-lg-4">
-            <label class="form-label fw-bold">{{ form.date_joined.label }}:</label>
-            {{ form.date_joined }}
-        </div>
-        <div class="col-lg-8">
-            <label class="form-label fw-bold">{{ form.client.label }}:</label>
-            <div class="input-group">
-                {{ form.client }}
-                <button class="btn btn-success btnAddClient" type="button">
-                    <i class="fas fa-plus"></i> Crear cliente
-                </button>
-            </div>
+<div class="row mb-4">
+    <div class="col-12 col-md-6 col-lg-4 mb-3">
+        <label class="form-label fw-bold">{{ form.date_joined.label }}:</label>
+        {{ form.date_joined }}
+    </div>
+    <div class="col-12 col-md-6 col-lg-8 mb-3">
+        <label class="form-label fw-bold">{{ form.client.label }}:</label>
+        <div class="input-group">
+            {{ form.client }}
+            <button class="btn btn-success btnAddClient" type="button">
+                <i class="fas fa-plus"></i> Crear cliente
+            </button>
         </div>
     </div>
-    <div class="card p-4">
-        <div class="row">
-            <div class="col-lg-8">
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Búsqueda de productos:</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control form-control-lg" autocomplete="off" name="search_product" placeholder="Ingrese el nombre de un producto">
-                        <button class="btn btn-success btnSearchProducts" type="button">
+</div>
+
+<div class="row">
+    <div class="col-12 card border p-3 mb-4">
+        <div class="mb-3">
+            <label class="form-label fw-bold">Búsqueda de productos:</label>
+            <div class="row g-2 align-items-stretch">
+                <!-- Input de búsqueda -->
+                <div class="col-12 col-md-6">
+                    <input type="text" id="search_product" class="form-control form-control-lg h-100" autocomplete="off" name="search_product" placeholder="Ingrese el nombre de un producto">
+
+                </div>
+
+                <!-- Botones -->
+                <div class="col-12 col-md-6">
+                    <div class="d-grid d-md-flex h-100 align-items-stretch">
+                        <button class="btnSearchProducts btn btn-success flex-fill h-100 rounded-5 rounded-start" type="button">
                             <i class="fas fa-search"></i> Buscar productos
                         </button>
-                        <button class="btn btn-warning btnClearProducts" type="button">
+                        <button class="btnClearProducts btn btn-warning flex-fill h-100 rounded-0" type="button">
                             <i class="fas fa-times"></i> Limpiar búsqueda
                         </button>
-                        <button class="btn btn-danger btnRemoveAllProducts" type="button">
+                        <button class="btnRemoveAllProducts btn btn-danger flex-fill h-100 rounded-5 rounded-end" type="button">
                             <i class="fas fa-trash-alt"></i> Borrar todo
                         </button>
                     </div>
                 </div>
-                <table style="width:100%;" class="table table-bordered" id="tblProducts">
-                    <thead>
-                    <tr>
-                        <th style="width: 5%;">Eliminar</th>
-                        <th style="width: 25%;">Producto</th>
-                        <th style="width: 5%;">Stock</th>
-                        <th style="width: 20%;">Cantidad</th>
-                        <th style="width: 15%;">P./Unitario</th>
-                        <th style="width: 20%;">Descuento</th>
-                        <th style="width: 10%;">Total</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
             </div>
-            <div class="col-lg-4 card border p-3">
-                <div class="mb-3">
-                    <label class="form-label fw-bold">{{ form.subtotal_0.label|upper }}</label>
-                    {{ form.subtotal_0 }}
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">{{ form.subtotal_12.label|upper }}</label>
-                    {{ form.subtotal_12 }}
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">{{ form.dscto.label|upper }}</label>
-                    {{ form.dscto }}
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">{{ form.total_dscto.label|upper }}</label>
-                    {{ form.total_dscto }}
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">{{ form.iva.label|upper }}</label>
-                    {{ form.iva }}
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">{{ form.total_iva.label|upper }}</label>
-                    {{ form.total_iva }}
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">{{ form.total.label|upper }}</label>
-                    {{ form.total }}
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">{{ form.cash.label }}:</label>
-                    {{ form.cash }}
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">{{ form.change.label }}:</label>
-                    {{ form.change }}
-                </div>
+        </div>
+
+        <!-- Tabla responsive -->
+        <div class="table-responsive">
+            <table class="table table-bordered" id="tblProducts">
+                <thead>
+                <tr>
+                    <th style="width: 5%;">Eliminar</th>
+                    <th style="width: 25%;">Producto</th>
+                    <th style="width: 5%;">Stock</th>
+                    <th style="width: 20%;">Cantidad</th>
+                    <th style="width: 15%;">P./Unitario</th>
+                    <th style="width: 10%;">Total</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Totales -->
+    <div class="col-12 card border p-3 mb-4">
+        <div class="row">
+            <div class="col-12 col-md mb-2">
+                <label class="form-label fw-bold w-100">{{ form.subtotal_12_sin_iva.label|upper }}</label>
+                {{ form.subtotal_12_sin_iva }}
+            </div>
+            <div class="col-12 col-md mb-2">
+                <label class="form-label fw-bold w-100">{{ form.iva.label|upper }}</label>
+                {{ form.iva }}
+            </div>
+            <div class="col-12 col-md mb-2">
+                <label class="form-label fw-bold w-100">{{ form.total_iva.label|upper }}</label>
+                {{ form.total_iva }}
+            </div>
+            <div class="col-12 col-md mb-2">
+                <label class="form-label fw-bold w-100">{{ form.dscto.label|upper }}</label>
+                {{ form.dscto }}
+            </div>
+            <div class="col-12 col-md mb-2">
+                <label class="form-label fw-bold w-100">{{ form.total_dscto.label|upper }}</label>
+                {{ form.total_dscto }}
             </div>
         </div>
     </div>
+
+    <!-- Totales Finales -->
+    <div class="col-12 col-lg-4 card border p-3 ms-auto mb-4">
+        <div class="mb-3">
+            <label class="form-label fw-bold">{{ form.paymentmethod.label }}:</label>
+            {{ form.paymentmethod }}
+        </div>
+        <div class="mb-3 transfermethods">
+            <label class="form-label fw-bold">{{ form.transfermethods.label }}:</label>
+            {{ form.transfermethods }}
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">{{ form.total.label|upper }}</label>
+            {{ form.total }}
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">{{ form.cash.label }}:</label>
+            {{ form.cash }}
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">{{ form.change.label }}:</label>
+            {{ form.change }}
+        </div>
+    </div>
+</div>
 {% endblock %}
+
 
 {% block buttons %}
     <button type="submit" class="btn btn-primary">
@@ -117,7 +141,7 @@
 
 {% block content_form_before %}
     <div class="modal fade" tabindex="-1" id="myModalSearchProducts">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-fullscreen-sm-down">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold">
@@ -128,13 +152,13 @@
                 <div class="modal-body">
                     <table style="width:100%;" class="table table-bordered table-sm" id="tblSearchProducts">
                         <thead>
-                        <tr>
-                            <th>Código</th>
-                            <th>Nombre</th>
-                            <th>P./Unitario</th>
-                            <th>Stock</th>
-                            <th>Agregar</th>
-                        </tr>
+                            <tr>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>P./Unitario</th>
+                                <th>Stock</th>
+                                <th>Agregar</th>
+                            </tr>
                         </thead>
                         <tbody>
                         </tbody>
@@ -144,7 +168,7 @@
         </div>
     </div>
     <div class="modal fade" tabindex="-2" id="myModalClient">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog">
             <form class="form" id="frmClient" method="POST" autocomplete="off">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -184,6 +208,7 @@
             {% if final_consumer %}
                 select_client.select2('trigger', 'select', {data: {{ final_consumer|safe }}});
             {% endif %}
+            $('#search_product').focus();
         });
     </script>
 {% endblock %}

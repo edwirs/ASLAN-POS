@@ -13,10 +13,78 @@
 {% endblock %}
 
 {% block content %}
+    
+        <div class="row">
+          <div class="col-lg-3 col-6">
+            <!-- small card -->
+            <div class="small-box bg-info">
+              <div class="inner">
+                <h3 class="font-weight-bolder" id="recaudos-hoy">$0</h3>
+
+                <p>Ventas totales hoy</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-money-check-dollar"></i>
+              </div>
+            </div>
+          </div>
+          <!-- ./col -->
+          <div class="col-lg-3 col-6">
+            <!-- small card -->
+            <div class="small-box bg-success">
+              <div class="inner">
+                <h3 class="font-weight-bolder" id="ventas-hoy">0</h3>
+
+                <p>Cant. ventas hoy</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-shopping-cart"></i>
+              </div>
+            </div>
+          </div>
+          <!-- ./col -->
+          <div class="col-lg-3 col-6">
+            <!-- small card -->
+            <div class="small-box bg-warning">
+              <div class="inner text-white">
+                <h3 class="font-weight-bolder" id="ventas-semana">$0</h3>
+
+                <p>Total ventas semanal</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-user-plus"></i>
+              </div>
+            </div>
+          </div>
+          <!-- ./col -->
+          <div class="col-lg-3 col-6">
+            <!-- small card -->
+            <div class="small-box bg-danger">
+              <div class="inner">
+                <h3 class="font-weight-bolder" id="producto-mas-vendido">0</h3>
+
+                <p>Producto mas vendido</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-arrow-trend-up"></i>
+              </div>
+            </div>
+          </div>
+          <!-- ./col -->
+        </div>
+
     <div class="container-fluid p-0">
+        <div class="row gx-2">
+            <div class="col-lg-6">
+                <div id="container" class="card p-3 mt-2" style="border-radius: 20px;"></div>
+            </div>
+            <div class="col-lg-6">
+                <div id="container-pie" class=" card p-3 mt-2" style="border-radius: 20px;"></div>
+            </div>
+        </div>
         <div class="row">
             <div class="col-lg-12 col-md-12">
-                <div class="card p-4">
+                <div class="card p-4" style="border-radius: 20px;">
                     <h4 class="font-weight-bold text-center mb-3">
                         <i class="fas fa-shopping-cart"></i> Las 10 últimas ventas realizadas
                     </h4>
@@ -47,14 +115,6 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
-        </div>
-        <div class="row gx-2">
-            <div class="col-lg-6">
-                <div id="container" class="card p-3 mt-2"></div>
-            </div>
-            <div class="col-lg-6">
-                <div id="container-pie" class=" card p-3 mt-2"></div>
             </div>
         </div>
     </div>
@@ -208,9 +268,113 @@
                 });
             }
         };
+        function fetchVentasHoy() {
+            $.ajax({
+                url: window.location.pathname,
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                data: {
+                    'action': 'get_sales_total_today'
+                },
+                success: function (response) {
+                    if (!response.error) {
+                        const total = parseFloat(response.total).toLocaleString('es-CL', {
+                            style: 'currency',
+                            currency: 'CLP',
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0
+                        });
+                        $('#recaudos-hoy').text(total);
+                    } else {
+                        console.error('Error:', response.error);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error al obtener las ventas de hoy:', error);
+                }
+            });
+        }
+        function ProductoMasVendido() {
+            $.ajax({
+                url: window.location.pathname,
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                data: {
+                    'action': 'get_product_total_today'
+                },
+                success: function (response) {
+                    if (!response.error) {
+                        if (response.product) {
+                            // Mostramos el producto y la cantidad
+                            const mensaje = `${response.product} (${response.quantity})`;
+                            $('#producto-mas-vendido').text(mensaje);
+                        } else {
+                            $('#producto-mas-vendido').text("No hay ventas hoy");
+                        }
+                    } else {
+                        console.error('Error:', response.error);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error al obtener las ventas de hoy:', error);
+                }
+            });
+        }
+        function VentasSemanales() {
+            $.ajax({
+                url: window.location.pathname,
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                data: {
+                    'action': 'get_sales_total_week'
+                },
+                success: function (response) {
+                    if (!response.error) {
+                        $('#ventas-semana').text(response.total + ' ventas');
+                    } else {
+                        console.error('Error:', response.error);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error al obtener las ventas de hoy:', error);
+                }
+            });
+        }
+        function CantVentasHoy() {
+            $.ajax({
+                url: window.location.pathname,
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                data: {
+                    'action': 'get_sales_count_today'
+                },
+                success: function (response) {
+                    if (!response.error) {
+                        $('#ventas-hoy').text(response.count);
+                    } else {
+                        console.error('Error:', response.error);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error al obtener las ventas de hoy:', error);
+                }
+            });
+        }
         $(function () {
             chart.getSalesYearMonth();
             chart.getSalesProductsYearMonth();
+            fetchVentasHoy();
+            ProductoMasVendido();
+            VentasSemanales();
+            CantVentasHoy();
         });
     </script>
 {% endblock %}

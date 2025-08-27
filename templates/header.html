@@ -1,5 +1,6 @@
 {% load static %}
 {% load security_extras %}
+
 <header>
     <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-primary">
         <div class="container-fluid px-5">
@@ -58,6 +59,11 @@
                             <li>
                                 <a class="dropdown-item" href="{% url 'sale_admin_list' %}">
                                     <i class="fas fa-shopping-cart"></i> Ventas
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'price_admin_list' %}">
+                                    <i class="fas fa-shopping-cart"></i> Cotizaciones
                                 </a>
                             </li>
                         </ul>

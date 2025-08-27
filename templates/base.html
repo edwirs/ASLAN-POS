@@ -1,56 +1,562 @@
 {% load static %}
+
 <!DOCTYPE html>
-<html lang="es" class="h-100">
+<html
+  lang="es"
+  class="h-100"
+>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Sistema de punto de venta para el curso de facturación electrónica">
-    <meta name="author" content="William Jair Dávila Vargas">
-    <title>{{ title }}</title>
-    <link rel="icon" type="image/x-icon" href="{% static 'img/logotipo.png' %}">
-    <!--bootstrap-->
-    <link href="{% static 'lib/bootstrap-5.0.2/css/bootstrap.min.css' %}" rel="stylesheet">
-    <link href="{% static 'lib/bootstrap-5.0.2/css/sticky-footer-navbar.css' %}" rel="stylesheet">
-    <script src="{% static 'lib/bootstrap-5.0.2/js/jquery.min.js' %}"></script>
-    <script src="{% static 'lib/bootstrap-5.0.2/js/bootstrap.bundle.min.js' %}"></script>
-    <!--fontawesome-->
-    <link rel="stylesheet" href="{% static 'lib/fontawesome-6.1.1/css/all.min.css' %}"/>
-    <link href="{% static 'css/style.css' %}" rel="stylesheet">
-    <!--jquery-confirm-->
-    <script src="{% static 'lib/jquery-confirm-3.3.4/js/jquery-confirm.min.js' %}"></script>
-    <link rel="stylesheet" href="{% static 'lib/jquery-confirm-3.3.4/css/jquery-confirm.min.css' %}"/>
-    <!--sweetalert2-->
-    <script src="{% static 'lib/sweetalert2-11.0.16/js/sweetalert2.all.min.js' %}"></script>
-    <link rel="stylesheet" href="{% static 'lib/sweetalert2-11.0.16/css/sweetalert2.min.css' %}"/>
-    <!--jquery-loading-overlay-->
-    <script src="{% static 'lib/jquery-loading-overlay-2.1.7/js/loadingoverlay.min.js' %}"></script>
+  <meta charset="utf-8"></meta>
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  ></meta>
+
+  <meta
+    name="description"
+    content="Sistema de punto de venta para el curso de facturación electrónica"
+  ></meta>
+
+  <meta
+    name="author"
+    content="Edwin Alexis Barragan Puentes"
+  ></meta>
+
+  <title>{{ title }}</title>
+
+  <link
+    rel="icon"
+    type="image/x-icon"
+    href="{% static 'img/ASLAN LOGO PNG.png' %}"
+  ></link>
+
+  <!-- bootstrap -->
+
+  <link
+    href="{% static 'lib/bootstrap-5.3.3-dist/css/bootstrap.min.css' %}"
+    rel="stylesheet"
+  ></link>
+
+  <link
+    href="{% static 'lib/bootstrap-5.3.3-dist/css/sticky-footer-navbar.css' %}"
+    rel="stylesheet"
+  ></link>
+
+  <script src="{% static 'lib/bootstrap-5.3.3-dist/js/jquery.min.js' %}"></script>
+  <script src="{% static 'lib/bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js' %}"></script>
+  <!-- fontawesome -->
+
+  <link
+    rel="stylesheet"
+    href="{% static 'lib/fontawesome-6.1.1/css/all.min.css' %}"
+  ></link>
+
+  <link
+    href="{% static 'css/style.css' %}"
+    rel="stylesheet"
+  ></link>
+
+  <!-- jquery-confirm -->
+  <script src="{% static 'lib/jquery-confirm-3.3.4/js/jquery-confirm.min.js' %}"></script>
+
+  <link
+    rel="stylesheet"
+    href="{% static 'lib/jquery-confirm-3.3.4/css/jquery-confirm.min.css' %}"
+  ></link>
+
+  <!-- sweetalert2 -->
+  <script src="{% static 'lib/sweetalert2-11.0.16/js/sweetalert2.all.min.js' %}"></script>
+
+  <link
+    rel="stylesheet"
+    href="{% static 'lib/sweetalert2-11.0.16/css/sweetalert2.min.css' %}"
+  ></link>
+
+  <!-- jquery-loading-overlay -->
+  <script src="{% static 'lib/jquery-loading-overlay-2.1.7/js/loadingoverlay.min.js' %}"></script>
+
+  <!-- ADMIN LTE -->
+  <!-- Google Font: Source Sans Pro -->
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback"
+  ></link>
+
+  <!-- Theme style -->
+  <link
+    rel="stylesheet"
+    href="{% static 'lib/adminlte-3.2.0/css/adminlte.min.css'%}"
+  ></link>
+
+  <!-- Theme js -->
+  <link
+    rel="stylesheet"
+    href="{% static 'lib/adminlte-3.2.0/js/adminlte.min.js'%}"
+  ></link>
 </head>
+
 {% block body %}
-    <body class="d-flex flex-column h-100">
 
-    <!-- Header -->
-    {% include 'header.html' %}
-    <!-- End Header -->
+<body class="hold-transition sidebar-mini layout-fixed">
+  <!-- Navbar -->
 
+  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <!-- Left navbar links -->
+
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          data-widget="pushmenu"
+          href="#"
+          role="button"
+        >
+          <i class="fas fa-bars"></i>
+        </a>
+      </li>
+
+      <li class="nav-item d-none d-sm-inline-block">
+        <a
+          href="{% url 'dashboard' %}"
+          class="nav-link"
+        >Inicio</a>
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          href="{% url 'sale_admin_create' %}"
+        >
+          <i class="fas fa-cash-register"></i>
+          Venta
+        </a>
+      </li>
+      <!--<li class="nav-item">
+        <a
+          class="nav-link"
+          href="{% url 'sale_admin_create' %}"
+        >
+          <i class="fas fa-cutlery"></i>
+          Mesas
+        </a>
+      </li> -->
+    </ul>
+
+    <!-- Right navbar links -->
+    <ul class="navbar-nav ml-auto">
+      
+      <!--{% if request.user.has_at_least_one_group %}
+      <li class="nav-item dropdown">
+        <a
+          class="nav-link{% if request.user.has_more_than_one_group %} dropdown-toggle{% endif %}"
+          data-bs-toggle="dropdown"
+        >
+          Perfil: {{ request.session.group.name }}
+        </a>
+        {% if request.user.has_more_than_one_group %}
+        <div class="dropdown-menu dropdown-menu-end">
+          {% for group in request.user.groups.all %}
+            {% if group.id != request.session.group.id %}
+              <a
+                href="{% url 'user_choose_profile' group.id %}"
+                class="dropdown-item"
+              >{{ group.name }}</a>
+            {% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
+      </li>
+      {% endif %}-->
+
+      <li class="nav-item dropdown">
+        <a
+          class="nav-link"
+          data-bs-toggle="dropdown"
+        >
+          Usuario: {{ request.user.username }}
+        </a>
+
+        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
+          <div class="dropdown-header text-center">Datos de conexión</div>
+          <a class="dropdown-item">
+            <p class="pb-0 mb-0">
+              <b>Dirección ip:</b>
+              <br>
+              {{ request.META.REMOTE_ADDR }}
+            </p>
+          </a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item">
+            <p class="pb-0 mb-0">
+              <b>Información:</b>
+              <br>
+              {{ request.user_agent }}
+            </p>
+          </a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item">
+            <p class="pb-0 mb-0">
+              <b>Última fecha de conexión:</b>
+              <br>
+              {{ request.user.last_login }}
+            </p>
+          </a>
+        </div>
+      </li>
+
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          href="{% url 'login_logout' %}"
+        >
+          <i class="fas fa-power-off"></i>
+          Cerrar Sesión
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <!-- /.navbar -->
+
+  <!-- Main Sidebar Container -->
+  <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <!-- Brand Logo -->
+    <a
+      href="{% url 'dashboard' %}"
+      class="brand-link"
+    >
+      <img
+        src="{{ dashboard.get_image }}"
+        alt="AdminLTE Logo"
+        class="brand-image"
+        style="opacity: .8"
+      >
+      <span class="brand-text font-weight-light">ASLAN pos</span>
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Sidebar user panel (optional) -->
+      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="image">
+          <img
+            src="{% static 'lib/adminlte-3.2.0/img/user2-160x160.jpg'%}"
+            class="img-circle elevation-2"
+            alt="User Image"
+          >
+        </div>
+
+        <div class="info">
+          <a
+            href="#"
+            class="d-block"
+          >{{ request.user.names }}</a>
+        </div>
+      </div>
+
+      <!-- Sidebar Menu -->
+      <nav class="mt-2">
+        <ul
+          class="nav nav-pills nav-sidebar flex-column"
+          data-widget="treeview"
+          role="menu"
+        >
+          <li class="nav-item">
+            <a
+              href="#"
+              class="nav-link"
+            >
+              <i class="fas fa-users"></i>
+              <p>
+                Personas
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a
+                  href="{% url 'client_list' %}"
+                  class="nav-link"
+                >
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Clientes</p>
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a
+                  href="{% url 'provider_list' %}"
+                  class="nav-link"
+                >
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Proveedores</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+
+          <li class="nav-item">
+            <a
+              href="#"
+              class="nav-link"
+            >
+              <i class="fas fa-boxes"></i>
+              <p>
+                Bodega
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a
+                  href="{% url 'category_list' %}"
+                  class="nav-link"
+                >
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Categorías</p>
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a
+                  href="{% url 'product_list' %}"
+                  class="nav-link"
+                >
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Productos</p>
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  href="{% url 'productautoadd_list' %}"
+                >
+                  <i class="far fa-circle nav-icon"></i>
+                  Productos descuento
+                </a>
+              </li>
+            </ul>
+          </li>
+
+          <li class="nav-item">
+            <a
+              href="#"
+              class="nav-link"
+            >
+              <i class="fas fa-file-text"></i>
+              <p>
+                Facturación
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a
+                  href="{% url 'sale_admin_list' %}"
+                  class="nav-link"
+                >
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Ventas</p>
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a
+                  href="{% url 'buy_admin_list' %}"
+                  class="nav-link"
+                >
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Compras</p>
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a
+                  href="{% url 'price_admin_list' %}"
+                  class="nav-link"
+                >
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Cotizaciones</p>
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a
+                  href="{% url 'expenses_list' %}"
+                  class="nav-link"
+                >
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Gastos</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+
+          <li class="nav-item">
+            <a
+              href="#"
+              class="nav-link"
+            >
+              <i class="fas fa-chart-pie"></i>
+              <p>
+                Reportes
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a
+                  href="{% url 'sale_report' %}"
+                  class="nav-link"
+                >
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Ventas</p>
+                </a>
+              </li>
+            </ul>
+
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a
+                  href="{% url 'employee_sale_report' %}"
+                  class="nav-link"
+                >
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Ventas Empleados</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+
+          <li class="nav-item">
+            <a
+              href="#"
+              class="nav-link"
+            >
+              <i class="fas fa-lock"></i>
+              <p>
+                Seguridad
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a
+                  href="{% url 'user_list' %}"
+                  class="nav-link"
+                >
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Usuarios</p>
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a
+                  href="{% url 'user_access_list' %}"
+                  class="nav-link"
+                >
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Accesos</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  href="{% url 'user_update_password' %}"
+                >
+                  <i class="far fa-circle nav-icon"></i>
+                  Actualizar Contraseña
+                </a>
+              </li>
+            </ul>
+          </li>
+
+          <li class="nav-item">
+            <a
+              href="#"
+              class="nav-link"
+            >
+              <i class="fas fa-wrench"></i>
+              <p>
+                Configuraciones
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a
+                  href="{% url 'company_update' %}"
+                  class="nav-link"
+                >
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Compañia</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="{% url 'dashboard_update' %}"
+                  class="nav-link"
+                >
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Conf. Dashboard</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  href="{% url 'user_update_profile' %}"
+                >
+                  <i class="far fa-circle nav-icon"></i>
+                  Actualizar Perfil
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+  </aside>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
     <!-- Begin page content -->
     <main class="flex-shrink-0 mt-4">
-        <div class="container-fluid mt-5 mb-5 px-5">
-            {% block content_main %}
+      <div class="container-fluid px-3">
+        {% block content_main %}
 
-            {% endblock %}
-        </div>
+          {% endblock %}
+      </div>
     </main>
+    <!-- /.content -->
+  </div>
 
+  <!-- /.content-wrapper -->
+  <!-- Main Footer -->
+  <footer class="main-footer">
     <!-- Fooder -->
     {% include 'footer.html' %}
     <!-- End Footer -->
-    <!--moment-->
-    <script src="{% static 'lib/bootstrap-daterangepicker-3.1/js/moment.min.js' %}"></script>
-    <script src="{% static 'lib/bootstrap-daterangepicker-3.1/js/moment-with-locales.js' %}"></script>
-    <!--utils-->
-    <script src="{% static 'js/main.js' %}"></script>
-    <script src="{% static 'js/functions.js' %}"></script>
-{% endblock %}
+  </footer>
+
+  <!-- moment -->
+  <script src="{% static 'lib/bootstrap-daterangepicker-3.1/js/moment.min.js' %}"></script>
+  <script src="{% static 'lib/bootstrap-daterangepicker-3.1/js/moment-with-locales.js' %}"></script>
+  <!-- utils -->
+  <script src="{% static 'js/main.js' %}"></script>
+  <script src="{% static 'js/functions.js' %}"></script>
+  <!-- REQUIRED SCRIPTS -->
+
+  <!-- AdminLTE App -->
+  <script src="{% static 'lib/adminlte-3.2.0/js/adminlte.js'%}"></script>
+  {% endblock %}
 {% block assets %}
 
 {% endblock %}

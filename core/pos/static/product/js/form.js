@@ -1,8 +1,10 @@
 var input_is_service;
+var input_description;
 
 $(function () {
     input_is_service = $('input[name="is_service"]');
-
+    input_description = $('input[name="description"]');
+    
     $('.select2').select2({
         language: 'es',
         theme: 'bootstrap4'
@@ -48,13 +50,21 @@ $(function () {
         .on('keypress', function (e) {
             return validate_text_box({'event': e, 'type': 'decimals'});
         });
-
-    input_is_service.on('change', function () {
-        var container = $(this).closest('.container-fluid').find('input[name="price"], input[name="stock"]').closest('.form-input');
-        $(container).show();
-        if (this.checked) {
-            $(container).hide();
+    
+    function toggleFields() {
+        if (input_is_service.prop('checked')) {
+            $('#price, #stock').hide(); // Oculta los divs con los inputs
+        } else {
+            $('#price, #stock').show(); // Muestra los divs
         }
+    }
+
+    // Ejecutar al cargar la página
+    toggleFields();
+
+    // Ejecutar cuando se cambia el switch
+    input_is_service.on('change', function () {
+        toggleFields();
     });
 
     input_is_service.trigger('change');

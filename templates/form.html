@@ -2,13 +2,13 @@
 {% load widget_tweaks %}
 {% block assets_list %}
     {% block assets_form %}
-
+        <meta name="viewport" content="width=device-width, initial-scale=1">
     {% endblock %}
 {% endblock %}
 
 {% block content %}
     <form enctype="multipart/form-data" method="post" autocomplete="off" data-url="{{ list_url }}" id="frmForm">
-        <div class="card">
+        <div class="card card-outline card-info">
             <div class="card-header">
                 <h3 class="card-title">
                     {% if action == 'add' %}
@@ -41,7 +41,7 @@
                     {% endblock %}
                 </div>
             </div>
-            <div class="card-footer">
+            <div class="card-footer" style="c;">
                 {% block buttons %}
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> Guardar registro

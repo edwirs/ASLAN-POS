@@ -18,15 +18,15 @@ def insert_data():
     numbers = list(string.digits)
 
     company = Company()
-    company.name = 'POS-STORE S.A.'
-    company.ruc = '0928363993001'
-    company.address = 'MILAGRO, CDLA PAQUISHA'
-    company.mobile = '0996555528'
-    company.phone = '2977557'
-    company.email = 'williamjair94@hotmail.com'
+    company.name = 'CRM RANDOLS'
+    company.ruc = '35519551'
+    company.address = 'Cl 5 # 5 - 58'
+    company.mobile = '3144447610'
+    company.phone = '3144447610'
+    company.email = 'confeccionesrandols@hotmail.com'
     company.website = 'https://algorisoft.com'
-    company.description = 'VENTA AL POR MAYOR Y MENOS DE PRODUCTOS DE PRIMERA NECESIDAD'
-    company.iva = 12.00
+    company.description = 'VENTA AL POR MAYOR Y MENOR DE ROPA PARA CABELLERO Y DAMA'
+    company.iva = 00.00
     company.save()
 
     with open(f'{settings.BASE_DIR}/deploy/json/products.json', encoding='utf8') as json_file:
@@ -47,10 +47,10 @@ def insert_data():
     client = Client()
     client.names = 'Consumidor Final'
     client.dni = '9999999999999'
-    client.email = 'davilawilliam94@gmail.com'
+    client.email = 'edwirs964@gmail.com'
     client.birthdate = date(1994, 10, 19)
     client.mobile = '9999999999'
-    client.address = 'Milagro, cdla. Paquisha'
+    client.address = 'cra 4 12 39'
     client.save()
 
     with open(f'{settings.BASE_DIR}/deploy/json/customers.json', encoding='utf8') as json_file:

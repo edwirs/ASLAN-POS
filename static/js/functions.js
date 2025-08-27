@@ -64,6 +64,7 @@ function submit_with_formdata(args) {
 
     $.confirm({
         type: args.type,
+        typeAnimated: true,
         theme: args.theme,
         title: args.title,
         icon: args.icon,
