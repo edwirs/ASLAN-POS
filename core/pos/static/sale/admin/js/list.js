@@ -34,18 +34,19 @@ var sale = {
                 {data: "total_dscto"},
                 {data: "total"},    
                 {data: "paymentmethod.name"},
+                {data: "transfermethods.name"},
                 {data: "id"},
             ],
             columnDefs: [
                 {
-                    targets: [-3, -4],
+                    targets: [-4, -5],
                     class: 'text-center',
                     render: function (data, type, row) {
                         return '$' + parseFloat(data).toFixed(2);
                     }
                 },
                 {
-                    targets: [-2, -5],
+                    targets: [-2, -5, -6],
                     class: 'text-center',
                 },
                 {
