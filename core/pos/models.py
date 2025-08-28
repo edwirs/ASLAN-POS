@@ -48,7 +48,7 @@ class Product(models.Model):
         return self.get_full_name()
 
     def get_full_name(self):
-        return f'{self.name} ({self.code}) ({self.category.name})'
+        return f'{self.code} - {self.name} ({self.category.name})'
 
     def get_short_name(self):
         return f'{self.name} ({self.category.name})'
