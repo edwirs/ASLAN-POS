@@ -207,6 +207,14 @@ $(function () {
         } else {
             select_transfermethods.parent().hide();
         }
+
+        // Si la forma de pago es transferencia o tarjeta, llenar cash con el total
+        if (['transfer', 'debitCard', 'creditCard'].includes(selectedValue)) {
+            var total = parseFloat($('input[name="total"]').val()) || 0;
+            input_cash.val(total.toFixed(2)).trigger('change');
+        } else {
+            input_cash.val('0.00').trigger('change');
+        }
     });
 
     select_paymentmethod.trigger('change');
