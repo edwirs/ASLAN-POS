@@ -111,10 +111,18 @@ class SaleCreateView(GroupPermissionMixin, CreateView):
                 ids = json.loads(request.POST['ids'])
                 data = []
                 term = request.POST['term']
-                queryset = Product.objects.filter(Q(stock__gt=0) | Q(is_service=True)).exclude(id__in=ids).order_by('name')
+                queryset = Product.objects.filter(Q(stock__gt=0) | Q(is_service=True)).exclude(id__in=ids).order_by('code')
                 if len(term):
-                    queryset = queryset.filter(Q(name__icontains=term) | Q(code__icontains=term))
-                    queryset = queryset[:10]
+                    # Coincidencia exacta en code
+                    exact_matches = queryset.filter(code__iexact=term)
+
+                    # Coincidencias parciales por nombre o code (excepto exactos)
+                    partial_matches = queryset.filter(
+                        Q(name__icontains=term) | Q(code__icontains=term)
+                    ).exclude(code__iexact=term)
+
+                    # Unimos y limitamos a 10
+                    queryset = (exact_matches | partial_matches).order_by('code')[:10]
                 for i in queryset:
                     item = i.toJSON()
                     item['pvp'] = float(i.pvp)
