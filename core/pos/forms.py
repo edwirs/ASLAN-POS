@@ -240,6 +240,10 @@ class SaleForm(forms.ModelForm):
                 'class': 'select2',
                 'style': 'width: 100%'
             }),
+            'service_type': forms.Select(attrs={
+                'class': 'select2',
+                'style': 'width: 100%'
+            }),
         }
 
 class PriceForm(forms.ModelForm):

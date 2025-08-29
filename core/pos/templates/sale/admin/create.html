@@ -106,6 +106,10 @@
     <!-- Totales Finales -->
     <div class="col-12 col-lg-4 card border p-3 ms-auto mb-4">
         <div class="mb-3">
+            <label class="form-label fw-bold">{{ form.service_type.label }}:</label>
+            {{ form.service_type }}
+        </div>
+        <div class="mb-3">
             <label class="form-label fw-bold">{{ form.paymentmethod.label }}:</label>
             {{ form.paymentmethod }}
         </div>
@@ -205,6 +209,38 @@
         sale.detail.iva = {{ company.iva|safe }};
         $(function () {
             sale.listProducts();
+
+            {% if action == 'update' %}
+                sale.detail.products = {{ products|safe }};
+                sale.listProducts();
+
+                // Deshabilitar todo excepto pago
+                $('input, select, textarea').prop('disabled', true);
+                $('select[name="paymentmethod"], select[name="transfermethods"], input[name="cash"]').prop('disabled', false);
+
+                select_client.select2('trigger', 'select', {
+                    data: {{ client|safe }}
+                });
+
+                // Quitar botones de eliminar producto
+                $('#tblProducts tbody').find('a[rel="remove"]').remove();
+                $('#tblProducts thead').find('th:last').remove(); // quita cabecera "Acciones"
+
+                // Bloquear también los botones globales
+                $('#search_product, .btnRemoveAll').prop('disabled', true);
+
+                // Anular eventos que hacen ajax en update
+                $('#search_product').off();
+                $('.btnRemoveAll').off();
+                $('#tblProducts tbody').off('click', 'a[rel="remove"]');
+            {% else %}
+                sale.listProducts();
+                {% if final_consumer %}
+                    select_client.select2('trigger', 'select', {data: {{ final_consumer|safe }}} );
+                {% endif %}
+                $('#search_product').focus();
+            {% endif %}
+
             {% if final_consumer %}
                 select_client.select2('trigger', 'select', {data: {{ final_consumer|safe }}});
             {% endif %}

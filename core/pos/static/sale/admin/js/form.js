@@ -1,6 +1,7 @@
 var select_client;
 var select_paymentmethod;
 var select_transfermethods;
+var select_service_type;
 var tblProducts, tblSearchProducts;
 var input_search_product, input_birthdate, input_date_joined, input_cash, input_change;
 
@@ -40,15 +41,15 @@ var sale = {
 
         $('input[name="subtotal_0"]').val(this.detail.subtotal_0.toFixed(2));
         $('input[name="subtotal_12"]').val(this.detail.subtotal_12.toFixed(2));
-        $('input[name="subtotal_12_sin_iva"]').val(this.detail.subtotal_12_sin_iva.toFixed(2));
-        $('input[name="iva"]').val(this.detail.iva.toFixed(2));
-        $('input[name="total_iva"]').val(this.detail.total_iva.toFixed(2));
-        $('input[name="total_dscto"]').val(this.detail.total_dscto.toFixed(2));
-        $('input[name="total"]').val(this.detail.total.toFixed(2));
+        $('input[name="subtotal_12_sin_iva"]').val(this.detail.subtotal_12_sin_iva.toLocaleString('es-CL'));
+        $('input[name="iva"]').val(this.detail.iva.toLocaleString('es-CL'));
+        $('input[name="total_iva"]').val(this.detail.total_iva.toLocaleString('es-CL'));
+        $('input[name="total_dscto"]').val(this.detail.total_dscto.toLocaleString('es-CL'));
+        $('input[name="total"]').val(this.detail.total.toLocaleString('es-CL')); 
 
         var cash = parseFloat(input_cash.val());
         var change = cash - sale.detail.total;
-        input_change.val(change.toFixed(2));
+        input_change.val(change.toLocaleString('es-CL'));
     },
     addProduct: function (item) {
         this.detail.products.push(item);
@@ -92,9 +93,9 @@ var sale = {
                             return 'N/A';
                         }
                         if (data > 0) {
-                            return '<span class="badge bg-success rounded-pill">' + parseFloat(data).toFixed(2) + '</span>';
+                            return '<span class="badge bg-success rounded-pill">' + parseFloat(data).toLocaleString('es-CL') + '</span>';
                         }
-                        return '<span class="badge bg-warning rounded-pill">' + parseFloat(data).toFixed(2) + '</span>';
+                        return '<span class="badge bg-warning rounded-pill">' + parseFloat(data).toLocaleString('es-CL') + '</span>';
                     }
                 },
                 {
@@ -108,7 +109,7 @@ var sale = {
                     targets: [-1, -2],
                     class: 'text-center',
                     render: function (data, type, row) {
-                        return '$' + data.toFixed(2);
+                        return '$' + parseFloat(data).toLocaleString('es-CL');
                     }
                 },
                 {
@@ -161,6 +162,7 @@ $(function () {
     input_date_joined = $('input[name="date_joined"]');
     select_paymentmethod = $('select[name="paymentmethod"]');
     select_transfermethods = $('select[name="transfermethods"]');
+    select_service_type = $('select[name="service_type"]');
 
     // Client
 
@@ -194,6 +196,11 @@ $(function () {
     });
 
     select_transfermethods.select2({
+        theme: "bootstrap4",
+        language: 'es'
+    });
+
+    select_service_type.select2({
         theme: "bootstrap4",
         language: 'es'
     });
@@ -357,7 +364,7 @@ $(function () {
                     targets: [-3],
                     class: 'text-center',
                     render: function (data, type, row) {
-                        return '$' + data.toFixed(2);
+                        return '$' + parseFloat(data).toLocaleString('es-CL');
                     }
                 },
                 {

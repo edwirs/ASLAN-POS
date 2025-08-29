@@ -11,6 +11,7 @@ from core.pos.choices import GENDER
 from core.pos.choices import PAYMENTMETHODS
 from core.pos.choices import TRANSFERMETHODS
 from core.pos.choices import EXPENSES
+from core.pos.choices import SERVICE_TYPE
 from core.user.models import User
 
 
@@ -186,6 +187,7 @@ class Sale(models.Model):
     change = models.DecimalField(max_digits=9, decimal_places=2, null=True, default=0.00, verbose_name='Cambio')
     paymentmethod = models.CharField(max_length=50, choices=PAYMENTMETHODS, default=PAYMENTMETHODS[0][0], verbose_name='Método de pago')
     transfermethods = models.CharField(max_length=50, choices=TRANSFERMETHODS, default=TRANSFERMETHODS[0][0], verbose_name='Tipo transferencia', null=True)
+    service_type = models.CharField(max_length=50, choices=SERVICE_TYPE, default=SERVICE_TYPE[0][0], verbose_name='Tipo Servicio', null=True)
     delivered = models.BooleanField(default=False, verbose_name='Entregado')
     is_active = models.BooleanField(default=True, verbose_name='Estado')
 
@@ -236,6 +238,7 @@ class Sale(models.Model):
         item['change'] = float(self.change)
         item['paymentmethod'] = {'id': self.paymentmethod, 'name': self.get_paymentmethod_display()}
         item['transfermethods'] = {'id': self.transfermethods, 'name': self.get_transfermethods_display()}
+        item['service_type'] = {'id': self.service_type, 'name': self.get_service_type_display()}
         item['delivered'] = self.delivered
         return item
 

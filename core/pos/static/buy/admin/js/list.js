@@ -42,7 +42,7 @@ var buy = {
                     targets: [-3, -4, -5, -6],
                     class: 'text-center',
                     render: function (data, type, row) {
-                        return '$' + parseFloat(data).toFixed(2);
+                        return '$' + parseFloat(data).toLocaleString('es-CL');
                     }
                 },
                 {
@@ -108,7 +108,7 @@ $(function () {
                         targets: [-1, -2, -3, -5],
                         class: 'text-center',
                         render: function (data, type, row) {
-                            return '$' + data.toFixed(2);
+                            return '$' + parseFloat(data).toLocaleString('es-CL');
                         }
                     },
                     {

@@ -36,16 +36,16 @@ var buy = {
         this.detail.total_iva = this.detail.products.filter(value => value.with_tax).reduce((a, b) => a + (b.total_iva || 0), 0);
         this.detail.total = this.detail.subtotal - this.detail.total_dscto;
 
-        $('input[name="subtotal_0"]').val(this.detail.subtotal_0.toFixed(2));
-        $('input[name="subtotal_12"]').val(this.detail.subtotal_12.toFixed(2));
-        $('input[name="iva"]').val(this.detail.iva.toFixed(2));
-        $('input[name="total_iva"]').val(this.detail.total_iva.toFixed(2));
-        $('input[name="total_dscto"]').val(this.detail.total_dscto.toFixed(2));
-        $('input[name="total"]').val(this.detail.total.toFixed(2));
+        $('input[name="subtotal_0"]').val(this.detail.subtotal_0.toLocaleString('es-CL'));
+        $('input[name="subtotal_12"]').val(this.detail.subtotal_12.toLocaleString('es-CL'));
+        $('input[name="iva"]').val(this.detail.iva.toLocaleString('es-CL'));
+        $('input[name="total_iva"]').val(this.detail.total_iva.toLocaleString('es-CL'));
+        $('input[name="total_dscto"]').val(this.detail.total_dscto.toLocaleString('es-CL'));
+        $('input[name="total"]').val(this.detail.total.toLocaleString('es-CL'));
 
         var cash = parseFloat(input_cash.val());
         var change = cash - buy.detail.total;
-        input_change.val(change.toFixed(2));
+        input_change.val(change.toLocaleString('es-CL'));
     },
     addProduct: function (item) {
         this.detail.products.push(item);
@@ -94,7 +94,7 @@ var buy = {
                     targets: [-1, -2],
                     class: 'text-center',
                     render: function (data, type, row) {
-                        return '$' + data.toFixed(2);
+                        return '$' + parseFloat(data).toLocaleString('es-CL');
                     }
                 },
                 {
@@ -111,7 +111,7 @@ var buy = {
                 tr.find('input[name="cant"]')
                     .TouchSpin({
                         min: 1,
-                        max: stock
+                        max: Number.MAX_SAFE_INTEGER
                     })
                     .on('keypress', function (e) {
                         return validate_text_box({'event': e, 'type': 'numbers'});
@@ -335,7 +335,7 @@ $(function () {
                     targets: [-3],
                     class: 'text-center',
                     render: function (data, type, row) {
-                        return '$' + data.toFixed(2);
+                        return '$' + parseFloat(data).toLocaleString('es-CL');
                     }
                 },
                 {

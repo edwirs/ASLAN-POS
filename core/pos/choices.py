@@ -19,3 +19,8 @@ EXPENSES = (
     ('caja', 'Caja'),
     ('general', 'General'),
 )
+
+SERVICE_TYPE = (
+    ('in_site', 'En Sitio'),
+    ('delivery', 'Domicilio'),
+)

@@ -13,9 +13,9 @@ from core.pos.forms import *
 from core.pos.utilities import printer
 from core.reports.forms import ReportForm
 from core.security.mixins import GroupPermissionMixin
+from core.pos.choices import PAYMENTMETHODS, TRANSFERMETHODS
 
 MODULE_NAME = 'Ventas'
-
 
 class SaleListView(GroupPermissionMixin, FormView):
     template_name = 'sale/admin/list.html'
@@ -44,7 +44,7 @@ class SaleListView(GroupPermissionMixin, FormView):
         except Exception as e:
             data['error'] = str(e)
         return HttpResponse(json.dumps(data), content_type='application/json')
-
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Listado de Ventas'
@@ -52,6 +52,34 @@ class SaleListView(GroupPermissionMixin, FormView):
         context['create_url'] = reverse_lazy('sale_admin_create')
         context['module_name'] = MODULE_NAME
         return context
+    
+def get_sale(request, pk):
+    sale = Sale.objects.get(pk=pk)
+    paymentmethods = [{'id': pm[0], 'name': pm[1]} for pm in PAYMENTMETHODS]
+    transfermethods = [{'id': tm[0], 'name': tm[1]} for tm in TRANSFERMETHODS]
+    data = {
+        'sale': {
+            'paymentmethod': sale.paymentmethod,
+            'transfermethods': sale.transfermethods,
+            'total': sale.total,
+            'cash': sale.cash,
+            'change': sale.change,
+        },
+        'paymentmethods': paymentmethods,
+        'transfermethods': transfermethods
+    }
+    return JsonResponse(data)
+
+def update_sale(request, pk):
+    import json
+    sale = Sale.objects.get(pk=pk)
+    data = json.loads(request.body)
+    sale.paymentmethod_id = data.get('paymentmethod')
+    sale.transfermethods_id = data.get('transfermethods')
+    sale.cash = data.get('cash')
+    sale.change = max(sale.cash - sale.total, 0)
+    sale.save()
+    return JsonResponse({'success': True})
 
 
 class SaleCreateView(GroupPermissionMixin, CreateView):
@@ -82,6 +110,7 @@ class SaleCreateView(GroupPermissionMixin, CreateView):
                         sale.transfermethods = (request.POST['transfermethods'])
                     else:
                         sale.transfermethods = None
+                    sale.service_type = (request.POST['service_type'])
                     sale.save()
                     for i in json.loads(request.POST['products']):
                         product = Product.objects.get(pk=i['id'])

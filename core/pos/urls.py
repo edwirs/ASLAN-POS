@@ -40,6 +40,7 @@ urlpatterns = [
     path('sale/admin/delete/<int:pk>/', SaleDeleteView.as_view(), name='sale_admin_delete'),
     path('sale/admin/delivered/<int:pk>/', SaleDeliveredUpdateView.as_view(), name='sale_admin_delivered'),
     path('sale/admin/print/invoice/<int:pk>/', SalePrintInvoiceView.as_view(), name='sale_admin_print_invoice'),
+    #path('sale/admin/update/<int:pk>/', SaleUpdateView.as_view(), name='sale_admin_update'),
     # price
     path('price/admin/', PriceListView.as_view(), name='price_admin_list'),
     path('price/admin/add/', PriceCreateView.as_view(), name='price_admin_create'),

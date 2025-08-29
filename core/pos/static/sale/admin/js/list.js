@@ -35,18 +35,19 @@ var sale = {
                 {data: "total"},    
                 {data: "paymentmethod.name"},
                 {data: "transfermethods.name"},
+                {data: "service_type.name"},
                 {data: "id"},
             ],
             columnDefs: [
                 {
-                    targets: [-4, -5],
+                    targets: [-5, -6],
                     class: 'text-center',
                     render: function (data, type, row) {
-                        return '$' + parseFloat(data).toFixed(2);
+                        return '$' + parseFloat(data).toLocaleString('es-CL');
                     }
                 },
                 {
-                    targets: [-2, -5, -6],
+                    targets: [-2, -3, -7],
                     class: 'text-center',
                 },
                 {
@@ -56,6 +57,12 @@ var sale = {
                         var buttons = '<a rel="detail" data-bs-toggle="tooltip" title="Detalle" class="btn btn-success btn-sm rounded-pill"><i class="fas fa-boxes"></i></a> ';
                         buttons += '<a href="' + pathname + 'delete/' + row.id + '/" data-bs-toggle="tooltip" title="Eliminar" class="btn btn-danger btn-sm rounded-pill"><i class="fas fa-trash"></i></a> ';
                         buttons += '<a href="' + pathname + 'print/invoice/' + row.id + '/" target="_blank" data-bs-toggle="tooltip" title="Imprimir" class="btn btn-secondary btn-sm rounded-pill"><i class="fas fa-print"></i></a>';
+                        
+
+                        if (row.service_type && row.service_type.id === 'delivery') {
+                            buttons += '<a href="#" rel="myModalEdit" data-id="' + row.id + '" data-bs-toggle="tooltip" title="Editar Domicilio" class="btn btn-warning btn-sm rounded-pill"><i class="fas fa-edit"></i></a>';
+                        }
+
                         return buttons;
                     }
                 },
@@ -108,7 +115,7 @@ $(function () {
                         targets: [-1, -2, -3, -5],
                         class: 'text-center',
                         render: function (data, type, row) {
-                            return '$' + data.toFixed(2);
+                            return '$' + parseFloat(data).toLocaleString('es-CL');
                         }
                     },
                     {
@@ -125,6 +132,71 @@ $(function () {
             });
             $('#myModalDetail').modal('show');
         })
+        .on('click', 'a[rel="update"]', function () {
+            $('.tooltip').remove();
+            var tr = tblSale.cell($(this).closest('td, li')).index();
+            var row = tblSale.row(tr.row).data();
+            window.location.href = pathname + 'update/' + row.id + '/';
+        })
+        .on('click', 'a[rel="myModalEdit"]', function () {
+            $('.tooltip').remove();
+            var tr = tblSale.cell($(this).closest('td, li')).index();
+            var row = tblSale.row(tr.row).data();
+
+            fetch( '/pos/sale/admin/get_sale/' + row.id + '/', {  // Endpoint para obtener datos de la venta
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Llenar métodos de pago
+                $('#paymentmethod').empty();
+                data.paymentmethods.forEach(pm => {
+                    $('#paymentmethod').append(`<option value="${pm.id}" ${pm.id == data.sale.paymentmethod ? 'selected' : ''}>${pm.name}</option>`);
+                });
+
+                // Llenar métodos de transferencia
+                $('#transfermethods').empty();
+                data.transfermethods.forEach(tm => {
+                    $('#transfermethods').append(`<option value="${tm.id}" ${tm.id == data.sale.transfermethods ? 'selected' : ''}>${tm.name}</option>`);
+                });
+
+                $('#total').val(data.sale.total);
+                $('#cash').val(data.sale.cash);
+                $('#change').val(data.sale.change);
+            });
+
+            $('#myModalEdit').modal('show');
+
+            // Guardar cambios
+            $('#btnSaveEdit').off('click').on('click', function () {
+                var payload = {
+                    paymentmethod: $('#paymentmethod').val(),
+                    transfermethods: $('#transfermethods').val(),
+                    cash: parseFloat($('#cash').val()),
+                };
+
+                fetch(pathname + 'update_sale/' + row.id + '/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken,
+                    },
+                    body: JSON.stringify(payload),
+                })
+                .then(response => response.json())
+                .then(resp => {
+                    if (resp.success) {
+                        $('#myModalEdit').modal('hide');
+                        sale.list(false); // recargar tabla
+                    } else {
+                        alert('Error al actualizar la venta');
+                    }
+                });
+            });
+        });
 
     input_date_range
         .daterangepicker({

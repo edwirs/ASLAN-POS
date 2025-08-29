@@ -37,7 +37,7 @@ class BuyListView(GroupPermissionMixin, FormView):
                     data.append(i.toJSON())
             elif action == 'search_detail_products':
                 data = []
-                for i in BuyDetail.objects.filter(price_id_id=request.POST['id']):
+                for i in BuyDetail.objects.filter(buy_id_id=request.POST['id']):
                     data.append(i.toJSON())
             else:
                 data['error'] = 'No ha seleccionado ninguna opción'
@@ -98,7 +98,7 @@ class BuyCreateView(GroupPermissionMixin, CreateView):
                 ids = json.loads(request.POST['ids'])
                 data = []
                 term = request.POST['term']
-                queryset = Product.objects.filter(Q(stock__gt=0) | Q(is_service=True)).exclude(id__in=ids).order_by('name')
+                queryset = Product.objects.filter(stock__gt=0, is_service=False).exclude(id__in=ids).order_by('code')
                 if len(term):
                     queryset = queryset.filter(Q(name__icontains=term) | Q(code__icontains=term))
                     queryset = queryset[:10]
