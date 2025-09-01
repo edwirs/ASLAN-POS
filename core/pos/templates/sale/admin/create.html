@@ -109,14 +109,30 @@
             <label class="form-label fw-bold">{{ form.service_type.label }}:</label>
             {{ form.service_type }}
         </div>
-        <div class="mb-3">
-            <label class="form-label fw-bold">{{ form.paymentmethod.label }}:</label>
-            {{ form.paymentmethod }}
+
+        <div class="row mb-3">
+            <div class="col">
+                <label class="form-label fw-bold">{{ form.paymentmethod.label }}:</label>
+                {{ form.paymentmethod }}
+            </div>
+            <div class="col">
+                <label class="form-label fw-bold">{{ form.transfermethods.label }}:</label>
+                {{ form.transfermethods }}
+            </div>
         </div>
-        <div class="mb-3 transfermethods">
-            <label class="form-label fw-bold">{{ form.transfermethods.label }}:</label>
-            {{ form.transfermethods }}
+
+        <div class="row mb-3">
+            <div class="col transfermethods">
+                <label class="form-label fw-bold">{{ form.typemethods.label }}:</label>
+                {{ form.typemethods }}
+            </div>
+            <div class="col">
+                <label class="form-label fw-bold">{{ form.expiration_date.label }}:</label>
+                {{ form.expiration_date }}
+            </div>
         </div>
+
+        
         <div class="mb-3">
             <label class="form-label fw-bold">{{ form.total.label|upper }}</label>
             {{ form.total }}

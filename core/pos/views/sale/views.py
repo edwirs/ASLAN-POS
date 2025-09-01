@@ -51,35 +51,33 @@ class SaleListView(GroupPermissionMixin, FormView):
         context['list_url'] = reverse_lazy('sale_admin_list')
         context['create_url'] = reverse_lazy('sale_admin_create')
         context['module_name'] = MODULE_NAME
+        context['sale_form'] = SaleForm()
         return context
     
 def get_sale(request, pk):
-    sale = Sale.objects.get(pk=pk)
-    paymentmethods = [{'id': pm[0], 'name': pm[1]} for pm in PAYMENTMETHODS]
-    transfermethods = [{'id': tm[0], 'name': tm[1]} for tm in TRANSFERMETHODS]
-    data = {
-        'sale': {
-            'paymentmethod': sale.paymentmethod,
-            'transfermethods': sale.transfermethods,
-            'total': sale.total,
-            'cash': sale.cash,
-            'change': sale.change,
-        },
-        'paymentmethods': paymentmethods,
-        'transfermethods': transfermethods
-    }
-    return JsonResponse(data)
-
+    try:
+        sale = Sale.objects.get(pk=pk)
+        data = sale.toJSON()  # 👈 asegúrate que tu modelo Sale tenga este método
+        return JsonResponse(data, safe=False)
+    except Sale.DoesNotExist:
+        return JsonResponse({'error': 'La venta no existe'}, status=404)
+    
 def update_sale(request, pk):
-    import json
-    sale = Sale.objects.get(pk=pk)
-    data = json.loads(request.body)
-    sale.paymentmethod_id = data.get('paymentmethod')
-    sale.transfermethods_id = data.get('transfermethods')
-    sale.cash = data.get('cash')
-    sale.change = max(sale.cash - sale.total, 0)
-    sale.save()
-    return JsonResponse({'success': True})
+    try:
+        sale = Sale.objects.get(pk=pk)
+        sale.service_type_id = request.POST.get('service_type')
+        sale.paymentmethod_id = request.POST.get('paymentmethod')
+        sale.transfermethods_id = request.POST.get('transfermethods') or None
+        sale.typemethods_id = request.POST.get('typemethods')
+        sale.total = request.POST.get('total')
+        sale.cash = request.POST.get('cash')
+        sale.change = request.POST.get('change')
+        sale.save()
+        return JsonResponse({"success": True})
+    except Sale.DoesNotExist:
+        return JsonResponse({"error": "Venta no encontrada"})
+    except Exception as e:
+        return JsonResponse({"error": str(e)})
 
 
 class SaleCreateView(GroupPermissionMixin, CreateView):
@@ -110,6 +108,11 @@ class SaleCreateView(GroupPermissionMixin, CreateView):
                         sale.transfermethods = (request.POST['transfermethods'])
                     else:
                         sale.transfermethods = None
+                    sale.typemethods = (request.POST['typemethods'])
+                    if sale.typemethods == 'credit':
+                        sale.expiration_date = (request.POST['expiration_date'])
+                    else:
+                        sale.expiration_date = None
                     sale.service_type = (request.POST['service_type'])
                     sale.save()
                     for i in json.loads(request.POST['products']):

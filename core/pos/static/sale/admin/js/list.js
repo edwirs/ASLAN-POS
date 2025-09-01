@@ -1,5 +1,9 @@
 var tblSale;
 var input_date_range;
+var select_paymentmethod;
+var select_transfermethods;
+var select_service_type;
+var input_cash, input_change;
 
 var sale = {
     list: function (all) {
@@ -60,7 +64,7 @@ var sale = {
                         
 
                         if (row.service_type && row.service_type.id === 'delivery') {
-                            buttons += '<a href="#" rel="myModalEdit" data-id="' + row.id + '" data-bs-toggle="tooltip" title="Editar Domicilio" class="btn btn-warning btn-sm rounded-pill"><i class="fas fa-edit"></i></a>';
+                            buttons += '<a href="#" rel="myModalEdit" data-id="' + row.id + '" data-bs-toggle="tooltip" title="Editar Pago" class="btn btn-warning btn-sm rounded-pill"><i class="fas fa-money-check-dollar text-white"></i></a>';
                         }
 
                         return buttons;
@@ -74,12 +78,17 @@ var sale = {
                 enable_tooltip();
             }
         });
-        $('#data thead th').css('background-color', '#ffffff');
+        $('#data thead th').css('background-color', '#ffffffff');
     }
 };
 
 $(function () {
     input_date_range = $('input[name="date_range"]');
+    select_paymentmethod = $('select[name="paymentmethod"]');
+    select_transfermethods = $('select[name="transfermethods"]');
+    select_service_type = $('select[name="service_type"]');
+    input_cash = $('input[name="cash"]');
+    input_change = $('input[name="change"]');
 
     $('#data tbody')
         .off()
@@ -132,74 +141,72 @@ $(function () {
             });
             $('#myModalDetail').modal('show');
         })
-        .on('click', 'a[rel="update"]', function () {
-            $('.tooltip').remove();
-            var tr = tblSale.cell($(this).closest('td, li')).index();
-            var row = tblSale.row(tr.row).data();
-            window.location.href = pathname + 'update/' + row.id + '/';
-        })
         .on('click', 'a[rel="myModalEdit"]', function () {
             $('.tooltip').remove();
-            var tr = tblSale.cell($(this).closest('td, li')).index();
-            var row = tblSale.row(tr.row).data();
 
-            fetch( '/pos/sale/admin/get_sale/' + row.id + '/', {  // Endpoint para obtener datos de la venta
-                method: 'GET',
-                headers: {
-                    'X-CSRFToken': csrftoken,
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Llenar métodos de pago
-                $('#paymentmethod').empty();
-                data.paymentmethods.forEach(pm => {
-                    $('#paymentmethod').append(`<option value="${pm.id}" ${pm.id == data.sale.paymentmethod ? 'selected' : ''}>${pm.name}</option>`);
-                });
+            let id = $(this).data('id');
+            $.ajax({
+                url: '/pos/sale/admin/get_sale/' + id + '/',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    if (!data.error) {
+                        // Cargar datos en el modal
+                        $('#myModalEdit').data('sale-id', data.id);
+                        $('#myModalEdit #id_paymentmethod').val(data.paymentmethod.id).trigger('change');
+                        $('#myModalEdit #id_transfermethods').val(data.transfermethods.id).trigger('change');
+                        $('#myModalEdit #id_total').val(data.total).toLocaleString('es-CL');
+                        $('#myModalEdit #id_cash').val(data.cash).toLocaleString('es-CL');
+                        $('#myModalEdit #id_change').val(data.change).toLocaleString('es-CL');
 
-                // Llenar métodos de transferencia
-                $('#transfermethods').empty();
-                data.transfermethods.forEach(tm => {
-                    $('#transfermethods').append(`<option value="${tm.id}" ${tm.id == data.sale.transfermethods ? 'selected' : ''}>${tm.name}</option>`);
-                });
-
-                $('#total').val(data.sale.total);
-                $('#cash').val(data.sale.cash);
-                $('#change').val(data.sale.change);
-            });
-
-            $('#myModalEdit').modal('show');
-
-            // Guardar cambios
-            $('#btnSaveEdit').off('click').on('click', function () {
-                var payload = {
-                    paymentmethod: $('#paymentmethod').val(),
-                    transfermethods: $('#transfermethods').val(),
-                    cash: parseFloat($('#cash').val()),
-                };
-
-                fetch(pathname + 'update_sale/' + row.id + '/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrftoken,
-                    },
-                    body: JSON.stringify(payload),
-                })
-                .then(response => response.json())
-                .then(resp => {
-                    if (resp.success) {
-                        $('#myModalEdit').modal('hide');
-                        sale.list(false); // recargar tabla
+                        // Mostrar modal
+                        $('#myModalEdit').modal('show');
                     } else {
-                        alert('Error al actualizar la venta');
+                        alert(data.error);
                     }
-                });
+                }
             });
         });
 
-    input_date_range
-        .daterangepicker({
+    // Guardar cambios al dar clic en "Guardar"
+    $(document).on('click', '#btnSaveEdit', function () {
+        let id = $('#myModalEdit').data('sale-id'); // guardamos el id de la venta al abrir la modal
+
+        // Serializar los campos del formulario
+        let formData = {
+            service_type: $('#id_service_type').val(),
+            paymentmethod: $('#id_paymentmethod').val(),
+            transfermethods: $('#id_transfermethods').val(),
+            typemethods: $('#id_typemethods').val(),
+            total: $('#id_total').val(),
+            cash: $('#id_cash').val(),
+            change: $('#id_change').val(),
+        };
+
+        $.ajax({
+            url: '/pos/sale/admin/update_sale/' + id + '/',  // nueva URL para actualizar
+            type: 'POST', // puede ser PUT si quieres, pero en Django normalmente usamos POST
+            data: formData,
+            headers: { "X-CSRFToken": csrftoken }, // csrf_token necesario
+            success: function (data) {
+                if (!data.error) {
+                    alert("Venta actualizada con éxito ✅");
+                    $('#myModalEdit').modal('hide');
+                    // opcional: recargar tabla/listado
+                    location.reload();
+                } else {
+                    alert("Error: " + data.error);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error(error);
+                alert("Ocurrió un error al guardar los cambios ❌");
+            }
+        });
+    });
+
+
+    input_date_range.daterangepicker({
                 language: 'auto',
                 startDate: new Date(),
                 locale: {
@@ -240,5 +247,68 @@ $(function () {
             console.error('Error:', error);
         });
     });
+
+    $('select[name="paymentmethod"]').select2({
+        language: 'es',
+        theme: 'bootstrap4'
+    });
+
+    $('select[name="transfermethods"]').select2({
+        language: 'es',
+        theme: 'bootstrap4'
+    });
+
+    select_paymentmethod.select2({
+        theme: "bootstrap4",
+        language: 'es'
+    });
+
+    select_transfermethods.select2({
+        theme: "bootstrap4",
+        language: 'es'
+    });
+
+    select_service_type.select2({
+        theme: "bootstrap4",
+        language: 'es'
+    });
+
+    select_transfermethods.parent().hide(); 
+    
+    select_paymentmethod.on('change', function(){
+        const selectedValue = $(this).val();
+        if (selectedValue === 'transfer') {
+            select_transfermethods.parent().show();
+        } else {
+            select_transfermethods.parent().hide();
+        }
+    });
+
+    input_cash
+        .TouchSpin({
+            min: 0.00,
+            max: 100000000,
+            step: 0.01,
+            decimals: 2,
+            boostat: 5,
+            maxboostedstep: 10
+        })
+        .off('change')
+        .on('change touchspin.on.min touchspin.on.max', function () {
+            let cash = parseFloat($(this).val()) || 0;              // lo que el usuario digitó
+            let total = $('#myModalEdit #id_total').val() || 0; // el total de la venta
+            let change = cash - total;                              // diferencia
+
+            // Si el cambio es negativo, lo dejamos en 0 (opcional)
+            if (change < 0) {
+                change = 0;
+            }
+
+            // Asignar valor al campo change
+            $('#myModalEdit #id_change').val(change);
+        })
+        .on('keypress', function (e) {
+            return validate_text_box({'event': e, 'type': 'decimals'});
+        });
 
 });

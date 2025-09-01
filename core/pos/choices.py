@@ -10,6 +10,11 @@ PAYMENTMETHODS = (
     ('transfer', 'Transferencia'),
 )
 
+TYPETMETHODS = (
+    ('fullpayment', 'Contado'),
+    ('credit', 'Crédito'),
+)
+
 TRANSFERMETHODS = (
     ('nequi', 'Nequi'),
     ('daviplata', 'Daviplata'),

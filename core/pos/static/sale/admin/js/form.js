@@ -2,7 +2,9 @@ var select_client;
 var select_paymentmethod;
 var select_transfermethods;
 var select_service_type;
+var select_typemethods;
 var tblProducts, tblSearchProducts;
+var expiration_date;
 var input_search_product, input_birthdate, input_date_joined, input_cash, input_change;
 
 var sale = {
@@ -49,7 +51,7 @@ var sale = {
 
         var cash = parseFloat(input_cash.val());
         var change = cash - sale.detail.total;
-        input_change.val(change.toLocaleString('es-CL'));
+        input_change.val(change);
     },
     addProduct: function (item) {
         this.detail.products.push(item);
@@ -163,6 +165,8 @@ $(function () {
     select_paymentmethod = $('select[name="paymentmethod"]');
     select_transfermethods = $('select[name="transfermethods"]');
     select_service_type = $('select[name="service_type"]');
+    select_typemethods = $('select[name="typemethods"]');
+    expiration_date = $('input[name="expiration_date"]');
 
     // Client
 
@@ -178,6 +182,11 @@ $(function () {
     });
 
     $('select[name="transfermethods"]').select2({
+        language: 'es',
+        theme: 'bootstrap4'
+    });
+
+    $('select[name="typemethods"]').select2({
         language: 'es',
         theme: 'bootstrap4'
     });
@@ -217,14 +226,44 @@ $(function () {
 
         // Si la forma de pago es transferencia o tarjeta, llenar cash con el total
         if (['transfer', 'debitCard', 'creditCard'].includes(selectedValue)) {
-            var total = parseFloat($('input[name="total"]').val()) || 0;
-            input_cash.val(total.toFixed(2)).trigger('change');
+            var totalStr = $('input[name="total"]').val();
+            totalStr = totalStr.replace(/\./g, '').replace(',', '.');
+            var total = parseFloat(totalStr) || 0;
+            input_cash.val(total).trigger('change');
         } else {
             input_cash.val('0.00').trigger('change');
         }
     });
 
-    select_paymentmethod.trigger('change');
+    expiration_date.parent().hide(); 
+    
+    select_typemethods.on('change', function(){
+        const selectedValue = $(this).val();
+        if (selectedValue === 'credit') {
+            expiration_date.parent().show();
+            input_cash.val('0').trigger('change');
+            input_change.val('0').trigger('change');
+            $('input[name="total"]').val('0').trigger('change');
+        } else {
+            expiration_date.parent().hide();
+        }
+    }); 
+    
+    select_service_type.on('change', function(){
+        const selectedValue = $(this).val();
+
+        // Si la forma de pago es transferencia o tarjeta, llenar cash con el total
+        if (['delivery'].includes(selectedValue)) {
+            var totalStr = $('input[name="total"]').val();
+            totalStr = totalStr.replace(/\./g, '').replace(',', '.');
+            var total = parseFloat(totalStr) || 0;
+            input_cash.val(total).trigger('change');
+        } else {
+            input_cash.val('0.00').trigger('change');
+        }
+    });
+
+    select_service_type.trigger('change');
 
     select_client.select2({
         theme: "bootstrap4",
@@ -482,6 +521,13 @@ $(function () {
         });
 
     input_date_joined.datetimepicker({
+        useCurrent: false,
+        format: 'YYYY-MM-DD',
+        locale: 'es',
+        keepOpen: false,
+    });
+
+    expiration_date.datetimepicker({
         useCurrent: false,
         format: 'YYYY-MM-DD',
         locale: 'es',

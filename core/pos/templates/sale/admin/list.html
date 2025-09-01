@@ -1,6 +1,14 @@
 {% extends 'list.html' %}
 {% load static %}
 {% block assets_list %}
+    <script src="{% static 'lib/select2-4.0.13/js/select2.min.js' %}"></script>
+    <script src="{% static 'lib/select2-4.0.13/js/i18n/es.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2-bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2-bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/bootstrap-touchspin-4.2.5/css/jquery.bootstrap-touchspin.css' %}"/>
+    <script src="{% static 'lib/bootstrap-touchspin-4.2.5/js/jquery.bootstrap-touchspin.js' %}"></script>
     <script src="{% static 'lib/bootstrap-daterangepicker-3.1/js/spanish.js' %}"></script>
     <script src="{% static 'lib/bootstrap-daterangepicker-3.1/js/daterangepicker.js' %}"></script>
     <link rel="stylesheet" href="{% static 'lib/bootstrap-daterangepicker-3.1/css/daterangepicker.css' %}"/>
@@ -51,35 +59,41 @@
     </div>
 
     <div class="modal fade" tabindex="-1" id="myModalEdit">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-sm">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold">
-                        <i class="fa fa-edit"></i> Editar Domicilio
+                        <i class="fa fa-edit"></i> Editar Pago
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="formEditSale">
-                        <div class="mb-3">
-                            <label for="paymentmethod" class="form-label">Método de pago</label>
-                            <select class="form-select" id="paymentmethod" name="paymentmethod"></select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="transfermethods" class="form-label">Transferencia</label>
-                            <select class="form-select" id="transfermethods" name="transfermethods"></select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="total" class="form-label">Total</label>
-                            <input type="text" class="form-control" id="total" name="total" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label for="cash" class="form-label">Efectivo</label>
-                            <input type="number" step="0.01" class="form-control" id="cash" name="cash">
-                        </div>
-                        <div class="mb-3">
-                            <label for="change" class="form-label">Cambio</label>
-                            <input type="text" class="form-control" id="change" name="change" readonly>
+                        <!-- Totales Finales -->
+                        <div class="col-12 col-lg-12 card border p-3 ms-auto mb-4">
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label class="form-label fw-bold">{{ sale_form.paymentmethod.label }}:</label>
+                                    {{ sale_form.paymentmethod }}
+                                </div>
+                                <div class="col">
+                                    <label class="form-label fw-bold">{{ sale_form.transfermethods.label }}:</label>
+                                    {{ sale_form.transfermethods }}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">{{ sale_form.total.label|upper }}</label>
+                                {{ sale_form.total }}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">{{ sale_form.cash.label }}:</label>
+                                {{ sale_form.cash }}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">{{ sale_form.change.label }}:</label>
+                                {{ sale_form.change }}
+                            </div>
                         </div>
                     </form>
                 </div>

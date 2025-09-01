@@ -1,4 +1,5 @@
 from django import forms
+from datetime import date
 
 from .models import *
 
@@ -178,6 +179,8 @@ class SaleForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['client'].queryset = Client.objects.none()
+        if not self.instance.pk:  # solo en formularios nuevos
+            self.fields['expiration_date'].initial = next_month_day_10()
 
     class Meta:
         model = Sale
@@ -244,7 +247,24 @@ class SaleForm(forms.ModelForm):
                 'class': 'select2',
                 'style': 'width: 100%'
             }),
+            'typemethods': forms.Select(attrs={
+                'class': 'select2',
+                'style': 'width: 100%'
+            }),
+            'expiration_date': forms.DateInput(format='%Y-%m-%d', attrs={
+                'class': 'form-control datetimepicker-input',
+                'id': 'expiration_date',
+                'data-toggle': 'datetimepicker',
+                'data-target': '#expiration_date'
+            }),
         }
+        
+def next_month_day_10():
+    today = date.today()
+    if today.month == 12:
+        return date(today.year + 1, 1, 10)
+    else:
+        return date(today.year, today.month + 1, 10)
 
 class PriceForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
