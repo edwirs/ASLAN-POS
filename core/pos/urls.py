@@ -10,7 +10,9 @@ from core.pos.views.buy.views import *
 from core.pos.views.provider.views import *
 from core.pos.views.productAutoAdd.views import *
 from core.pos.views.expenses.views import *
-from core.pos.views.sale import views
+from core.pos.views.sale.views import get_sale, update_sale
+from core.pos.views.credit.views import *
+from core.pos.views.credit.views import get_sale_credit, get_sale_payments
 
 urlpatterns = [
     # category
@@ -41,8 +43,8 @@ urlpatterns = [
     path('sale/admin/delete/<int:pk>/', SaleDeleteView.as_view(), name='sale_admin_delete'),
     path('sale/admin/delivered/<int:pk>/', SaleDeliveredUpdateView.as_view(), name='sale_admin_delivered'),
     path('sale/admin/print/invoice/<int:pk>/', SalePrintInvoiceView.as_view(), name='sale_admin_print_invoice'),
-    path('sale/admin/get_sale/<int:pk>/', views.get_sale, name='get_sale'),
-    path('sale/admin/update_sale/<int:pk>/', views.update_sale, name='update_sale'),
+    path('sale/admin/get_sale/<int:pk>/', get_sale, name='get_sale'),
+    path('sale/admin/update_sale/<int:pk>/', update_sale, name='update_sale'),
     # price
     path('price/admin/', PriceListView.as_view(), name='price_admin_list'),
     path('price/admin/add/', PriceCreateView.as_view(), name='price_admin_create'),
@@ -63,4 +65,9 @@ urlpatterns = [
     path("expenses/add/", ExpensesCreateView.as_view(), name='expenses_create'),
     path("expenses/update/<int:pk>/", ExpensesUpdateView.as_view(), name='expenses_update'),
     path("expenses/delete/<int:pk>/", ExpensesDeleteView.as_view(), name='expenses_delete'),
+     # credit
+    path('credit/', SaleCreditReportView.as_view(), name='sale_credit_report'),
+    path('credit/admin/get_sale_credit/<int:pk>/', get_sale_credit, name='get_sale_credit'),
+    path('credit/admin/get_sale_payments/<int:pk>/', get_sale_payments, name='get_sale_payments'),
+    path("credit/admin/add_payment/", SaleCreditAddPaymentView.as_view(), name="add_payment"),
 ]

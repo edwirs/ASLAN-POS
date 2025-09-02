@@ -195,6 +195,10 @@ class SaleForm(forms.ModelForm):
                 'data-target': '#date_joined',
                 'disabled': True
             }),
+            'id': forms.TextInput(attrs={
+                'class': 'form-control',
+                'disabled': True,
+            }),
             'subtotal_0': forms.TextInput(attrs={
                 'class': 'form-control',
                 'disabled': True,

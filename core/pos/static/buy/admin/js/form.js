@@ -292,10 +292,6 @@ $(function () {
         select: function (event, ui) {
             event.preventDefault();
             $(this).blur();
-            if (ui.item.stock === 0 && !ui.item.is_service) {
-                message_error('El stock de este producto esta en 0');
-                return false;
-            }
             ui.item.cant = 1;
             buy.addProduct(ui.item);
             $(this).val('').focus();

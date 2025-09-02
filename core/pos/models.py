@@ -223,6 +223,13 @@ class Sale(models.Model):
             detail.total = detail.subtotal - detail.total_dscto
             detail.save()
 
+    def total_paid(self):
+        result = self.salecreditpayment_set.aggregate(s=Sum('total'))['s']
+        return result if result else 0
+
+    def pending(self):
+        return self.total - self.total_paid()
+
     def toJSON(self):
         item = model_to_dict(self, exclude=['company', 'creation_date'])
         item['client'] = self.client.toJSON()
@@ -245,6 +252,8 @@ class Sale(models.Model):
         item['expiration_date'] = (self.expiration_date.strftime('%Y-%m-%d') if self.expiration_date else None)
         item['service_type'] = {'id': self.service_type, 'name': self.get_service_type_display()}
         item['delivered'] = self.delivered
+        item['total_paid'] = float(self.total_paid())
+        item['pending'] = float(self.pending())
         return item
 
     class Meta:
@@ -564,3 +573,26 @@ class ProductAutoAdd(models.Model):
 
     def __str__(self):
         return f'{self.trigger_product} -> {self.auto_product} (x{self.quantity})'
+    
+class SaleCreditPayment(models.Model):
+    sale = models.ForeignKey(Sale, on_delete=models.CASCADE)
+    paymentmethod = models.CharField(max_length=50, choices=PAYMENTMETHODS, default=PAYMENTMETHODS[0][0], verbose_name='Método de pago')
+    transfermethods = models.CharField(max_length=50, choices=TRANSFERMETHODS, default=TRANSFERMETHODS[0][0], verbose_name='Tipo transferencia', null=True)
+    total = models.DecimalField(max_digits=9, decimal_places=2, default=0.00, verbose_name='Valor pago')
+    date_payment = models.DateField(default=datetime.now, verbose_name='Fecha de pago')
+
+    def __str__(self):
+        return f"{self.sale.client.get_full_name()}"
+    
+    def toJSON(self):
+        item = model_to_dict(self, exclude=['sale'])
+        item['paymentmethod'] = {'id': self.paymentmethod, 'name': self.get_paymentmethod_display()}
+        item['transfermethods'] = {'id': self.transfermethods, 'name': self.get_transfermethods_display()}
+        item['total'] = float(self.total)
+        item['date_payment'] = self.date_payment.strftime('%Y-%m-%d')
+        return item
+
+    class Meta:
+        verbose_name = 'Pago Crédito'
+        verbose_name_plural = 'Pagos Créditos'
+        default_permissions = ()
