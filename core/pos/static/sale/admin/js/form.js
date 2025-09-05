@@ -552,8 +552,20 @@ $(function () {
                 dialog_action({
                     'content': '¿Desea imprimir la boleta de venta?',
                     'success': function () {
-                        window.open(request.print_url, '_blank');
-                        location.href = url_refresh;
+                        //window.open(request.print_url, '_blank');
+                        //location.href = url_refresh;
+                        var iframe = document.getElementById('print_frame');
+                        iframe.src = request.print_url;
+                        iframe.onload = function() {
+                            // Cuando termine de cargar, abre el cuadro de impresión
+                            iframe.contentWindow.focus();
+                            iframe.contentWindow.print();
+
+                            // Cuando se cierre el cuadro de impresión (imprimir o cancelar)
+                            iframe.contentWindow.onafterprint = function() {
+                                location.href = url_refresh;
+                            };
+                        };
                     },
                     'cancel': function () {
                         location.href = url_refresh;

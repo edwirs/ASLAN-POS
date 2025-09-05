@@ -24,10 +24,13 @@ class SaleCreditReportView(LoginRequiredMixin, FormView):
                 data = []
                 start_date = request.POST.get('start_date', '')
                 end_date = request.POST.get('end_date', '')
+                client_id = request.POST.get('client_id', '')
 
                 queryset = Sale.objects.filter(typemethods='credit')
                 if start_date and end_date:
                     queryset = queryset.filter(date_joined__range=[start_date, end_date])
+                if client_id:
+                    queryset = queryset.filter(client_id=client_id)
 
                 for s in queryset:
                     total_paid = s.salecreditpayment_set.aggregate(total=Sum('total'))['total'] or 0
@@ -56,6 +59,7 @@ class SaleCreditReportView(LoginRequiredMixin, FormView):
         context['title'] = 'Créditos de Ventas'
         context['module_name'] = MODULE_NAME
         context['sale_form'] = SaleForm()
+        context['clients'] = Client.objects.all()
         return context
 
 

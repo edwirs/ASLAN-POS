@@ -60,12 +60,8 @@ var sale = {
                     render: function (data, type, row) {
                         var buttons = '<a rel="detail" data-bs-toggle="tooltip" title="Detalle" class="btn btn-success btn-sm rounded-pill"><i class="fas fa-boxes"></i></a> ';
                         buttons += '<a href="' + pathname + 'delete/' + row.id + '/" data-bs-toggle="tooltip" title="Eliminar" class="btn btn-danger btn-sm rounded-pill"><i class="fas fa-trash"></i></a> ';
-                        buttons += '<a href="' + pathname + 'print/invoice/' + row.id + '/" target="_blank" data-bs-toggle="tooltip" title="Imprimir" class="btn btn-secondary btn-sm rounded-pill"><i class="fas fa-print"></i></a>';
-                        
-
-                        if (row.service_type && row.service_type.id === 'delivery') {
-                            buttons += '<a href="#" rel="myModalEdit" data-id="' + row.id + '" data-bs-toggle="tooltip" title="Editar Pago" class="btn btn-warning btn-sm rounded-pill"><i class="fas fa-money-check-dollar text-white"></i></a>';
-                        }
+                        buttons += '<a href="#" rel="print" data-id="' + row.id + '" data-bs-toggle="tooltip" title="Imprimir" class="btn btn-secondary btn-sm rounded-pill"><i class="fas fa-print"></i></a>';                        
+                        buttons += '<a href="#" rel="myModalEdit" data-id="' + row.id + '" data-bs-toggle="tooltip" title="Editar Pago" class="btn btn-warning btn-sm rounded-pill"><i class="fas fa-money-check-dollar text-white"></i></a>';
 
                         return buttons;
                     }
@@ -166,6 +162,28 @@ $(function () {
                     }
                 }
             });
+        })
+        .on('click', 'a[rel="print"]', function (e) {
+            e.preventDefault();
+            $('.tooltip').remove();
+
+            let id = $(this).data('id');
+            let printUrl = pathname + 'print/invoice/' + id + '/';
+
+            var iframe = document.getElementById('print_frame');
+            iframe.src = printUrl;
+
+            iframe.onload = function () {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+
+                // Cuando el usuario termina (imprimir o cancelar), regresar al listado
+                var afterPrint = function () {
+                    location.href = pathname;  // vuelve a la lista
+                    window.removeEventListener("afterprint", afterPrint);
+                };
+                window.addEventListener("afterprint", afterPrint);
+            };
         });
 
     // Guardar cambios al dar clic en "Guardar"

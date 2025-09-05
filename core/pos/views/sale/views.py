@@ -8,6 +8,9 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, DeleteView, FormView, TemplateView
+from django.shortcuts import render
+from django.utils.decorators import method_decorator
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 from core.pos.forms import *
 from core.pos.utilities import printer
@@ -148,13 +151,8 @@ class SaleCreateView(GroupPermissionMixin, CreateView):
                     # Coincidencia exacta en code
                     exact_matches = queryset.filter(code__iexact=term)
 
-                    # Coincidencias parciales por nombre o code (excepto exactos)
-                    partial_matches = queryset.filter(
-                        Q(name__icontains=term) | Q(code__icontains=term)
-                    ).exclude(code__iexact=term)
-
                     # Unimos y limitamos a 10
-                    queryset = (exact_matches | partial_matches).order_by('code')[:10]
+                    queryset = (exact_matches).order_by('code')[:20]
                 for i in queryset:
                     item = i.toJSON()
                     item['pvp'] = float(i.pvp)
@@ -231,13 +229,15 @@ class SaleDeleteView(GroupPermissionMixin, DeleteView):
         return context
 
 
+@method_decorator(xframe_options_exempt, name='dispatch')
 class SalePrintInvoiceView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         try:
             sale = Sale.objects.get(id=self.kwargs['pk'])
-            context = {'sale': sale, 'height': 450 + sale.saledetail_set.all().count() * 10}
-            pdf_file = printer.create_pdf(context=context, template_name='sale/format/ticket.html')
-            return HttpResponse(pdf_file, content_type='application/pdf')
-        except:
-            pass
-        return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
+            context = {
+                'sale': sale,
+                'height': 450 + sale.saledetail_set.all().count() * 10
+            }
+            return render(request, 'sale/format/ticket.html', context)
+        except Sale.DoesNotExist:
+            return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)

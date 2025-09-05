@@ -29,6 +29,22 @@
             </div>
         </div>
     </div>
+    <div class="row mb-3">
+        <div class="col-lg-5 col-md-12">
+            <label class="form-label fw-bold">Cliente:</label>
+            <select id="clientSelect" class="form-control">
+                <option value="">-- Todos --</option>
+                {% for c in clients %}
+                    <option value="{{ c.id }}">{{ c.names }} ({{ c.dni }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-lg-2 col-md-12 d-flex align-items-end">
+            <button type="button" class="btn btn-primary" id="btnSearchClient">
+                <i class="fas fa-search"></i> Consultar
+            </button>
+        </div>
+    </div>
     <div class="row">
         <div class="col-lg-12">
             <hr>

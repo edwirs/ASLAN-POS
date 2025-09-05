@@ -20,10 +20,12 @@ var report = {
             'action': 'search_report',
             'start_date': input_date_range.data('daterangepicker').startDate.format('YYYY-MM-DD'),
             'end_date': input_date_range.data('daterangepicker').endDate.format('YYYY-MM-DD'),
+            'client_id': $('#clientSelect').val() 
         };
         if (all) {
             parameters['start_date'] = '';
             parameters['end_date'] = '';
+            parameters['client_id'] = '';
         }
         tblReport = $('#tblReport').DataTable({
             destroy: true,
@@ -40,7 +42,6 @@ var report = {
             order: [[0, 'asc']],
             paging: true,
             ordering: true,
-            searching: false,
             dom: 'Bfrtip',
             buttons: [
                 {
@@ -278,6 +279,13 @@ $(function () {
         language: 'es'
     });
 
+    $('#clientSelect').select2({
+        placeholder: 'Seleccione un cliente',
+        allowClear: true,
+        theme: 'bootstrap4',
+        language: 'es'
+    });
+
     select_transfermethods.parent().hide(); 
     
     select_paymentmethod.on('change', function(){
@@ -295,6 +303,10 @@ $(function () {
 
     $('.btnSearchAll').on('click', function () {
         report.list(true);
+    });
+
+    $('#btnSearchClient').on('click', function () {
+        report.list(false);
     });
 });
 
