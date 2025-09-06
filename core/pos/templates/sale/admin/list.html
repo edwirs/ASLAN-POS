@@ -59,7 +59,7 @@
     </div>
 
     <div class="modal fade" tabindex="-1" id="myModalEdit">
-        <div class="modal-dialog modal-sm">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold">
@@ -86,9 +86,15 @@
                                 <label class="form-label fw-bold">{{ sale_form.total.label|upper }}</label>
                                 {{ sale_form.total }}
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">{{ sale_form.cash.label }}:</label>
-                                {{ sale_form.cash }}
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label class="form-label fw-bold">{{ sale_form.cash.label }}:</label>
+                                    {{ sale_form.cash }}
+                                </div>
+                                <div class="col">
+                                    <label class="form-label fw-bold">{{ sale_form.propina.label }}:</label>
+                                    {{ sale_form.propina }}
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label fw-bold">{{ sale_form.change.label }}:</label>

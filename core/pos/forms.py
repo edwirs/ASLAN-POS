@@ -261,6 +261,10 @@ class SaleForm(forms.ModelForm):
                 'data-toggle': 'datetimepicker',
                 'data-target': '#expiration_date'
             }),
+            'propina': forms.TextInput(attrs={
+                'class': 'form-control',
+                'autocomplete': 'off'
+            }),
         }
         
 def next_month_day_10():

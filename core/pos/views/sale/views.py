@@ -60,7 +60,7 @@ class SaleListView(GroupPermissionMixin, FormView):
 def get_sale(request, pk):
     try:
         sale = Sale.objects.get(pk=pk)
-        data = sale.toJSON()  # 👈 asegúrate que tu modelo Sale tenga este método
+        data = sale.toJSON()
         return JsonResponse(data, safe=False)
     except Sale.DoesNotExist:
         return JsonResponse({'error': 'La venta no existe'}, status=404)
@@ -68,13 +68,15 @@ def get_sale(request, pk):
 def update_sale(request, pk):
     try:
         sale = Sale.objects.get(pk=pk)
-        sale.service_type_id = request.POST.get('service_type')
-        sale.paymentmethod_id = request.POST.get('paymentmethod')
-        sale.transfermethods_id = request.POST.get('transfermethods') or None
-        sale.typemethods_id = request.POST.get('typemethods')
+        sale.paymentmethod = request.POST.get('paymentmethod')
+        if sale.paymentmethod == 'transfer':
+            sale.transfermethods = (request.POST['transfermethods'])
+        else:
+            sale.transfermethods = None
         sale.total = request.POST.get('total')
         sale.cash = request.POST.get('cash')
         sale.change = request.POST.get('change')
+        sale.propina = request.POST.get('propina')
         sale.save()
         return JsonResponse({"success": True})
     except Sale.DoesNotExist:
@@ -117,6 +119,7 @@ class SaleCreateView(GroupPermissionMixin, CreateView):
                     else:
                         sale.expiration_date = None
                     sale.service_type = (request.POST['service_type'])
+                    sale.propina = float(request.POST['propina'])
                     sale.save()
                     for i in json.loads(request.POST['products']):
                         product = Product.objects.get(pk=i['id'])

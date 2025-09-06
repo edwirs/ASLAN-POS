@@ -192,6 +192,7 @@ class Sale(models.Model):
     expiration_date = models.DateField(null = True, blank=True , verbose_name='Fecha de vencimiento')
     service_type = models.CharField(max_length=50, choices=SERVICE_TYPE, default=SERVICE_TYPE[0][0], verbose_name='Tipo Servicio', null=True)
     delivered = models.BooleanField(default=False, verbose_name='Entregado')
+    propina = models.DecimalField(max_digits=9, decimal_places=2, default=0.00, verbose_name='Propina')
     is_active = models.BooleanField(default=True, verbose_name='Estado')
 
     def __str__(self):
@@ -254,6 +255,7 @@ class Sale(models.Model):
         item['delivered'] = self.delivered
         item['total_paid'] = float(self.total_paid())
         item['pending'] = float(self.pending())
+        item['propina'] = float(self.propina)
         return item
 
     class Meta:

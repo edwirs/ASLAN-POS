@@ -137,9 +137,15 @@
             <label class="form-label fw-bold">{{ form.total.label|upper }}</label>
             {{ form.total }}
         </div>
-        <div class="mb-3">
-            <label class="form-label fw-bold">{{ form.cash.label }}:</label>
-            {{ form.cash }}
+        <div class="row mb-3">
+            <div class="col">
+                <label class="form-label fw-bold">{{ form.cash.label }}:</label>
+                {{ form.cash }}
+            </div>
+            <div class="col">
+                <label class="form-label fw-bold">{{ form.propina.label }}:</label>
+                {{ form.propina }}
+            </div>
         </div>
         <div class="mb-3">
             <label class="form-label fw-bold">{{ form.change.label }}:</label>

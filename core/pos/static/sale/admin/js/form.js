@@ -167,6 +167,7 @@ $(function () {
     select_service_type = $('select[name="service_type"]');
     select_typemethods = $('select[name="typemethods"]');
     expiration_date = $('input[name="expiration_date"]');
+    input_propina = $('input[name="propina"]');
 
     // Client
 
@@ -218,14 +219,22 @@ $(function () {
     
     select_paymentmethod.on('change', function(){
         const selectedValue = $(this).val();
+        select_transfermethods.empty();
         if (selectedValue === 'transfer') {
+            select_transfermethods.append('<option value="nequi">Nequi</option>');
+            select_transfermethods.append('<option value="daviplata">Daviplata</option>');
             select_transfermethods.parent().show();
+        } else if (selectedValue === 'mixto') {
+        select_transfermethods.append('<option value="mixto1">Nequi + Efectivo</option>');
+        select_transfermethods.append('<option value="mixto2">Daviplata + Efectivo</option>');
+        select_transfermethods.append('<option value="mixto3">Nequi + Daviplata</option>');
+        select_transfermethods.parent().show();
         } else {
             select_transfermethods.parent().hide();
         }
 
         // Si la forma de pago es transferencia o tarjeta, llenar cash con el total
-        if (['transfer', 'debitCard', 'creditCard'].includes(selectedValue)) {
+        if (['transfer', 'debitCard', 'creditCard', 'mixto'].includes(selectedValue)) {
             var totalStr = $('input[name="total"]').val();
             totalStr = totalStr.replace(/\./g, '').replace(',', '.');
             var total = parseFloat(totalStr) || 0;
@@ -533,6 +542,23 @@ $(function () {
         locale: 'es',
         keepOpen: false,
     });
+
+    input_propina
+        .TouchSpin({
+            min: 0.00,
+            max: 100000000,
+            step: 0.01,
+            decimals: 2,
+            boostat: 5,
+            maxboostedstep: 10
+        })
+        .off('change')
+        .on('change touchspin.on.min touchspin.on.max', function () {
+            sale.calculateInvoice();
+        })
+        .on('keypress', function (e) {
+            return validate_text_box({'event': e, 'type': 'decimals'});
+        });
 
     $('#frmForm').on('submit', function (e) {
         e.preventDefault();

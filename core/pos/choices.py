@@ -8,6 +8,7 @@ PAYMENTMETHODS = (
     ('creditCard', 'Tarjeta Crédito'),
     ('debitCard', 'Tarjeta Débito'),
     ('transfer', 'Transferencia'),
+    ('mixto', 'Mixto'),
 )
 
 TYPETMETHODS = (
@@ -18,6 +19,9 @@ TYPETMETHODS = (
 TRANSFERMETHODS = (
     ('nequi', 'Nequi'),
     ('daviplata', 'Daviplata'),
+    ('mixto1', 'Nequi + Efectivo'),
+    ('mixto2', 'Daviplata + Efectivo'),
+    ('mixto3', 'Nequi + daviplata'),
 )
 
 EXPENSES = (

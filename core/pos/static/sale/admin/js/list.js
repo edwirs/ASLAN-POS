@@ -85,6 +85,7 @@ $(function () {
     select_service_type = $('select[name="service_type"]');
     input_cash = $('input[name="cash"]');
     input_change = $('input[name="change"]');
+    input_propina = $('input[name="propina"]');
 
     $('#data tbody')
         .off()
@@ -154,6 +155,7 @@ $(function () {
                         $('#myModalEdit #id_total').val(data.total).toLocaleString('es-CL');
                         $('#myModalEdit #id_cash').val(data.cash).toLocaleString('es-CL');
                         $('#myModalEdit #id_change').val(data.change).toLocaleString('es-CL');
+                        $('#myModalEdit #id_propina').val(data.propina).toLocaleString('es-CL');
 
                         // Mostrar modal
                         $('#myModalEdit').modal('show');
@@ -192,13 +194,13 @@ $(function () {
 
         // Serializar los campos del formulario
         let formData = {
-            service_type: $('#id_service_type').val(),
             paymentmethod: $('#id_paymentmethod').val(),
             transfermethods: $('#id_transfermethods').val(),
             typemethods: $('#id_typemethods').val(),
             total: $('#id_total').val(),
             cash: $('#id_cash').val(),
             change: $('#id_change').val(),
+            propina: $('#id_propina').val(),
         };
 
         $.ajax({
@@ -207,6 +209,7 @@ $(function () {
             data: formData,
             headers: { "X-CSRFToken": csrftoken }, // csrf_token necesario
             success: function (data) {
+                console.log(formData);
                 if (!data.error) {
                     alert("Venta actualizada con éxito ✅");
                     $('#myModalEdit').modal('hide');
@@ -295,8 +298,16 @@ $(function () {
     
     select_paymentmethod.on('change', function(){
         const selectedValue = $(this).val();
+        select_transfermethods.empty();
         if (selectedValue === 'transfer') {
+            select_transfermethods.append('<option value="nequi">Nequi</option>');
+            select_transfermethods.append('<option value="daviplata">Daviplata</option>');
             select_transfermethods.parent().show();
+        } else if (selectedValue === 'mixto') {
+        select_transfermethods.append('<option value="mixto1">Nequi + Efectivo</option>');
+        select_transfermethods.append('<option value="mixto2">Daviplata + Efectivo</option>');
+        select_transfermethods.append('<option value="mixto3">Nequi + Daviplata</option>');
+        select_transfermethods.parent().show();
         } else {
             select_transfermethods.parent().hide();
         }
@@ -324,6 +335,23 @@ $(function () {
 
             // Asignar valor al campo change
             $('#myModalEdit #id_change').val(change);
+        })
+        .on('keypress', function (e) {
+            return validate_text_box({'event': e, 'type': 'decimals'});
+        });
+    
+    input_propina
+        .TouchSpin({
+            min: 0.00,
+            max: 100000000,
+            step: 0.01,
+            decimals: 2,
+            boostat: 5,
+            maxboostedstep: 10
+        })
+        .off('change')
+        .on('change touchspin.on.min touchspin.on.max', function () {
+            sale.calculateInvoice();
         })
         .on('keypress', function (e) {
             return validate_text_box({'event': e, 'type': 'decimals'});
