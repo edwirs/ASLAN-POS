@@ -81,6 +81,9 @@
             <div class="col-lg-6">
                 <div id="container-pie" class=" card p-3 mt-2" style="border-radius: 20px;"></div>
             </div>
+            <div class="col-lg-6">
+                <div id="container-day" class=" card p-3 mt-2" style="border-radius: 20px;"></div>
+            </div>
         </div>
         <div class="row">
             <div class="col-lg-12 col-md-12">
@@ -169,8 +172,15 @@
                                 },
                                 tooltip: {
                                     headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-                                    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                                        '<td style="padding:0"><b>{point.y:.1f} $</b></td></tr>',
+                                    pointFormatter: function () {
+                                        return '<tr><td style="color:' + this.color + ';padding:0">' +
+                                            this.series.name + ': </td><td style="padding:0"><b>' +
+                                            new Intl.NumberFormat('es-CO', {
+                                                style: 'currency',
+                                                currency: 'COP',
+                                                minimumFractionDigits: 0
+                                            }).format(this.y) + '</b></td></tr>';
+                                    },
                                     footerFormat: '</table>',
                                     shared: true,
                                     useHTML: true
@@ -191,7 +201,13 @@
                                         rotation: 0,
                                         color: '#FFFFFF',
                                         align: 'center',
-                                        format: '{point.y:.2f}',
+                                        formatter: function () {
+                                            return new Intl.NumberFormat('es-CO', {
+                                                style: 'currency',
+                                                currency: 'COP',
+                                                minimumFractionDigits: 0
+                                            }).format(this.y);
+                                        },
                                         y: 50,
                                         style: {
                                             fontSize: '11px',
@@ -247,7 +263,13 @@
                                         cursor: 'pointer',
                                         dataLabels: {
                                             enabled: true,
-                                            format: '<b>{point.name}</b><br>{point.y:.2f}',
+                                            formatter: function () {
+                                                return new Intl.NumberFormat('es-CO', {
+                                                    style: 'currency',
+                                                    currency: 'COP',
+                                                    minimumFractionDigits: 0
+                                                }).format(this.y);
+                                            },
                                             {#distance: -50,#}
                                         }
                                     }
@@ -256,6 +278,97 @@
                                     'name': 'Porcentaje',
                                     'colorByPoint': true,
                                     'data': request
+                                }]
+                            });
+                            return false;
+                        }
+                        message_error(request.error);
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        message_error(errorThrown + ' ' + textStatus);
+                    }
+                });
+            },
+            getSalesWeekday: function () {
+                $.ajax({
+                    url: pathname,
+                    data: {
+                        'action': 'get_graph_sales_weekday'
+                    },
+                    type: 'POST',
+                    dataType: 'json',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    success: function (request) {
+                        console.log("Respuesta del servidor:", request);
+                        if (!request.hasOwnProperty('error')) {
+                            // Extraer categorías (días) y valores (totales)
+                            let categories = request.map(item => item.day);
+                            let totals = request.map(item => item.total);
+
+                            Highcharts.chart('container-day', {
+                                chart: {
+                                    type: 'column'
+                                },
+                                exporting: false,
+                                title: {
+                                    text: 'Ventas por día de la semana'
+                                },
+                                xAxis: {
+                                    categories: categories,
+                                    crosshair: true
+                                },
+                                yAxis: {
+                                    min: 0,
+                                    title: {
+                                        text: ''
+                                    }
+                                },
+                                tooltip: {
+                                    headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                                    pointFormatter: function () {
+                                        return '<tr><td style="color:' + this.color + ';padding:0">' +
+                                            this.series.name + ': </td><td style="padding:0"><b>' +
+                                            new Intl.NumberFormat('es-CO', {
+                                                style: 'currency',
+                                                currency: 'COP',
+                                                minimumFractionDigits: 0
+                                            }).format(this.y) + '</b></td></tr>';
+                                    },
+                                    footerFormat: '</table>',
+                                    shared: true,
+                                    useHTML: true
+                                },
+                                plotOptions: {
+                                    column: {
+                                        pointPadding: 0.2,
+                                        borderWidth: 0
+                                    }
+                                },
+                                series: [{
+                                    name: 'Total',
+                                    showInLegend: false,
+                                    colorByPoint: true,
+                                    data: totals,
+                                    dataLabels: {
+                                        enabled: true,
+                                        rotation: 0,
+                                        color: '#FFFFFF',
+                                        align: 'center',
+                                        formatter: function () {
+                                            return new Intl.NumberFormat('es-CO', {
+                                                style: 'currency',
+                                                currency: 'COP',
+                                                minimumFractionDigits: 0
+                                            }).format(this.y);
+                                        },
+                                        y: 50,
+                                        style: {
+                                            fontSize: '11px',
+                                            fontFamily: 'Verdana, sans-serif'
+                                        }
+                                    }
                                 }]
                             });
                             return false;
@@ -371,6 +484,7 @@
         $(function () {
             chart.getSalesYearMonth();
             chart.getSalesProductsYearMonth();
+            chart.getSalesWeekday();
             fetchVentasHoy();
             ProductoMasVendido();
             VentasSemanales();

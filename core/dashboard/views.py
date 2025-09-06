@@ -1,9 +1,9 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import FloatField, Sum
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Coalesce, ExtractWeekDay
 from django.http import HttpResponse
 from django.views.generic import TemplateView
 from django.db.models import DecimalField
@@ -38,6 +38,39 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     total = queryset.filter(product_id=p.id).aggregate(result=Coalesce(Sum('total'), 0.00, output_field=FloatField())).get('result')
                     if total:
                         data.append({'name': p.name, 'y': float(total)})
+            elif action == 'get_graph_sales_weekday':
+                data = []
+                today = datetime.now().date()
+
+                # lunes de esta semana (weekday() → lunes=0, domingo=6)
+                start_week = today - timedelta(days=today.weekday())
+                end_week = start_week + timedelta(days=6)
+
+                # queryset solo de la semana actual
+                queryset = Sale.objects.filter(date_joined__range=[start_week, end_week])
+
+                # Agrupamos por día de la semana (1=domingo, 7=sábado en Django)
+                sales_by_day = (
+                    queryset
+                    .annotate(weekday=ExtractWeekDay('date_joined'))
+                    .values('weekday')
+                    .annotate(total=Coalesce(Sum('total'), 0.0, output_field=FloatField()))
+                    .order_by('weekday')
+                )
+
+                # Crear estructura fija para los 7 días
+                days_map = {1: 'Domingo', 2: 'Lunes', 3: 'Martes', 4: 'Miércoles', 5: 'Jueves', 6: 'Viernes', 7: 'Sábado'}
+                totals = {d: 0.0 for d in range(1, 8)}
+
+                for item in sales_by_day:
+                    weekday = item.get('weekday')
+                    total = item.get('total', 0.0)
+                    if weekday in totals:
+                        totals[weekday] = float(total)
+
+                # Si quieres devolver como lista ordenada
+                order = [2, 3, 4, 5, 6, 7, 1]  # Lunes → Domingo
+                data = [{'day': days_map[d], 'total': totals[d]} for d in order]
             elif action == 'get_sales_total_today':
                 today = datetime.now().date()
                 total = (
