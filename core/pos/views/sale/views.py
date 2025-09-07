@@ -89,7 +89,7 @@ class SaleCreateView(GroupPermissionMixin, CreateView):
     model = Sale
     template_name = 'sale/admin/create.html'
     form_class = SaleForm
-    success_url = reverse_lazy('sale_admin_list')
+    success_url = reverse_lazy('sale_admin_create')
     permission_required = 'add_sale'
 
     def post(self, request, *args, **kwargs):

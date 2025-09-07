@@ -560,6 +560,15 @@ $(function () {
             return validate_text_box({'event': e, 'type': 'decimals'});
         });
 
+    // Configuración global de Toastr
+    toastr.options = {
+        "closeButton": true,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+        "timeOut": "0",              // 👈 Nunca se cierra solo
+        "extendedTimeOut": "0"
+    };
+    
     $('#frmForm').on('submit', function (e) {
         e.preventDefault();
         if (sale.detail.products.length === 0) {
@@ -589,12 +598,19 @@ $(function () {
 
                             // Cuando se cierre el cuadro de impresión (imprimir o cancelar)
                             iframe.contentWindow.onafterprint = function() {
-                                location.href = url_refresh;
+                                toastr.success('La factura se guardó exitosamente');
+                                // 👇 Retarda la redirección 2 segundos para que se vea el toastr
+                                setTimeout(function() {
+                                    location.href = url_refresh;
+                                }, 2000);
                             };
                         };
                     },
                     'cancel': function () {
-                        location.href = url_refresh;
+                        toastr.success('La factura se guardó exitosamente');
+                        setTimeout(function() {
+                            location.href = url_refresh;
+                        }, 2000);
                     }
                 });
             }

@@ -211,10 +211,11 @@ $(function () {
             success: function (data) {
                 console.log(formData);
                 if (!data.error) {
-                    alert("Venta actualizada con éxito ✅");
-                    $('#myModalEdit').modal('hide');
-                    // opcional: recargar tabla/listado
-                    location.reload();
+                    toastr.success('La factura se guardó exitosamente');
+                        setTimeout(function() {
+                            $('#myModalEdit').modal('hide');
+                            location.reload();
+                        }, 2000);
                 } else {
                     alert("Error: " + data.error);
                 }
