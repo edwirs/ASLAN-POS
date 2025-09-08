@@ -78,11 +78,17 @@
             <div class="col-lg-6">
                 <div id="container" class="card p-3 mt-2" style="border-radius: 20px;"></div>
             </div>
+
             <div class="col-lg-6">
-                <div id="container-pie" class=" card p-3 mt-2" style="border-radius: 20px;"></div>
+                <div id="container-week" class=" card p-3 mt-2" style="border-radius: 20px;"></div>
             </div>
+            
             <div class="col-lg-6">
                 <div id="container-day" class=" card p-3 mt-2" style="border-radius: 20px;"></div>
+            </div>
+
+            <div class="col-lg-6">
+                <div id="container-pie" class=" card p-3 mt-2" style="border-radius: 20px;"></div>
             </div>
         </div>
         <div class="row">
@@ -379,6 +385,97 @@
                         message_error(errorThrown + ' ' + textStatus);
                     }
                 });
+            },
+            getSalesWeek: function () {
+                $.ajax({
+                    url: pathname,
+                    data: {
+                        'action': 'get_graph_sales_week'  // 👈 Cambié el action
+                    },
+                    type: 'POST',
+                    dataType: 'json',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    success: function (request) {
+                        console.log("Respuesta del servidor:", request);
+                        if (!request.hasOwnProperty('error')) {
+                            // Extraer categorías (semanas) y valores (totales)
+                            let categories = request.map(item => item.week);
+                            let totals = request.map(item => item.total);
+
+                            Highcharts.chart('container-week', {
+                                chart: {
+                                    type: 'column'
+                                },
+                                exporting: false,
+                                title: {
+                                    text: 'Ventas por semana del mes'
+                                },
+                                xAxis: {
+                                    categories: categories,
+                                    crosshair: true
+                                },
+                                yAxis: {
+                                    min: 0,
+                                    title: {
+                                        text: ''
+                                    }
+                                },
+                                tooltip: {
+                                    headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                                    pointFormatter: function () {
+                                        return '<tr><td style="color:' + this.color + ';padding:0">' +
+                                            this.series.name + ': </td><td style="padding:0"><b>' +
+                                            new Intl.NumberFormat('es-CO', {
+                                                style: 'currency',
+                                                currency: 'COP',
+                                                minimumFractionDigits: 0
+                                            }).format(this.y) + '</b></td></tr>';
+                                    },
+                                    footerFormat: '</table>',
+                                    shared: true,
+                                    useHTML: true
+                                },
+                                plotOptions: {
+                                    column: {
+                                        pointPadding: 0.2,
+                                        borderWidth: 0
+                                    }
+                                },
+                                series: [{
+                                    name: 'Total',
+                                    showInLegend: false,
+                                    colorByPoint: true,
+                                    data: totals,
+                                    dataLabels: {
+                                        enabled: true,
+                                        rotation: 0,
+                                        color: '#FFFFFF',
+                                        align: 'center',
+                                        formatter: function () {
+                                            return new Intl.NumberFormat('es-CO', {
+                                                style: 'currency',
+                                                currency: 'COP',
+                                                minimumFractionDigits: 0
+                                            }).format(this.y);
+                                        },
+                                        y: 50,
+                                        style: {
+                                            fontSize: '11px',
+                                            fontFamily: 'Verdana, sans-serif'
+                                        }
+                                    }
+                                }]
+                            });
+                            return false;
+                        }
+                        message_error(request.error);
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        message_error(errorThrown + ' ' + textStatus);
+                    }
+                });
             }
         };
         function fetchVentasHoy() {
@@ -483,8 +580,9 @@
         }
         $(function () {
             chart.getSalesYearMonth();
-            chart.getSalesProductsYearMonth();
+            chart.getSalesWeek();
             chart.getSalesWeekday();
+            chart.getSalesProductsYearMonth();
             fetchVentasHoy();
             ProductoMasVendido();
             VentasSemanales();

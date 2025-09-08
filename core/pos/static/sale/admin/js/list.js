@@ -215,7 +215,7 @@ $(function () {
                         setTimeout(function() {
                             $('#myModalEdit').modal('hide');
                             location.reload();
-                        }, 2000);
+                        }, 1000);
                 } else {
                     alert("Error: " + data.error);
                 }

@@ -4,17 +4,19 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.http import HttpResponse
 from django.urls import reverse_lazy
-from django.views.generic import DeleteView, CreateView, UpdateView, TemplateView
+from django.views.generic import DeleteView, CreateView, UpdateView, FormView, TemplateView
 from django.core.serializers.json import DjangoJSONEncoder
 
 from core.pos.models import Expenses
 from core.pos.forms import ExpensesForm
+from core.reports.forms import ReportForm
 from core.security.mixins import GroupPermissionMixin
 
 MODULE_NAME = 'Gastos'
 
-class ExpensesListView(GroupPermissionMixin, TemplateView):
+class ExpensesListView(GroupPermissionMixin, FormView):
     template_name = "expenses/list.html"
+    form_class = ReportForm
     permission_required = 'view_bill'
     model = Expenses
 
@@ -23,7 +25,15 @@ class ExpensesListView(GroupPermissionMixin, TemplateView):
         action = request.POST['action']
         try:
             if action == 'search':
-                data = [expense.toJSON() for expense in Expenses.objects.all()]
+                data = []
+                start_date = request.POST['start_date']
+                end_date = request.POST['end_date']
+                queryset = Expenses.objects.all()
+                if start_date and end_date:
+                    queryset = queryset.filter(created_at__range=[start_date, end_date])
+
+                for i in queryset.order_by('-id'):
+                    data.append(i.toJSON())
             else:
                 data['error'] = 'No ha seleccionado ninguna opción'
         except Exception as e:

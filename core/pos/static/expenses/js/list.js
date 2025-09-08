@@ -1,6 +1,18 @@
+var tblExpenses;
+var input_date_range;
+
 var expenses = {
-    list: function () {
-        $('#data').DataTable({
+    list: function (all) {
+        var parameters = {
+            'action': 'search',
+            'start_date': input_date_range.data('daterangepicker').startDate.format('YYYY-MM-DD'),
+            'end_date': input_date_range.data('daterangepicker').endDate.format('YYYY-MM-DD'),
+        };
+        if (all) {
+            parameters['start_date'] = '';
+            parameters['end_date'] = '';
+        }
+        tblExpenses = $('#data').DataTable({
             autoWidth: false,
             destroy: true,
             deferRender: true,
@@ -10,9 +22,7 @@ var expenses = {
                 headers: {
                     'X-CSRFToken': csrftoken
                 },
-                data: {
-                    'action': 'search'
-                },
+                data: parameters,
                 dataSrc: ""
             },
             columns: [
@@ -54,5 +64,26 @@ var expenses = {
 };
 
 $(function () {
-    expenses.list();
+    input_date_range = $('input[name="date_range"]');
+
+    input_date_range.daterangepicker({
+                language: 'auto',
+                startDate: new Date(),
+                locale: {
+                    format: 'YYYY-MM-DD',
+                },
+                autoApply: true,
+            }
+        )
+        .on('change.daterangepicker apply.daterangepicker', function (ev, picker) {
+            expenses.list(false);
+        });
+
+    $('.drp-buttons').hide();
+
+    expenses.list(false);
+
+    $('.btnSearchAll').on('click', function () {
+        sale.list(true);
+    });
 });

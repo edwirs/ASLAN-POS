@@ -3,13 +3,14 @@ from datetime import datetime, timedelta
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import FloatField, Sum
-from django.db.models.functions import Coalesce, ExtractWeekDay
+from django.db.models.functions import Coalesce, ExtractWeekDay, ExtractMonth, ExtractYear, ExtractWeek
 from django.http import HttpResponse
 from django.views.generic import TemplateView
 from django.db.models import DecimalField
 from django.utils.timezone import now, timedelta
 from decimal import Decimal
 from django.db.models import Count
+import calendar
 
 from core.pos.models import Sale, Product, SaleDetail
 from core.security.models import Dashboard
@@ -71,6 +72,48 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 # Si quieres devolver como lista ordenada
                 order = [2, 3, 4, 5, 6, 7, 1]  # Lunes → Domingo
                 data = [{'day': days_map[d], 'total': totals[d]} for d in order]
+            elif action == 'get_graph_sales_week':
+                data = []
+                today = datetime.now().date()
+
+                # mes y año actual
+                current_month = today.month
+                current_year = today.year
+
+                # queryset solo del mes actual
+                queryset = Sale.objects.filter(
+                    date_joined__year=current_year,
+                    date_joined__month=current_month
+                )
+
+                # agrupamos por semana ISO del año
+                sales_by_week = (
+                    queryset
+                    .annotate(week=ExtractWeek('date_joined'))
+                    .values('week')
+                    .annotate(total=Coalesce(Sum('total'), 0.0, output_field=FloatField()))
+                    .order_by('week')
+                )
+
+                # 🔹 calcular todas las semanas que caen en este mes
+                first_day = datetime(current_year, current_month, 1).date()
+                last_day = datetime(current_year, current_month, calendar.monthrange(current_year, current_month)[1]).date()
+
+                # semanas ISO que cubren el rango del mes
+                start_week = first_day.isocalendar()[1]
+                end_week = last_day.isocalendar()[1]
+
+                # 🔹 diccionario con todas las semanas en 0
+                totals = {w: 0.0 for w in range(start_week, end_week + 1)}
+
+                # actualizar solo las semanas con ventas
+                for item in sales_by_week:
+                    week = item['week']
+                    if week in totals:
+                        totals[week] = float(item['total'])
+
+                # construir lista final (ordenada)
+                data = [{'week': f"Semana {w}", 'total': totals[w]} for w in sorted(totals.keys())]
             elif action == 'get_sales_total_today':
                 today = datetime.now().date()
                 total = (

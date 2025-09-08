@@ -265,6 +265,14 @@ class SaleForm(forms.ModelForm):
                 'class': 'form-control',
                 'autocomplete': 'off'
             }),
+            'nequi_value': forms.TextInput(attrs={
+                'class': 'form-control',
+                'autocomplete': 'off'
+            }),
+            'daviplata_value': forms.TextInput(attrs={
+                'class': 'form-control',
+                'autocomplete': 'off'
+            }),
         }
         
 def next_month_day_10():

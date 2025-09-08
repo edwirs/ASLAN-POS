@@ -168,6 +168,8 @@ $(function () {
     select_typemethods = $('select[name="typemethods"]');
     expiration_date = $('input[name="expiration_date"]');
     input_propina = $('input[name="propina"]');
+    input_nequi_value = $('input[name="nequi_value"]');
+    input_daviplata_value = $('input[name="daviplata_value"]');
 
     // Client
 
@@ -216,6 +218,22 @@ $(function () {
     });
 
     select_transfermethods.parent().hide(); 
+
+    // referencias
+    const nequiGroup = $('input[name="nequi_value"]').closest('.col');
+    const daviplataGroup = $('input[name="daviplata_value"]').closest('.col');
+    nequiGroup.hide();
+    daviplataGroup.hide();
+    // helper
+    function toggleMixtoFields(show) {
+        if (show) {
+            nequiGroup.show();
+            daviplataGroup.show();
+        } else {
+            nequiGroup.hide();
+            daviplataGroup.hide();
+        }
+    }
     
     select_paymentmethod.on('change', function(){
         const selectedValue = $(this).val();
@@ -224,13 +242,16 @@ $(function () {
             select_transfermethods.append('<option value="nequi">Nequi</option>');
             select_transfermethods.append('<option value="daviplata">Daviplata</option>');
             select_transfermethods.parent().show();
+            toggleMixtoFields(false);
         } else if (selectedValue === 'mixto') {
-        select_transfermethods.append('<option value="mixto1">Nequi + Efectivo</option>');
-        select_transfermethods.append('<option value="mixto2">Daviplata + Efectivo</option>');
-        select_transfermethods.append('<option value="mixto3">Nequi + Daviplata</option>');
-        select_transfermethods.parent().show();
+            select_transfermethods.append('<option value="mixto1">Nequi + Efectivo</option>');
+            select_transfermethods.append('<option value="mixto2">Daviplata + Efectivo</option>');
+            select_transfermethods.append('<option value="mixto3">Nequi + Daviplata</option>');
+            select_transfermethods.parent().show();
+            toggleMixtoFields(true);
         } else {
             select_transfermethods.parent().hide();
+            toggleMixtoFields(false);
         }
 
         // Si la forma de pago es transferencia o tarjeta, llenar cash con el total
@@ -560,6 +581,40 @@ $(function () {
             return validate_text_box({'event': e, 'type': 'decimals'});
         });
 
+    input_nequi_value
+        .TouchSpin({
+            min: 0.00,
+            max: 100000000,
+            step: 0.01,
+            decimals: 2,
+            boostat: 5,
+            maxboostedstep: 10
+        })
+        .off('change')
+        .on('change touchspin.on.min touchspin.on.max', function () {
+            sale.calculateInvoice();
+        })
+        .on('keypress', function (e) {
+            return validate_text_box({'event': e, 'type': 'decimals'});
+        });
+
+    input_daviplata_value
+        .TouchSpin({
+            min: 0.00,
+            max: 100000000,
+            step: 0.01,
+            decimals: 2,
+            boostat: 5,
+            maxboostedstep: 10
+        })
+        .off('change')
+        .on('change touchspin.on.min touchspin.on.max', function () {
+            sale.calculateInvoice();
+        })
+        .on('keypress', function (e) {
+            return validate_text_box({'event': e, 'type': 'decimals'});
+        });
+
     // Configuración global de Toastr
     toastr.options = {
         "closeButton": true,
@@ -602,7 +657,7 @@ $(function () {
                                 // 👇 Retarda la redirección 2 segundos para que se vea el toastr
                                 setTimeout(function() {
                                     location.href = url_refresh;
-                                }, 2000);
+                                }, 1000);
                             };
                         };
                     },
@@ -610,7 +665,7 @@ $(function () {
                         toastr.success('La factura se guardó exitosamente');
                         setTimeout(function() {
                             location.href = url_refresh;
-                        }, 2000);
+                        }, 1000);
                     }
                 });
             }

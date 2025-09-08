@@ -111,6 +111,9 @@ class SaleCreateView(GroupPermissionMixin, CreateView):
                     sale.paymentmethod = (request.POST['paymentmethod'])
                     if sale.paymentmethod == 'transfer':
                         sale.transfermethods = (request.POST['transfermethods'])
+                    elif sale.paymentmethod == 'mixto':
+                        sale.nequi_value = (request.POST['nequi_value'])
+                        sale.daviplata_value = (request.POST['daviplata_value'])
                     else:
                         sale.transfermethods = None
                     sale.typemethods = (request.POST['typemethods'])

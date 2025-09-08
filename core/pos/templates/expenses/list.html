@@ -1,6 +1,17 @@
 {% extends 'list.html' %}
 {% load static %}
 {% block assets_list %}
+    <script src="{% static 'lib/select2-4.0.13/js/select2.min.js' %}"></script>
+    <script src="{% static 'lib/select2-4.0.13/js/i18n/es.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2-bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2-bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/bootstrap-touchspin-4.2.5/css/jquery.bootstrap-touchspin.css' %}"/>
+    <script src="{% static 'lib/bootstrap-touchspin-4.2.5/js/jquery.bootstrap-touchspin.js' %}"></script>
+    <script src="{% static 'lib/bootstrap-daterangepicker-3.1/js/spanish.js' %}"></script>
+    <script src="{% static 'lib/bootstrap-daterangepicker-3.1/js/daterangepicker.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'lib/bootstrap-daterangepicker-3.1/css/daterangepicker.css' %}"/>
     <script src="{% static 'expenses/js/list.js' %}"></script>
 {% endblock %}
 
@@ -14,6 +25,20 @@
     <th>Acciones</th>
 {% endblock %}
 
-{% block javascript_list %}
+{% block content_list %}
+    <div class="row">
+        <div class="col-lg-5 col-md-12">
+            <div class="mb-3">
+                <label class="form-label fw-bold">{{ form.date_range.label }}:</label>
+                <div class="input-group mb-3">
+                    {{ form.date_range }}
+                    <button class="btn btn-primary btnSearchAll" type="button" id="button-addon2">
+                        <i class="fas fa-calendar-check"></i> Ver todas
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <iframe id="print_frame" style="display:none;"></iframe>
 {% endblock %}
