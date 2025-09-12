@@ -5,12 +5,14 @@ from core.pos.views.client.views import *
 from core.pos.views.company.views import *
 from core.pos.views.product.views import *
 from core.pos.views.sale.views import *
+from core.pos.views.salefe.views import *
 from core.pos.views.price.views import *
 from core.pos.views.buy.views import *
 from core.pos.views.provider.views import *
 from core.pos.views.productAutoAdd.views import *
 from core.pos.views.expenses.views import *
 from core.pos.views.sale.views import get_sale, update_sale
+from core.pos.views.salefe.views import get_sale_Fe, update_sale_Fe
 from core.pos.views.credit.views import *
 from core.pos.views.credit.views import get_sale_credit, get_sale_payments
 
@@ -45,6 +47,14 @@ urlpatterns = [
     path('sale/admin/print/invoice/<int:pk>/', SalePrintInvoiceView.as_view(), name='sale_admin_print_invoice'),
     path('sale/admin/get_sale/<int:pk>/', get_sale, name='get_sale'),
     path('sale/admin/update_sale/<int:pk>/', update_sale, name='update_sale'),
+    # sale factura electronica
+    path('salefe/admin/', SaleFeListView.as_view(), name='sale_Fe_admin_list'),
+    path('salefe/admin/add/', SaleFeCreateView.as_view(), name='sale_Fe_admin_create'),
+    path('salefe/admin/delete/<int:pk>/', SaleFeDeleteView.as_view(), name='sale_Fe_admin_delete'),
+    path('salefe/admin/delivered/<int:pk>/', SaleFeDeliveredUpdateView.as_view(), name='sale_Fe_admin_delivered'),
+    path('salefe/admin/print/invoice/<int:pk>/', SaleFePrintInvoiceView.as_view(), name='sale_Fe_admin_print_invoice'),
+    path('salefe/admin/get_sale/<int:pk>/', get_sale_Fe, name='get_sale_Fe'),
+    path('salefe/admin/update_sale/<int:pk>/', update_sale_Fe, name='update_sale_Fe'),
     # price
     path('price/admin/', PriceListView.as_view(), name='price_admin_list'),
     path('price/admin/add/', PriceCreateView.as_view(), name='price_admin_create'),

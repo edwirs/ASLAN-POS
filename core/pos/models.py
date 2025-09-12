@@ -196,6 +196,15 @@ class Sale(models.Model):
     nequi_value = models.DecimalField(max_digits=9, decimal_places=2, default=0.00, verbose_name='Valor Nequi')
     daviplata_value = models.DecimalField(max_digits=9, decimal_places=2, default=0.00, verbose_name='Valor Daviplata')
     is_active = models.BooleanField(default=True, verbose_name='Estado')
+    # campos para integrar con Factus
+    factus_invoice_id = models.CharField(max_length=50, null=True, blank=True)
+    factus_status = models.CharField(max_length=20, null=True, blank=True)
+    factus_pdf_url = models.URLField(max_length=500, null=True, blank=True)
+    factus_xml_url = models.URLField(max_length=500, null=True, blank=True)
+    factus_cufe = models.TextField(null=True, blank=True)
+    factus_resolution = models.TextField(null=True, blank=True)
+    factus_qr_url = models.URLField(null=True, blank=True) 
+    is_electronicinvoice = models.BooleanField(default=False, verbose_name='Electronica')
 
     def __str__(self):
         return self.client.get_full_name()
@@ -260,6 +269,15 @@ class Sale(models.Model):
         item['propina'] = float(self.propina)
         item['nequi_value'] = float(self.nequi_value)
         item['daviplata_value'] = float(self.daviplata_value)
+        item['factus_invoice_id'] = self.factus_invoice_id
+        item['factus_status'] = self.factus_status
+        item['factus_pdf_url'] = self.factus_pdf_url
+        item['factus_xml_url'] = self.factus_xml_url
+        item['factus_cufe'] = self.factus_cufe
+        item['factus_resolution'] = self.factus_resolution
+        item['factus_qr_url'] = self.factus_qr_url
+        item['is_electronicinvoice'] = self.is_electronicinvoice
+
         return item
 
     class Meta:

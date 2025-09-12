@@ -1,0 +1,220 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="{% static 'lib/bootstrap-5.0.2/css/bootstrap.min.css' %}" rel="stylesheet">
+    <style>
+        @page {
+            size: 80mm auto;
+            margin: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 0;
+            margin: 0;
+            font-size: 10px;
+            color: black !important;
+            min-height: 100%;
+        }
+
+        .content {
+            width: 100%;
+            padding: 10px;
+        }
+
+        .head-name {
+            margin-top: 0;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 0;
+            text-align: center;
+        }
+
+        .head-voucher-number {
+            font-size: 10px;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 0;
+            font-weight: bold;
+        }
+
+        .head-details {
+            margin-top: 0;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .head-data {
+            text-align: left;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .table {
+            color: black;
+        }
+
+        #details thead tr th {
+            border-bottom: 1px outset black;
+        }
+
+        .table td, .table th {
+            padding: 0;
+            color: black;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .img-logo {
+            display: block;
+            margin: 0 auto 2px auto;
+            width: 60px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .dotted-separator {
+            border: none !important;
+            border-top: 1px dotted black !important;
+            margin: 5px 0;
+            color: black;
+            background-color: transparent !important;
+        }
+        .cufe-text {
+            display: inline-block;       /* Para que respete ancho y salto de línea */
+            max-width: 200px;            /* Ajusta según el contenedor */
+            word-break: break-all;       /* Rompe palabras largas */
+            overflow-wrap: anywhere;     /* Otra opción para compatibilidad */
+            text-align: center;          /* Centrar el texto si quieres */
+        }
+    </style>
+</head>
+<body>
+<div class="content">
+    <img alt="" src="{{ sale.company.get_image }}" class="img-fluid d-block mx-auto img-logo">
+    <h1 class="head-name">{{ sale.company.name|upper }}</h1>
+    <p class="text-center head-details">
+        Dirección: {{ sale.company.address }}<br>
+        RUT: {{ sale.company.ruc }}<br>
+        Teléfono: {{ sale.company.phone }} / Celular: {{ sale.company.mobile }}<br>
+        Email: {{ sale.company.email }}
+    </p>
+
+    <p class="text-center head-voucher-number">Factura electrónica de venta: {{ sale.factus_invoice_id }}</p>
+
+    <hr class="dotted-separator">
+
+    <p class="head-data">
+        <b>Fecha de registro:</b> {{ sale.date_joined|date:'c' }}<br>
+        <b>Factura:</b> {{ sale.id }}<br>
+        <b>Cliente:</b> {{ sale.client.names }}<br>
+        <b>Número de cédula:</b> {{ sale.client.dni }}<br>
+    </p>
+
+    <hr class="dotted-separator">
+
+    <table class="table table-borderless table-sm" id="details" style="margin-bottom: 0">
+        <thead>
+        <tr>
+            <th style="width: 15%;">Cant.</th>
+            <th style="width: 65%;">Descripción</th>
+            <th style="width: 20%;" class="text-right">Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for detail in sale.saledetail_set.all %}
+            <tr>
+                <td>{{ detail.cant }}</td>
+                <td>{{ detail.product.name }}</td>
+                <td class="text-right">$ {{ detail.total|floatformat:0|intcomma }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <hr class="dotted-separator">
+
+    <table class="table table-borderless table-sm text-uppercase mt-3">
+        <thead>
+        <tr>
+            <th style="width: 40%;"></th>
+            <th style="width: 40%;"></th>
+            <th style="width: 20%;"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td></td>
+            <td class="float-right font-weight-bold">Subtotal</td>
+            <td class="text-right">$ {{ sale.get_subtotal_without_taxes|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td class="float-right font-weight-bold">Valor bruto</td>
+            <td class="text-right">$ {{ sale.subtotal_12_sin_iva|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td class="float-right font-weight-bold">IVA {{ sale.get_iva_percent }}%:</td>
+            <td class="text-right">$ {{ sale.total_iva|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td class="float-right font-weight-bold">Descuentos</td>
+            <td class="text-right">$ {{ sale.total_dscto|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td class="float-right font-weight-bold">Total</td>
+            <td class="text-right">$ {{ sale.total|floatformat:0|intcomma }}</td>
+        </tr>
+        </tbody>
+    </table>
+    <hr class="dotted-separator">
+    <table class="table table-borderless table-sm text-uppercase mt-3">
+        <thead>
+        <tr>
+            <th style="width: 40%;"></th>
+            <th style="width: 40%;"></th>
+            <th style="width: 20%;"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td></td>
+            <td class="float-right font-weight-bold">Efectivo</td>
+            <td class="text-right">$ {{ sale.cash|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td class="float-right font-weight-bold">Cambio</td>
+            <td class="text-right">$ {{ sale.change|floatformat:0|intcomma }}</td>
+        </tr>
+        </tbody>
+    </table>
+    <hr class="dotted-separator">
+    <p class="text-center head-details">
+        Resolución DIAN {{ sale.factus_resolution }}<br>
+        CUFE: <br>
+        <span class="cufe-text">{{ sale.factus_cufe }}</span>
+    </p>
+    {% if sale.factus_qr_url %}
+        <div class="text-center mt-2">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data={{ sale.factus_qr_url }}" alt="QR DIAN" class="img-fluid mx-auto">
+            <p style="font-size: 9px; margin-top: 5px;">Escanea para validar en DIAN</p>
+        </div>
+    {% endif %}
+    <hr class="dotted-separator">
+    <p class="text-center head-details">
+        Elaborado por: ASLAN Tecnologia<br>
+        Tel: 3002308365
+    </p>
+</div>
+</body>
+</html>

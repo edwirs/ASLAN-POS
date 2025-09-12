@@ -17,11 +17,12 @@ from core.pos.utilities import printer
 from core.reports.forms import ReportForm
 from core.security.mixins import GroupPermissionMixin
 from core.pos.choices import PAYMENTMETHODS, TRANSFERMETHODS
+from core.services.factus import create_invoice
 
-MODULE_NAME = 'Ventas'
+MODULE_NAME = 'Ventas FE'
 
-class SaleListView(GroupPermissionMixin, FormView):
-    template_name = 'sale/admin/list.html'
+class SaleFeListView(GroupPermissionMixin, FormView):
+    template_name = 'salefe/admin/list.html'
     form_class = ReportForm
     permission_required = 'view_sale'
 
@@ -33,7 +34,7 @@ class SaleListView(GroupPermissionMixin, FormView):
                 data = []
                 start_date = request.POST['start_date']
                 end_date = request.POST['end_date']
-                queryset = Sale.objects.filter(is_electronicinvoice=False)
+                queryset = Sale.objects.filter(is_electronicinvoice=True)
                 if len(start_date) and len(end_date):
                     queryset = queryset.filter(date_joined__range=[start_date, end_date])
                 for i in queryset.order_by('-id'):
@@ -51,13 +52,13 @@ class SaleListView(GroupPermissionMixin, FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Listado de Ventas'
-        context['list_url'] = reverse_lazy('sale_admin_list')
-        context['create_url'] = reverse_lazy('sale_admin_create')
+        context['list_url'] = reverse_lazy('sale_Fe_admin_list')
+        context['create_url'] = reverse_lazy('sale_Fe_admin_create')
         context['module_name'] = MODULE_NAME
         context['sale_form'] = SaleForm()
         return context
     
-def get_sale(request, pk):
+def get_sale_Fe(request, pk):
     try:
         sale = Sale.objects.get(pk=pk)
         data = sale.toJSON()
@@ -65,7 +66,7 @@ def get_sale(request, pk):
     except Sale.DoesNotExist:
         return JsonResponse({'error': 'La venta no existe'}, status=404)
     
-def update_sale(request, pk):
+def update_sale_Fe(request, pk):
     try:
         sale = Sale.objects.get(pk=pk)
         sale.paymentmethod = request.POST.get('paymentmethod')
@@ -85,11 +86,11 @@ def update_sale(request, pk):
         return JsonResponse({"error": str(e)})
 
 
-class SaleCreateView(GroupPermissionMixin, CreateView):
+class SaleFeCreateView(GroupPermissionMixin, CreateView):
     model = Sale
-    template_name = 'sale/admin/create.html'
+    template_name = 'salefe/admin/create.html'
     form_class = SaleForm
-    success_url = reverse_lazy('sale_admin_create')
+    success_url = reverse_lazy('sale_Fe_admin_create')
     permission_required = 'add_sale'
 
     def post(self, request, *args, **kwargs):
@@ -123,6 +124,7 @@ class SaleCreateView(GroupPermissionMixin, CreateView):
                         sale.expiration_date = None
                     sale.service_type = (request.POST['service_type'])
                     sale.propina = float(request.POST['propina'])
+                    sale.is_electronicinvoice = True
                     sale.save()
                     for i in json.loads(request.POST['products']):
                         product = Product.objects.get(pk=i['id'])
@@ -147,7 +149,27 @@ class SaleCreateView(GroupPermissionMixin, CreateView):
                             auto_product.save()
 
                     sale.calculate_invoice()
-                    data = {'print_url': str(reverse_lazy('sale_admin_print_invoice', kwargs={'pk': sale.id}))}
+                    factus_response = create_invoice(sale)
+                    # Guarda datos en tu modelo Sale
+                    detail = factus_response.get("detail", {})
+                    message = detail.get("message", "")
+                    data = detail.get("data", {})
+
+                    if data:  # Si hay data significa que la factura fue creada
+                        bill_data = data.get("bill", {})
+                        numbering_range = data.get("numbering_range", {})
+
+                        sale.factus_invoice_id = bill_data.get("number")
+                        sale.factus_status = bill_data.get("status")
+                        sale.factus_pdf_url = bill_data.get("public_url")
+                        sale.factus_cufe = bill_data.get("cufe")
+                        sale.factus_resolution = numbering_range.get("resolution_number")
+                        sale.factus_qr_url = bill_data.get("qr")
+                        sale.save()
+                    else:
+                        sale.factus_status = "error"
+                    sale.save()
+                    data = {'print_url': str(reverse_lazy('sale_Fe_admin_print_invoice', kwargs={'pk': sale.id}))}
             elif action == 'search_products':
                 ids = json.loads(request.POST['ids'])
                 data = []
@@ -190,14 +212,14 @@ class SaleCreateView(GroupPermissionMixin, CreateView):
         context = super().get_context_data()
         context['frmClient'] = ClientForm()
         context['list_url'] = self.success_url
-        context['title'] = 'Nuevo registro de una Venta'
+        context['title'] = 'Nuevo registro de una Venta Electrónica'
         context['action'] = 'add'
         context['company'] = Company.objects.first()
         context['final_consumer'] = self.get_final_consumer()
         context['module_name'] = MODULE_NAME
         return context
 
-class SaleDeliveredUpdateView(View):
+class SaleFeDeliveredUpdateView(View):
     def post(self, request, *args, **kwargs):
         data = {}
         if not request.user.has_perm('app_label.delivered_sale'):
@@ -213,10 +235,10 @@ class SaleDeliveredUpdateView(View):
             data['error'] = str(e)
         return JsonResponse(data)
 
-class SaleDeleteView(GroupPermissionMixin, DeleteView):
+class SaleFeDeleteView(GroupPermissionMixin, DeleteView):
     model = Sale
     template_name = 'delete.html'
-    success_url = reverse_lazy('sale_admin_list')
+    success_url = reverse_lazy('sale_Fe_admin_list')
     permission_required = 'delete_sale'
 
     def post(self, request, *args, **kwargs):
@@ -236,7 +258,7 @@ class SaleDeleteView(GroupPermissionMixin, DeleteView):
 
 
 @method_decorator(xframe_options_exempt, name='dispatch')
-class SalePrintInvoiceView(LoginRequiredMixin, View):
+class SaleFePrintInvoiceView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         try:
             sale = Sale.objects.get(id=self.kwargs['pk'])
@@ -244,6 +266,6 @@ class SalePrintInvoiceView(LoginRequiredMixin, View):
                 'sale': sale,
                 'height': 450 + sale.saledetail_set.all().count() * 10
             }
-            return render(request, 'sale/format/ticket.html', context)
+            return render(request, 'salefe/format/ticket.html', context)
         except Sale.DoesNotExist:
             return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)

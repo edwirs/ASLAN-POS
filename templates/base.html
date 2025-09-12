@@ -131,6 +131,15 @@
           Venta
         </a>
       </li>
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          href="{% url 'sale_Fe_admin_create' %}"
+        >
+          <i class="fas fa-file-invoice-dollar"></i>
+          Factura Electrónica
+        </a>
+      </li>
       <!--<li class="nav-item">
         <a
           class="nav-link"
@@ -360,6 +369,16 @@
                 >
                   <i class="far fa-circle nav-icon"></i>
                   <p>Ventas</p>
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a
+                  href="{% url 'sale_Fe_admin_list' %}"
+                  class="nav-link"
+                >
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Factura Electrónica</p>
                 </a>
               </li>
 
