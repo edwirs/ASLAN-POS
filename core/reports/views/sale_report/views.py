@@ -8,7 +8,7 @@ from django.db.models.functions import Coalesce
 from core.pos.models import Sale
 from core.reports.forms import ReportForm
 
-MODULE_NAME = 'R.Ventas'
+MODULE_NAME = 'R.Totales'
 
 
 class SaleReportView(LoginRequiredMixin, FormView):
@@ -91,6 +91,6 @@ class SaleReportView(LoginRequiredMixin, FormView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Reporte de Ventas'
+        context['title'] = 'Reporte de Totales'
         context['module_name'] = MODULE_NAME
         return context
