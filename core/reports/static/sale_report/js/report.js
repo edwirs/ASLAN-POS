@@ -32,9 +32,12 @@ var report = {
                     'X-CSRFToken': csrftoken
                 },
                 data: parameters,
-                dataSrc: ''
+                dataSrc: function (json) {
+                    // Guardamos los totales para usarlos después
+                    return json.totals;
+                }
             },
-            order: [[0, 'asc']],
+            order: [],
             paging: true,
             ordering: true,
             searching: false,
@@ -102,32 +105,29 @@ var report = {
                 }
             ],
             columns: [
-                {data: "client.names"},
-                {data: "client.dni"},
-                {data: "date_joined"},
-                {data: "subtotal"},
-                {data: "total_dscto"},
-                {data: "total_iva"},
-                {data: "total"},
+                {data: "name"},
+                {
+                    data: "value",
+                    className: "text-center",
+                    render: function (data) {
+                        return '$' + parseFloat(data).toLocaleString('es-CL');
+                    }
+                }
             ],
             columnDefs: [
                 {
-                    targets: [-5, -6],
+                    targets: [-1],
                     class: 'text-center',
                     render: function (data, type, row) {
                         return data;
                     }
-                },
-                {
-                    targets: [-1, -2, -3, -4],
-                    class: 'text-center',
-                    render: function (data, type, row) {
-                        return '$' + data.toFixed(2);
-                    }
                 }
             ],
             rowCallback: function (row, data, index) {
-
+                if (data.name === "Total") {
+                    $(row).css("font-weight", "bold"); // negrita
+                    $(row).css("background-color", "#f2f2f2"); // opcional sombreado
+                }
             },
             initComplete: function (settings, json) {
 

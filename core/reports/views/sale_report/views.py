@@ -1,8 +1,9 @@
 import json
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
 from django.views.generic import FormView
+from django.db.models import Sum, Q, F, FloatField, Value as V
+from django.db.models.functions import Coalesce
 
 from core.pos.models import Sale
 from core.reports.forms import ReportForm
@@ -23,15 +24,70 @@ class SaleReportView(LoginRequiredMixin, FormView):
                 start_date = request.POST['start_date']
                 end_date = request.POST['end_date']
                 queryset = Sale.objects.filter()
+
+                # Filtrar por rango de fechas
                 if len(start_date) and len(end_date):
                     queryset = queryset.filter(date_joined__range=[start_date, end_date])
+
+                # Serializar detalle de ventas
                 for i in queryset:
                     data.append(i.toJSON())
+
+                # ---- Totales ----
+                totals = [
+                {
+                    "name": "Total Efectivo",
+                    "value": float(
+                        queryset.filter(paymentmethod="cash", transfermethods__isnull=True)
+                        .aggregate(total=Coalesce(Sum("total", output_field=FloatField()), 0.0))["total"]
+                    ),
+                },
+                {
+                    "name": "Total Nequi",
+                    "value": float(
+                        queryset.filter(paymentmethod="transfer", transfermethods="nequi")
+                        .aggregate(total=Coalesce(Sum("total", output_field=FloatField()), 0.0))["total"]
+                        +
+                        queryset.filter(nequi_value__gt=0)
+                        .aggregate(total=Coalesce(Sum("nequi_value", output_field=FloatField()), 0.0))["total"]
+                    ),
+                },
+                {
+                    "name": "Total Daviplata",
+                    "value": float(
+                        queryset.filter(paymentmethod="transfer", transfermethods="daviplata")
+                        .aggregate(total=Coalesce(Sum("total", output_field=FloatField()), 0.0))["total"]
+                        +
+                        queryset.filter(daviplata_value__gt=0)
+                        .aggregate(total=Coalesce(Sum("daviplata_value", output_field=FloatField()), 0.0))["total"]
+                    ),
+                },
+                {
+                    "name": "Total Tarjetas",
+                    "value": float(
+                        queryset.filter(paymentmethod="creditcard", transfermethods__isnull=True)
+                        .aggregate(total=Coalesce(Sum("total", output_field=FloatField()), 0.0))["total"]
+                    ),
+                },
+                {
+                    "name": "Total",
+                    "value": float(
+                        queryset.aggregate(total=Coalesce(Sum("total", output_field=FloatField()), 0.0))["total"]
+                    ),
+                },
+            ]
+
+                # empaquetamos la respuesta
+                response = {
+                    "sales": data,
+                    "totals": totals
+                }
             else:
-                data['error'] = 'No ha seleccionado ninguna opción'
+                response = {"error": "No ha seleccionado ninguna opción"}
         except Exception as e:
-            data['error'] = str(e)
-        return HttpResponse(json.dumps(data), content_type='application/json')
+            response = {"error": str(e)}
+
+        return HttpResponse(json.dumps(response), content_type="application/json")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
