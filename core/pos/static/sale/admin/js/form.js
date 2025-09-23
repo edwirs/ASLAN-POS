@@ -48,6 +48,7 @@ var sale = {
         $('input[name="total_iva"]').val(this.detail.total_iva.toLocaleString('es-CL'));
         $('input[name="total_dscto"]').val(this.detail.total_dscto.toLocaleString('es-CL'));
         $('input[name="total"]').val(this.detail.total.toLocaleString('es-CL')); 
+        $('input[name="cash"]').val(this.detail.total); 
 
         var cash = parseFloat(input_cash.val());
         var change = cash - sale.detail.total;
