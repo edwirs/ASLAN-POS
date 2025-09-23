@@ -545,7 +545,9 @@ $(function () {
         })
         .off('change')
         .on('change touchspin.on.min touchspin.on.max', function () {
-            sale.calculateInvoice();
+            var cash = parseFloat(input_cash.val());
+            var change = cash - sale.detail.total;
+            input_change.val(change);
         })
         .on('keypress', function (e) {
             return validate_text_box({'event': e, 'type': 'decimals'});
