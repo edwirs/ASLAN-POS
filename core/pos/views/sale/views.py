@@ -33,9 +33,12 @@ class SaleListView(GroupPermissionMixin, FormView):
                 data = []
                 start_date = request.POST['start_date']
                 end_date = request.POST['end_date']
+                service_type = request.POST['service_type']
                 queryset = Sale.objects.filter(is_electronicinvoice=False)
                 if len(start_date) and len(end_date):
                     queryset = queryset.filter(date_joined__range=[start_date, end_date])
+                if service_type:
+                    queryset = queryset.filter(service_type=service_type)
                 for i in queryset.order_by('-id'):
                     data.append(i.toJSON())
             elif action == 'search_detail_products':

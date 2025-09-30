@@ -1,5 +1,6 @@
 var tblSale;
 var input_date_range;
+var input_service_type;
 var select_paymentmethod;
 var select_transfermethods;
 var select_service_type;
@@ -11,10 +12,12 @@ var sale = {
             'action': 'search',
             'start_date': input_date_range.data('daterangepicker').startDate.format('YYYY-MM-DD'),
             'end_date': input_date_range.data('daterangepicker').endDate.format('YYYY-MM-DD'),
+            'service_type': $('#id_service_type').val(),
         };
         if (all) {
             parameters['start_date'] = '';
             parameters['end_date'] = '';
+            parameters['service_type'] = '';
         }
         tblSale = $('#data').DataTable({
             autoWidth: false,
@@ -242,6 +245,10 @@ $(function () {
         });
 
     $('.drp-buttons').hide();
+
+    $('#id_service_type').on('change', function () {
+        sale.list(false);
+    });
 
     sale.list(false);
 

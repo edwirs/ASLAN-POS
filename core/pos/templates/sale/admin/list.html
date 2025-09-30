@@ -118,18 +118,26 @@
 {% endblock %}
 
 {% block content_list %}
-    <div class="row">
-        <div class="col-lg-5 col-md-12">
-            <div class="mb-3">
-                <label class="form-label fw-bold">{{ form.date_range.label }}:</label>
-                <div class="input-group mb-3">
-                    {{ form.date_range }}
-                    <button class="btn btn-primary btnSearchAll" type="button" id="button-addon2">
-                        <i class="fas fa-calendar-check"></i> Ver todas
-                    </button>
-                </div>
+    <div class="row align-items-end">
+        <div class="col-lg-4 col-md-12">
+            <label class="form-label fw-bold">{{ form.date_range.label }}:</label>
+            <div class="input-group mb-3">
+                {{ form.date_range }}
             </div>
         </div>
+        <div class="col-lg-2 col-md-12">
+            <label class="form-label fw-bold">{{ sale_form.service_type.label }}:</label>
+            <div class="input-group mb-3">
+                {{ sale_form.service_type }}
+            </div>
+        </div>
+        <!--<div class="col-lg-4 col-md-12">
+            <div class="mb-3">
+                <button class="btn btn-primary btnSearchAll" type="button">
+                    <i class="fas fa-calendar-check"></i> Ver todas
+                </button>
+            </div>
+        </div>-->
     </div>
 
     <iframe id="print_frame" style="display:none;"></iframe>
