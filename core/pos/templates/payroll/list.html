@@ -1,0 +1,17 @@
+{% extends 'list.html' %}
+{% load static %}
+{% block assets_list %}
+    <script src="{% static 'payroll/js/list.js' %}"></script>
+{% endblock %}
+
+{% block columns %}
+    <th>Periodo</th>
+    <th>Tipo</th>
+    <th>Empleados</th>
+    <th>Total ganado</th>
+    <th>Total a pagar</th>
+{% endblock %}
+
+{% block javascript_list %}
+
+{% endblock %}

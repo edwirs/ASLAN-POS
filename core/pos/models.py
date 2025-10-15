@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import Sum, FloatField
 from django.db.models.functions import Coalesce
 from django.forms import model_to_dict
+from decimal import Decimal
 
 from config import settings
 from core.pos.choices import GENDER
@@ -13,6 +14,8 @@ from core.pos.choices import TRANSFERMETHODS
 from core.pos.choices import EXPENSES
 from core.pos.choices import SERVICE_TYPE
 from core.pos.choices import TYPETMETHODS
+from core.pos.choices import TIPO_CONTRATO
+from core.pos.choices import PERIODO_NOMINA
 from core.user.models import User
 
 
@@ -620,3 +623,161 @@ class SaleCreditPayment(models.Model):
         verbose_name = 'Pago Crédito'
         verbose_name_plural = 'Pagos Créditos'
         default_permissions = ()
+
+class Employee(models.Model):
+    dni = models.CharField(max_length=13, unique=True, verbose_name='Número de cedula')
+    names = models.CharField(max_length=150, null=True, blank=True, verbose_name='Nombres')
+    image = models.ImageField(upload_to='user/%Y/%m/%d', null=True, blank=True, verbose_name='Imagen')
+    email = models.EmailField(null=True, blank=True, verbose_name='Correo electrónico')
+    phone = models.CharField(max_length=15, blank=True, null=True, verbose_name='Telefono')
+    address = models.CharField(max_length=255, blank=True, null=True,verbose_name='Dirección')
+    birth_date = models.DateField(verbose_name='Fecha de nacimiento')
+    contract_type = models.CharField(max_length=50, choices=TIPO_CONTRATO, default=TIPO_CONTRATO[0][0], verbose_name='Tipo de contrato')
+    salary = models.DecimalField(max_digits=10, decimal_places=2)
+    start_date = models.DateField(verbose_name='Fecha de ingreso')
+    retire_date = models.DateField(blank=True, null=True,verbose_name='Fecha de retiro')
+    eps = models.CharField(max_length=100,null=True, verbose_name="Entidad Promotora de Salud")
+    afp = models.CharField(max_length=100,null=True, verbose_name="Fondo de pensiones")
+    arl = models.CharField(max_length=100,null=True, verbose_name="Administradora de Riesgos Laborales")
+    caja_compensacion = models.CharField(max_length=100, blank=True, null=True,verbose_name='Caja de compensacion')
+    is_active = models.BooleanField(default=True, verbose_name='Estado')
+    social_security = models.BooleanField(default=True, verbose_name='Seguridad social')
+    register_date = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de registro')
+    updated_date = models.DateTimeField(auto_now_add=True, null=True)
+
+    class Meta:
+        verbose_name = 'Empleado'
+        verbose_name_plural = 'Empleados'
+        ordering = ['names']
+
+    def __str__(self):
+        return f"{self.nombres}"
+    
+    def toJSON(self):
+        item = model_to_dict(self)
+        # Si usas un campo con choices, mostrar su texto legible:
+        item['contract_type'] = self.get_contract_type_display()
+        # Convertir decimales a float para evitar errores con json.dumps
+        item['salary'] = float(self.salary)
+        # Añadir campos calculados si quieres mostrarlos en la tabla o reportes
+        item['aporte_salud_empleado'] = float(self.aporte_salud_empleado)
+        item['aporte_pension_empleado'] = float(self.aporte_pension_empleado)
+        item['aporte_salud_empresa'] = float(self.aporte_salud_empresa)
+        item['aporte_pension_empresa'] = float(self.aporte_pension_empresa)
+        item['aporte_arl_empresa'] = float(self.aporte_arl_empresa)
+        item['total_empleado'] = float(self.total_empleado)
+        item['total_empresa'] = float(self.total_empresa)
+        item['total_seguridad_social'] = float(self.total_seguridad_social)
+
+        item['birth_date'] = self.birth_date.strftime("%Y-%m-%d") if self.birth_date else ""
+        item['start_date'] = self.start_date.strftime("%Y-%m-%d") if self.start_date else ""
+        item['retire_date'] = self.retire_date.strftime("%Y-%m-%d") if self.retire_date else ""
+        item['register_date'] = self.register_date.strftime("%Y-%m-%d %H:%M:%S") if self.register_date else ""
+        item['updated_date'] = self.updated_date.strftime("%Y-%m-%d %H:%M:%S") if self.updated_date else ""
+
+        item['image'] = self.image.url if self.image else None
+        return item
+    
+    # --- Cálculos automáticos ---
+    @property
+    def aporte_salud_empleado(self):
+        return round(self.salary * Decimal('0.04'), 2)
+
+    @property
+    def aporte_pension_empleado(self):
+        return round(self.salary * Decimal('0.04'), 2)
+
+    @property
+    def aporte_salud_empresa(self):
+        return round(self.salary * Decimal('0.085'), 2)
+
+    @property
+    def aporte_pension_empresa(self):
+        return round(self.salary * Decimal('0.12'), 2)
+
+    @property
+    def aporte_arl_empresa(self):
+        # Nivel de riesgo 1 por defecto (0.522%)
+        return round(self.salary * Decimal('0.00522'), 2)
+
+    @property
+    def aporte_caja_empresa(self):
+        return round(self.salary * Decimal('0.04'), 2)
+
+    @property
+    def aporte_sena_empresa(self):
+        return round(self.salary * Decimal('0.02'), 2)
+
+    @property
+    def aporte_icbf_empresa(self):
+        return round(self.salary * Decimal('0.03'), 2)
+
+    @property
+    def total_empleado(self):
+        return self.aporte_salud_empleado + self.aporte_pension_empleado
+
+    @property
+    def total_empresa(self):
+        return (
+            self.aporte_salud_empresa +
+            self.aporte_pension_empresa +
+            self.aporte_arl_empresa 
+            #+
+            #self.aporte_caja_empresa 
+            #+
+            #self.aporte_sena_empresa +
+            #self.aporte_icbf_empresa
+        )
+
+    @property
+    def total_seguridad_social(self):
+        return self.total_empleado + self.total_empresa
+    
+class Payroll(models.Model):
+    employee = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name='payrolls')
+    period = models.DateField(help_text="Mes y año de la nómina (usar el primer día del mes)")
+    period_type = models.CharField(max_length=2, choices=PERIODO_NOMINA, default='Q1')
+
+    days_worked = models.PositiveIntegerField(default=15)
+    base_salary = models.DecimalField(max_digits=12, decimal_places=2)
+    transportation_allowance = models.DecimalField(max_digits=12, decimal_places=2, default=81000.00)
+
+    overtime_hours_value = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    other_earnings = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    deductions = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    total_earned = models.DecimalField(max_digits=12, decimal_places=2, editable=False)
+    total_payable = models.DecimalField(max_digits=12, decimal_places=2, editable=False)
+
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Nomina'
+        verbose_name_plural = 'Nominas'
+        ordering = ['-period', 'period_type']
+
+    def __str__(self):
+        return f"Payroll {self.get_period_type_display()} {self.period.strftime('%Y-%m')} - {self.employee.first_name}"
+
+    def calculate_totals(self):
+        employee = self.employee
+
+        # Proportional salary based on days worked
+        proportional_salary = (employee.salary / 30) * self.days_worked
+
+        total_earned = (
+            proportional_salary +
+            self.transportation_allowance +
+            self.overtime_hours_value +
+            self.other_earnings
+        )
+
+        total_payable = total_earned - self.deductions
+
+        self.base_salary = round(proportional_salary, 2)
+        self.total_earned = round(total_earned, 2)
+        self.total_payable = round(total_payable, 2)
+
+    def save(self, *args, **kwargs):
+        self.calculate_totals()
+        super().save(*args, **kwargs)

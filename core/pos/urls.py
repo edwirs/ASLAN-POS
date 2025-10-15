@@ -11,6 +11,8 @@ from core.pos.views.buy.views import *
 from core.pos.views.provider.views import *
 from core.pos.views.productAutoAdd.views import *
 from core.pos.views.expenses.views import *
+from core.pos.views.employee.views import *
+from core.pos.views.payroll.views import *
 from core.pos.views.sale.views import get_sale, update_sale
 from core.pos.views.salefe.views import get_sale_Fe, update_sale_Fe
 from core.pos.views.credit.views import *
@@ -80,4 +82,12 @@ urlpatterns = [
     path('credit/admin/get_sale_credit/<int:pk>/', get_sale_credit, name='get_sale_credit'),
     path('credit/admin/get_sale_payments/<int:pk>/', get_sale_payments, name='get_sale_payments'),
     path("credit/admin/add_payment/", SaleCreditAddPaymentView.as_view(), name="add_payment"),
+     # empleados
+    path('employee/', EmployeeListView.as_view(), name='employee_list'),
+    path('employee/add/', EmployeeCreateView.as_view(), name='employee_create'),
+    path('employee/update/<int:pk>/', EmployeeUpdateView.as_view(), name='employee_update'),
+    path('employee/delete/<int:pk>/', EmployeeDeleteView.as_view(), name='employee_delete'),
+     # nomina
+    path('payroll/', PayrollListView.as_view(), name='payroll_list'),
+    path('payroll/add/', PayrollCreateView.as_view(), name='payroll_create'),
 ]

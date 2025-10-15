@@ -471,3 +471,78 @@ class ExpensesForm(forms.ModelForm):
                 'class': 'form-control',
             }),
         }
+
+class EmployeeForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        #self.fields['names'].widget.attrs['autofocus'] = True
+
+    class Meta:
+        model = Employee
+        fields = '__all__'
+        widgets = {
+            'dni': forms.TextInput(attrs={'class': 'form-control','placeholder': 'Ingrese la identificación'}),
+            'names': forms.TextInput(attrs={'class': 'form-control','placeholder': 'Ingrese los nombres'}),
+            'email': forms.TextInput(attrs={'class': 'form-control','placeholder': 'Ingrese un correo'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control','placeholder': 'Ingrese telefono'}),
+            'address': forms.TextInput(attrs={'class': 'form-control','placeholder': 'Ingrese una dirección'}),
+            'birth_date': forms.DateInput(format='%Y-%m-%d', attrs={
+                'class': 'form-control datetimepicker-input',
+                'id': 'birth_date',
+                'value': datetime.now().strftime('%Y-%m-%d'),
+                'data-toggle': 'datetimepicker',
+                'data-target': '#birth_date'
+            }),
+            'contract_type': forms.Select(attrs={
+                'class': 'select2',
+                'style': 'width: 100%'
+            }),
+            'start_date': forms.DateInput(format='%Y-%m-%d', attrs={
+                'class': 'form-control datetimepicker-input',
+                'id': 'start_date',
+                'value': datetime.now().strftime('%Y-%m-%d'),
+                'data-toggle': 'datetimepicker',
+                'data-target': '#start_date'
+            }),
+            'retire_date': forms.DateInput(format='%Y-%m-%d', attrs={
+                'class': 'form-control datetimepicker-input',
+                'id': 'retire_date',
+                #'value': datetime.now().strftime('%Y-%m-%d'),
+                'data-toggle': 'datetimepicker',
+                'data-target': '#retire_date'
+            }),
+            'salary': forms.TextInput(attrs={'name': 'salary'}),
+            'eps': forms.TextInput(attrs={'class': 'form-control','placeholder': 'Ingrese una EPS'}),
+            'afp': forms.TextInput(attrs={'class': 'form-control','placeholder': 'Ingrese un fondo de pensiones'}),
+            'arl': forms.TextInput(attrs={'class': 'form-control','placeholder': 'Ingrese una ARL'}),
+            'caja_compensacion': forms.TextInput(attrs={'class': 'form-control','placeholder': 'Ingrese CCF'}),
+            'social_security': forms.CheckboxInput(attrs={'class': 'form-check-input', 'name': 'social_security'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input', 'name': 'is_active'})
+        }
+
+    def save(self, commit=True):
+        data = {}
+        try:
+            if self.is_valid():
+                super().save()
+            else:
+                data['error'] = self.errors
+        except Exception as e:
+            data['error'] = str(e)
+        return data
+    
+class PayrollForm(forms.ModelForm):
+    class Meta:
+        model = Payroll
+        fields = [
+            'employee',
+            'period',
+            'period_type',
+            'days_worked',
+            'overtime_hours_value',
+            'other_earnings',
+            'deductions'
+        ]
+        widgets = {
+            'period': forms.DateInput(attrs={'type': 'date'}),
+        }

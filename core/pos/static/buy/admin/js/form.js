@@ -91,7 +91,14 @@ var buy = {
                     }
                 },
                 {
-                    targets: [-1, -2],
+                    targets: [-2],
+                    class: 'text-center',
+                    render: function (data, type, row) {
+                        return '<input type="text" class="form-control" autocomplete="off" name="price" value="' + data + '">';
+                    }
+                },
+                {
+                    targets: [-1],
                     class: 'text-center',
                     render: function (data, type, row) {
                         return '$' + parseFloat(data).toLocaleString('es-CL');
@@ -109,6 +116,14 @@ var buy = {
                 var tr = $(row).closest('tr');
                 var stock = !data.is_service ? data.stock : 1000000;
                 tr.find('input[name="cant"]')
+                    .TouchSpin({
+                        min: 1,
+                        max: Number.MAX_SAFE_INTEGER
+                    })
+                    .on('keypress', function (e) {
+                        return validate_text_box({'event': e, 'type': 'numbers'});
+                    });
+                tr.find('input[name="price"]')
                     .TouchSpin({
                         min: 1,
                         max: Number.MAX_SAFE_INTEGER
@@ -393,6 +408,12 @@ $(function () {
         .on('change', 'input[name="cant"]', function () {
             var tr = tblProducts.cell($(this).closest('td, li')).index();
             buy.detail.products[tr.row].cant = parseInt($(this).val());
+            buy.calculateInvoice();
+            $('td:last', tblProducts.row(tr.row).node()).html('$' + buy.detail.products[tr.row].total.toFixed(2));
+        })
+        .on('change', 'input[name="price"]', function () {
+            var tr = tblProducts.cell($(this).closest('td, li')).index();
+            buy.detail.products[tr.row].price = parseInt($(this).val());
             buy.calculateInvoice();
             $('td:last', tblProducts.row(tr.row).node()).html('$' + buy.detail.products[tr.row].total.toFixed(2));
         })

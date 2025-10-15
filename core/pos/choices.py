@@ -33,3 +33,16 @@ SERVICE_TYPE = (
     ('in_site', 'En Sitio'),
     ('delivery', 'Domicilio'),
 )
+
+TIPO_CONTRATO = [
+        ('F', 'Término Fijo'),
+        ('I', 'Término Indefinido'),
+        ('O', 'Obra o labor'),
+        ('P', 'Prestación de servicios'),
+    ]
+
+PERIODO_NOMINA = [
+        ('Q1', 'Primera quincena'),
+        ('Q2', 'Segunda quincena'),
+        ('M', 'Mensual'),
+    ]

@@ -62,3 +62,27 @@
     top: 36%;
     width: 100%;
 }
+
+/* === Personalización ASLAN POS === */
+
+/* Color de fondo del menú lateral 
+.main-sidebar {
+  background-color: #f48c5b !important;
+}
+
+/* Color de los enlaces del menú 
+.main-sidebar .nav-link,
+.main-sidebar .brand-text {
+  color: #3b1c0d !important; /* tono café oscuro similar al del logo 
+}
+
+/* Color al pasar el cursor 
+.main-sidebar .nav-link:hover {
+  background-color: #e67a45 !important; /* tono un poco más oscuro del fondo 
+  color: #fff !important;
+}
+
+/* Color del ícono 
+.main-sidebar .nav-icon {
+  color: #3b1c0d !important;
+} */
