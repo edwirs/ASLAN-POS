@@ -512,6 +512,7 @@ class EmployeeForm(forms.ModelForm):
                 'data-target': '#retire_date'
             }),
             'salary': forms.TextInput(attrs={'name': 'salary'}),
+            'base_salary': forms.TextInput(attrs={'name': 'base_salary'}),
             'eps': forms.TextInput(attrs={'class': 'form-control','placeholder': 'Ingrese una EPS'}),
             'afp': forms.TextInput(attrs={'class': 'form-control','placeholder': 'Ingrese un fondo de pensiones'}),
             'arl': forms.TextInput(attrs={'class': 'form-control','placeholder': 'Ingrese una ARL'}),
@@ -544,5 +545,13 @@ class PayrollForm(forms.ModelForm):
             'deductions'
         ]
         widgets = {
-            'period': forms.DateInput(attrs={'type': 'date'}),
+            'employee': forms.Select(attrs={'class': 'form-control select2', 'style': 'width: 100%;'}),
+            'period_type': forms.Select(attrs={'class': 'form-control select2', 'style': 'width: 100%;'}),
+            'period': forms.DateInput(format='%Y-%m-%d', attrs={
+                'class': 'form-control datetimepicker-input',
+                'id': 'period',
+                #'value': datetime.now().strftime('%Y-%m-%d'),
+                'data-toggle': 'datetimepicker',
+                'data-target': '#period'
+            }),
         }

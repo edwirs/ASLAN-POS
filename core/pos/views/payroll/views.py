@@ -4,9 +4,11 @@ from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import DeleteView, CreateView, UpdateView, TemplateView
 from django.db.models import Sum, Count
+from django.http import JsonResponse
+from decimal import Decimal
 
 from core.pos.forms import PayrollForm
-from core.pos.models import Payroll
+from core.pos.models import Payroll, Employee
 from core.security.mixins import GroupPermissionMixin
 
 MODULE_NAME = 'Nómina'
@@ -39,9 +41,9 @@ class PayrollListView(GroupPermissionMixin, TemplateView):
                         'period': i['period'].strftime('%Y-%m'),
                         'period_type': i['period_type'],
                         'period_type_display': (
-                            'First Half' if i['period_type'] == 'Q1'
-                            else 'Second Half' if i['period_type'] == 'Q2'
-                            else 'Monthly'
+                            'Primera quincena' if i['period_type'] == 'Q1'
+                            else 'Segunda quincena' if i['period_type'] == 'Q2'
+                            else 'Mensual'
                         ),
                         'total_employees': i['total_employees'],
                         'total_earned': float(i['total_earned'] or 0),
@@ -71,16 +73,41 @@ class PayrollCreateView(GroupPermissionMixin, CreateView):
     permission_required = 'add_payroll'
 
     def post(self, request, *args, **kwargs):
-        data = {}
-        action = request.POST['action']
+        action = request.POST.get('action', None)
         try:
-            if action == 'add':
-                data = self.get_form().save()
+            if action == 'search_employees':
+                employees = Employee.objects.filter(is_active=True)
+                data = []
+                for emp in employees:
+                    data.append({
+                        'id': emp.id,
+                        'names': emp.names,
+                        'salary': float(emp.salary),
+                        'base_salary': float(emp.base_salary),
+                        'social_security': emp.social_security
+                    })
+                return JsonResponse(data, safe=False)
+
+            elif action == 'save_payroll':
+                payrolls = json.loads(request.POST.get('payrolls', '[]'))
+                for p in payrolls:
+                    employee = Employee.objects.get(pk=p['employee_id'])
+                    Payroll.objects.create(
+                        employee=employee,
+                        period=p['period'],
+                        period_type=p['period_type'],
+                        days_worked=int(p['days_worked']),
+                        overtime_hours_value=Decimal(p['overtime_hours_value'] or 0),
+                        other_earnings=Decimal(p['other_earnings'] or 0),
+                        deductions=Decimal(p['deductions'] or 0)
+                    )
+                return JsonResponse({'success': True})
+
             else:
-                data['error'] = 'No ha seleccionado ninguna opción'
+                return JsonResponse({'error': 'Acción no reconocida'}, status=400)
+
         except Exception as e:
-            data['error'] = str(e)
-        return HttpResponse(json.dumps(data), content_type='application/json')
+            return JsonResponse({'error': str(e)}, status=400)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

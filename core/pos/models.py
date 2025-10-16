@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models import Sum, FloatField
 from django.db.models.functions import Coalesce
 from django.forms import model_to_dict
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
 from config import settings
 from core.pos.choices import GENDER
@@ -633,7 +633,8 @@ class Employee(models.Model):
     address = models.CharField(max_length=255, blank=True, null=True,verbose_name='Dirección')
     birth_date = models.DateField(verbose_name='Fecha de nacimiento')
     contract_type = models.CharField(max_length=50, choices=TIPO_CONTRATO, default=TIPO_CONTRATO[0][0], verbose_name='Tipo de contrato')
-    salary = models.DecimalField(max_digits=10, decimal_places=2)
+    salary = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Salario neto')
+    base_salary = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Salario base',default='1423500')
     start_date = models.DateField(verbose_name='Fecha de ingreso')
     retire_date = models.DateField(blank=True, null=True,verbose_name='Fecha de retiro')
     eps = models.CharField(max_length=100,null=True, verbose_name="Entidad Promotora de Salud")
@@ -651,7 +652,7 @@ class Employee(models.Model):
         ordering = ['names']
 
     def __str__(self):
-        return f"{self.nombres}"
+        return f"{self.names}"
     
     def toJSON(self):
         item = model_to_dict(self)
@@ -659,6 +660,7 @@ class Employee(models.Model):
         item['contract_type'] = self.get_contract_type_display()
         # Convertir decimales a float para evitar errores con json.dumps
         item['salary'] = float(self.salary)
+        item['base_salary'] = float(self.base_salary)
         # Añadir campos calculados si quieres mostrarlos en la tabla o reportes
         item['aporte_salud_empleado'] = float(self.aporte_salud_empleado)
         item['aporte_pension_empleado'] = float(self.aporte_pension_empleado)
@@ -681,36 +683,36 @@ class Employee(models.Model):
     # --- Cálculos automáticos ---
     @property
     def aporte_salud_empleado(self):
-        return round(self.salary * Decimal('0.04'), 2)
+        return round(self.base_salary * Decimal('0.04'), 2)
 
     @property
     def aporte_pension_empleado(self):
-        return round(self.salary * Decimal('0.04'), 2)
+        return round(self.base_salary * Decimal('0.04'), 2)
 
     @property
     def aporte_salud_empresa(self):
-        return round(self.salary * Decimal('0.085'), 2)
+        return round(self.base_salary * Decimal('0.085'), 2)
 
     @property
     def aporte_pension_empresa(self):
-        return round(self.salary * Decimal('0.12'), 2)
+        return round(self.base_salary * Decimal('0.12'), 2)
 
     @property
     def aporte_arl_empresa(self):
         # Nivel de riesgo 1 por defecto (0.522%)
-        return round(self.salary * Decimal('0.00522'), 2)
+        return round(self.base_salary * Decimal('0.00522'), 2)
 
     @property
     def aporte_caja_empresa(self):
-        return round(self.salary * Decimal('0.04'), 2)
+        return round(self.base_salary * Decimal('0.04'), 2)
 
     @property
     def aporte_sena_empresa(self):
-        return round(self.salary * Decimal('0.02'), 2)
+        return round(self.base_salary * Decimal('0.02'), 2)
 
     @property
     def aporte_icbf_empresa(self):
-        return round(self.salary * Decimal('0.03'), 2)
+        return round(self.base_salary * Decimal('0.03'), 2)
 
     @property
     def total_empleado(self):
@@ -734,20 +736,20 @@ class Employee(models.Model):
         return self.total_empleado + self.total_empresa
     
 class Payroll(models.Model):
-    employee = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name='payrolls')
-    period = models.DateField(help_text="Mes y año de la nómina (usar el primer día del mes)")
-    period_type = models.CharField(max_length=2, choices=PERIODO_NOMINA, default='Q1')
+    employee = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name='payrolls', verbose_name='Empleado')
+    period = models.DateField(help_text="Mes y año de la nómina (usar el primer día del mes)", verbose_name='Periodo')
+    period_type = models.CharField(max_length=2, choices=PERIODO_NOMINA, default='Q1', verbose_name='Tipo periodo')
 
-    days_worked = models.PositiveIntegerField(default=15)
-    base_salary = models.DecimalField(max_digits=12, decimal_places=2)
-    transportation_allowance = models.DecimalField(max_digits=12, decimal_places=2, default=81000.00)
+    days_worked = models.PositiveIntegerField(default=15, verbose_name='Dias trabajados')
+    base_salary = models.DecimalField(max_digits=12, decimal_places=2, verbose_name='Salario base')
+    transportation_allowance = models.DecimalField(max_digits=12, decimal_places=2, default=81000.00, verbose_name='Auxilio transporte')
 
-    overtime_hours_value = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    other_earnings = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    deductions = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    overtime_hours_value = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Valor horas extras')
+    other_earnings = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Otros ingresos')
+    deductions = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Deducciones')
 
-    total_earned = models.DecimalField(max_digits=12, decimal_places=2, editable=False)
-    total_payable = models.DecimalField(max_digits=12, decimal_places=2, editable=False)
+    total_earned = models.DecimalField(max_digits=12, decimal_places=2, editable=False, verbose_name='Total devengado')
+    total_payable = models.DecimalField(max_digits=12, decimal_places=2, editable=False, verbose_name='Total a pagar')
 
     generated_at = models.DateTimeField(auto_now_add=True)
 
@@ -763,20 +765,23 @@ class Payroll(models.Model):
         employee = self.employee
 
         # Proportional salary based on days worked
-        proportional_salary = (employee.salary / 30) * self.days_worked
+        # para este caso se calcula con el minimo por un acuerdo con empleados
+        proportional_salary = (employee.base_salary / Decimal('30')) * Decimal(self.days_worked)
 
-        total_earned = (
-            proportional_salary +
-            self.transportation_allowance +
-            self.overtime_hours_value +
-            self.other_earnings
-        )
+        transportation = Decimal(self.transportation_allowance or 0)
+        overtime = Decimal(self.overtime_hours_value or 0)
+        others = Decimal(self.other_earnings or 0)
+        deductions = Decimal(self.deductions or 0)
 
-        total_payable = total_earned - self.deductions
+        # 🔹 Total devengado
+        total_earned = proportional_salary + transportation + overtime + others
 
-        self.base_salary = round(proportional_salary, 2)
-        self.total_earned = round(total_earned, 2)
-        self.total_payable = round(total_payable, 2)
+        # 🔹 Total a pagar
+        total_payable = total_earned - deductions
+
+        self.base_salary = proportional_salary.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        self.total_earned = total_earned.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        self.total_payable = total_payable.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
     def save(self, *args, **kwargs):
         self.calculate_totals()

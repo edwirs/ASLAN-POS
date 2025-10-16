@@ -9,90 +9,44 @@
     <script src="{% static 'lib/bootstrap-touchspin-4.2.5/js/jquery.bootstrap-touchspin.js' %}"></script>
     <script src="{% static 'lib/tempusdominus-bootstrap-4.5.37.0/js/tempusdominus-bootstrap.js' %}"></script>
     <link rel="stylesheet" href="{% static 'lib/tempusdominus-bootstrap-4.5.37.0/css/tempusdominus-bootstrap.css' %}"/>
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="{% static 'lib/adminlte-3.2.0/plugins/toastr/toastr.min.css' %}">
+    <!-- Toastr JS -->
+    <script src="{% static 'lib/adminlte-3.2.0/plugins/toastr/toastr.min.js' %}"></script>
+    <script>
+        const list_url = "{{ list_url }}";
+    </script>
     <script src="{% static 'payroll/js/form.js' %}"></script>
 {% endblock %}
 
 {% block form_fields %}
-<div class="row g-3">
     <div class="col-md-6 col-lg-4">
-        <label class="form-label fw-bold">{{ form.dni.label }}</label>
-        {{ form.dni }}
-    </div>
-    <div class="col-md-6 col-lg-8">
-        <label class="form-label fw-bold">{{ form.names.label }}</label>
-        {{ form.names }}
-    </div>
-    <div class="col-md-6 col-lg-4">
-        <label class="form-label fw-bold">{{ form.email.label }}</label>
-        {{ form.email }}
-    </div>
-    <div class="col-md-6 col-lg-4">
-        <label class="form-label fw-bold">{{ form.phone.label }}</label>
-        {{ form.phone }}
-    </div>
-    <div class="col-md-6 col-lg-4">
-        <label class="form-label fw-bold">{{ form.address.label }}</label>
-        {{ form.address }}
-    </div>
-    <div class="col-md-6 col-lg-4">
-        <label class="form-label fw-bold">{{ form.birth_date.label }}</label>
-        {{ form.birth_date }}
-    </div>
-    <div class="col-md-6 col-lg-4">
-        <label class="form-label fw-bold">{{ form.contract_type.label }}</label>
-        {{ form.contract_type }}
-    </div>
-    <div class="col-md-6 col-lg-4">
-        <label class="form-label fw-bold">{{ form.salary.label }}</label>
-        {{ form.salary }}
-    </div>
-    <div class="col-md-6 col-lg-4">
-        <label class="form-label fw-bold">{{ form.start_date.label }}</label>
-        {{ form.start_date }}
-    </div>
-    <div class="col-md-6 col-lg-4">
-        <label class="form-label fw-bold">{{ form.retire_date.label }}</label>
-        {{ form.retire_date }}
-    </div>
-    <div class="col-md-6 col-lg-4">
-        <label class="form-label fw-bold">{{ form.eps.label }}</label>
-        {{ form.eps }}
-    </div>
-    <div class="col-md-6 col-lg-4">
-        <label class="form-label fw-bold">{{ form.afp.label }}</label>
-        {{ form.afp }}
-    </div>
-    <div class="col-md-6 col-lg-4">
-        <label class="form-label fw-bold">{{ form.arl.label }}</label>
-        {{ form.arl }}
-    </div>
-    <div class="col-md-6 col-lg-4">
-        <label class="form-label fw-bold">{{ form.caja_compensacion.label }}</label>
-        {{ form.caja_compensacion }}
-    </div>
-    
-    <div class="mb-4">
-        <!-- SWITCHES -->
-        <div class="col-md-4 d-flex justify-content-between align-items-center">
-            <label class="form-check-label fw-bold me-2 mb-0" for="{{ form.social_security.id_for_label }}">{{ form.social_security.label }}</label>
-            <div class="form-check form-switch mb-0">
-                {{ form.social_security }}
-            </div>
-        </div>
-        <div class="col-md-4 d-flex justify-content-between align-items-center">
-            <label class="form-check-label fw-bold me-2 mb-0" for="{{ form.is_active.id_for_label }}">{{ form.is_active.label }}</label>
-            <div class="form-check form-switch mb-0">
-                {{ form.is_active }}
-            </div>
-        </div>
+        <label class="form-label fw-bold">{{ form.period_type.label }}</label>
+        {{ form.period_type }}
     </div>
 
-    <div class="col-md-4 col-lg-4">
-        <label class="form-label fw-bold">{{ form.image.label|upper }}</label>
-        {{ form.image }}
-    </div>
-</div>
+    <table id="tblPayroll" class="table table-bordered">
+      <thead class="">
+        <tr>
+          <th >Empleado</th>
+          <th>Salario</th>
+          <th>Días</th>
+          <th>Horas Extra</th>
+          <th>Otros Ingresos</th>
+          <th>Deducciones</th>
+          <th>Seguridad Social</th>
+          <th>Total Estimado</th>
+        </tr>
+      </thead>
+    </table>
 
+{% endblock %}
 
-
+{% block buttons %}
+    <button type="button" class="btn btn-primary" id="btnSaveAll">
+        <i class="fas fa-save"></i> Liquidar Nómina
+    </button>
+    <a href="{{ list_url }}" class="btn btn-danger">
+        <i class="fas fa-times"></i> Cancelar
+    </a>
 {% endblock %}
