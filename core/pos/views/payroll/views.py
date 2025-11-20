@@ -117,4 +117,25 @@ class PayrollCreateView(GroupPermissionMixin, CreateView):
         context['module_name'] = MODULE_NAME
         return context
 
+class PayrollDetailView(GroupPermissionMixin, TemplateView):
+    template_name = 'payroll/detail.html'
+    permission_required = 'view_payroll'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        period = self.kwargs['period']        # formato YYYY-MM
+        period_type = self.kwargs['period_type']
+
+        # Filtrar nómina del periodo
+        payrolls = Payroll.objects.filter(
+            period__startswith=period,
+            period_type=period_type
+        ).select_related('employee')
+
+        context['title'] = "Detalle de Nómina"
+        context['period'] = period
+        context['period_type'] = period_type
+        context['payrolls'] = payrolls
+
+        return context

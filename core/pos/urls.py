@@ -90,4 +90,5 @@ urlpatterns = [
      # nomina
     path('payroll/', PayrollListView.as_view(), name='payroll_list'),
     path('payroll/add/', PayrollCreateView.as_view(), name='payroll_create'),
+    path('payroll/view/<slug:period>/<slug:period_type>/', PayrollDetailView.as_view(), name='payroll_view'),
 ]

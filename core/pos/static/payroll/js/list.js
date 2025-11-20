@@ -20,7 +20,19 @@ var payroll = {
                 { data: 'period_type_display' },
                 { data: 'total_employees' },
                 { data: 'total_earned', render: data => `$${parseFloat(data).toLocaleString()}` },
-                { data: 'total_payable', render: data => `$${parseFloat(data).toLocaleString()}` }
+                { data: 'total_payable', render: data => `$${parseFloat(data).toLocaleString()}` },
+                {
+                    data: null,
+                    className: "text-center",
+                    render: function (data) {
+                        // link con parámetros de periodo y tipo de quincena
+                        return `
+                            <a href="/pos/payroll/view/${data.period}/${data.period_type}/" class="btn btn-info btn-sm">
+                                <i class="fas fa-eye"></i> Ver
+                            </a>
+                        `;
+                    }
+                }
             ],
             
             rowCallback: function (row, data, index) {
