@@ -86,7 +86,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     date_joined__month=current_month
                 )
 
-                # agrupamos por semana ISO del año
+                # agrupamos por semana ISO
                 sales_by_week = (
                     queryset
                     .annotate(week=ExtractWeek('date_joined'))
@@ -95,25 +95,33 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     .order_by('week')
                 )
 
-                # 🔹 calcular todas las semanas que caen en este mes
+                # fechas del mes actual
                 first_day = datetime(current_year, current_month, 1).date()
                 last_day = datetime(current_year, current_month, calendar.monthrange(current_year, current_month)[1]).date()
 
-                # semanas ISO que cubren el rango del mes
-                start_week = first_day.isocalendar()[1]
-                end_week = last_day.isocalendar()[1]
+                # 🔹 generar todas las fechas del mes
+                dates_in_month = [
+                    first_day + timedelta(days=i)
+                    for i in range((last_day - first_day).days + 1)
+                ]
 
-                # 🔹 diccionario con todas las semanas en 0
-                totals = {w: 0.0 for w in range(start_week, end_week + 1)}
+                # 🔹 semanas ISO únicas del mes (ordenadas)
+                weeks_in_month = sorted({d.isocalendar()[1] for d in dates_in_month})
 
-                # actualizar solo las semanas con ventas
+                # 🔹 inicializar todas las semanas en 0
+                totals = {w: 0.0 for w in weeks_in_month}
+
+                # 🔹 colocar valores reales donde existan ventas
                 for item in sales_by_week:
                     week = item['week']
                     if week in totals:
                         totals[week] = float(item['total'])
 
-                # construir lista final (ordenada)
-                data = [{'week': f"Semana {w}", 'total': totals[w]} for w in sorted(totals.keys())]
+                # 🔹 construir la respuesta final para la gráfica
+                data = [
+                    {'week': f"Semana {w}", 'total': totals[w]}
+                    for w in weeks_in_month
+                ]
             elif action == 'get_sales_total_today':
                 today = datetime.now().date()
                 total = (
