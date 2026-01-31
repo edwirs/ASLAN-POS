@@ -17,6 +17,12 @@ from core.pos.views.sale.views import get_sale, update_sale
 from core.pos.views.salefe.views import get_sale_Fe, update_sale_Fe
 from core.pos.views.credit.views import *
 from core.pos.views.credit.views import get_sale_credit, get_sale_payments
+from core.pos.views.bar.views import *
+from core.pos.views.inventory_manager.views import *
+from core.pos.views.productAutoAdd.views import *
+from core.pos.views.table.views import *
+from core.pos.views.order.views import *
+from core.pos.views.kitchen_order.views import *
 
 urlpatterns = [
     # category
@@ -62,33 +68,55 @@ urlpatterns = [
     path('price/admin/add/', PriceCreateView.as_view(), name='price_admin_create'),
     path('price/admin/delete/<int:pk>/', PriceDeleteView.as_view(), name='price_admin_delete'),
     path('price/admin/print/invoice/<int:pk>/', PricePrintInvoiceView.as_view(), name='price_admin_print_invoice'),
-     # buy
+    # buy
     path('buy/admin/', BuyListView.as_view(), name='buy_admin_list'),
     path('buy/admin/add/', BuyCreateView.as_view(), name='buy_admin_create'),
     path('buy/admin/delete/<int:pk>/', BuyDeleteView.as_view(), name='buy_admin_delete'),
     path('buy/admin/print/invoice/<int:pk>/', BuyPrintInvoiceView.as_view(), name='buy_admin_print_invoice'),
-     # productAutoAdd
+    # productAutoAdd
     path("productAutoAdd/", ProductAutoAddListView.as_view(), name='productautoadd_list'),
     path("productAutoAdd/add/", ProductAutoAddCreateView.as_view(), name='productautoadd_create'),
     path("productAutoAdd/update/<int:pk>/", ProductAutoAddUpdateView.as_view(), name='productautoadd_update'),
     path("productAutoAdd/delete/<int:pk>/", ProductAutoAddDeleteView.as_view(), name='productautoadd_delete'),
-     # expenses
+    # expenses
     path("expenses/", ExpensesListView.as_view(), name='expenses_list'),
     path("expenses/add/", ExpensesCreateView.as_view(), name='expenses_create'),
     path("expenses/update/<int:pk>/", ExpensesUpdateView.as_view(), name='expenses_update'),
     path("expenses/delete/<int:pk>/", ExpensesDeleteView.as_view(), name='expenses_delete'),
-     # credit
+    # credit
     path('credit/', SaleCreditReportView.as_view(), name='sale_credit_report'),
     path('credit/admin/get_sale_credit/<int:pk>/', get_sale_credit, name='get_sale_credit'),
     path('credit/admin/get_sale_payments/<int:pk>/', get_sale_payments, name='get_sale_payments'),
     path("credit/admin/add_payment/", SaleCreditAddPaymentView.as_view(), name="add_payment"),
-     # empleados
+    # empleados
     path('employee/', EmployeeListView.as_view(), name='employee_list'),
     path('employee/add/', EmployeeCreateView.as_view(), name='employee_create'),
     path('employee/update/<int:pk>/', EmployeeUpdateView.as_view(), name='employee_update'),
     path('employee/delete/<int:pk>/', EmployeeDeleteView.as_view(), name='employee_delete'),
-     # nomina
+    # nomina
     path('payroll/', PayrollListView.as_view(), name='payroll_list'),
     path('payroll/add/', PayrollCreateView.as_view(), name='payroll_create'),
     path('payroll/view/<slug:period>/<slug:period_type>/', PayrollDetailView.as_view(), name='payroll_view'),
+    # bar
+    path('bar/admin/add/', BarCreateView.as_view(), name='bar_admin_create'),
+    #inventory manager
+    path('inventory/management/', InventoryManagementView.as_view(), name='inventory_management'),
+    # productAutoAdd
+    path('productAutoAdd/', ProductAutoAddListView.as_view(), name='productautoadd_list'),
+    path('productAutoAdd/add/', ProductAutoAddCreateView.as_view(), name='productautoadd_create'),
+    path('productAutoAdd/update/<int:pk>/', ProductAutoAddUpdateView.as_view(), name='productautoadd_update'),
+    path('productAutoAdd/delete/<int:pk>/', ProductAutoAddDeleteView.as_view(), name='productautoadd_delete'),
+    # mesas
+    path('table/', TableListView.as_view(), name='table_list'),
+    path('table/add/', TableCreateView.as_view(), name='table_create'),
+    path('table/update/<int:pk>/', TableUpdateView.as_view(), name='table_update'),
+    path('table/delete/<int:pk>/', TableDeleteView.as_view(), name='table_delete'),
+    # ventas rapidas
+    path('order/', OrderListView.as_view(), name='order_list'),
+    path('order/table/<int:table_id>/', OrderBarraView.as_view(), name='order_table'),
+    path('order/update/', OrderCreateView.as_view(), name='update_order'),
+    # cocina
+    path('kitchen/', KitchenBoardView.as_view(), name='kitchen_board'),
+    path('kitchen/orders/', kitchen_orders, name='kitchen_orders'),
+    path('kitchen/order/<int:pk>/ready/', mark_order_ready, name='order_ready'),
 ]

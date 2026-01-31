@@ -1,0 +1,193 @@
+{% extends 'form.html' %}
+{% load widget_tweaks %}
+{% load static %}
+{% block assets_form %}
+    <link href="{% static 'css/style.css' %}" rel="stylesheet"></link>
+    <link rel="stylesheet" href="{% static 'lib/jquery-ui-1.12.1/jquery-ui.css' %}"/>
+    <script src="{% static 'lib/jquery-ui-1.12.1/jquery-ui.min.js' %}"></script>
+    <script src="{% static 'lib/select2-4.0.13/js/select2.min.js' %}"></script>
+    <script src="{% static 'lib/select2-4.0.13/js/i18n/es.js' %}"></script>
+    <script src="{% static 'lib/jquery-confirm-3.3.4/jquery-confirm.min.js' %}"></script>
+    <script src="{% static 'lib/jquery-loading-overlay-2.1.7/js/loadingoverlay.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2-bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/bootstrap-touchspin-4.2.5/css/jquery.bootstrap-touchspin.css' %}"/>
+    <script src="{% static 'lib/bootstrap-touchspin-4.2.5/js/jquery.bootstrap-touchspin.js' %}"></script>
+    <script src="{% static 'lib/tempusdominus-bootstrap-4.5.37.0/js/tempusdominus-bootstrap.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'lib/tempusdominus-bootstrap-4.5.37.0/css/tempusdominus-bootstrap.css' %}"/>
+{% endblock %}
+
+{% block form_fields %}
+<div class="row mb-4 d-none">
+    <div class="col-12 col-md-6 col-lg-4 mb-3">
+        <label class="form-label fw-bold">{{ form.date_joined.label }}:</label>
+        {{ form.date_joined }}
+    </div>
+    <div class="col-12 col-md-6 col-lg-8 mb-3">
+        <label class="form-label fw-bold">{{ form.client.label }}:</label>
+        <div class="input-group">
+            {{ form.client }}
+            <button class="btn btn-success btnAddClient" type="button">
+                <i class="fas fa-plus"></i> Crear cliente
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row gx-3 align-items-stretch">
+    <div class="col-lg-7">
+        <div class="card border p-3 mb-4 h-100">
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-5 g-3" id="product-list">
+                    {% for entry in products_grouped %}
+                        {% with product=entry.product %}
+                            <div class="col">
+                                <div class="card h-100 product_card card-outline card-success"
+                                    style="cursor: pointer;"
+                                    data-id="{{ product.id }}"
+                                    data-code="{{ product.code }}"
+                                    data-name="{{ product.name }}"
+                                    data-price="{{ product.pvp }}">
+                                    <div class="card-body" style="font-size: 13px;">
+                                        <h5 class="card-title">{{ product.code }}</h5>
+                                        <p class="card-text fw-bold">{{ product.name }}</p>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        {% endwith %}
+                    {% endfor %}
+                </div>           
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card border p-3 mb-4 h-100">
+            <div class="table-responsive" style="max-height: 210px; overflow-y: auto;">
+                <table class="table table-bordered" id="tblProductsBarra">
+                    <thead>
+                    <tr style="border: none;">
+                        <th class="table-primary" style="width: 50%;">Producto</th>
+                        <th class="table-primary" style="width: 20%;">Cantidad</th>
+                        <th class="table-primary" style="width: 30%;">Precio</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label fw-bold">{{ form.total.label|upper }}</label>
+                {{ form.total|add_class:"form-control" }}
+            </div>
+
+            <!-- Switches de Descuento y Cortesía -->
+            {% if perms.pos.discounts_sale %}
+                <div class="mb-3 row">
+                    <div class="col-6 d-flex justify-content-center align-items-center">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="switchDescuento" name="switchDescuento">
+                            <label class="form-check-label" for="switchDescuento">Descuento</label>
+                        </div>
+                    </div>
+                    <div class="col-6 d-flex justify-content-center align-items-center">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="switchCortesia" name="switchCortesia">
+                            <label class="form-check-label" for="switchCortesia">Cortesía</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3 autorization_discount w-100" id="discount">
+                    <label class="form-label fw-bold">{{ form.autorization_discount.label }}:</label>
+                    {{ form.autorization_discount }}
+                </div>
+
+                <div class="mb-3 discount_value w-100" id="discount_value">
+                    <label class="form-label fw-bold">{{ form.discount_value.label }}:</label>
+                    {{ form.discount_value }}
+                </div>
+
+                <div class="mb-3 description w-100" id="description">
+                    <label class="form-label fw-bold">{{ form.description.label }}</label>
+                    {{ form.description }}
+                </div>
+            {% endif %}
+
+            
+                <div class="mb-3">
+                    <div class="">
+                    <label class="form-label fw-bold">{{ form.paymentmethod.label }}:</label>
+                        {{ form.paymentmethod }}
+                    </div>
+                    <div class="transfermethods">
+                        <label class="form-label fw-bold">{{ form.transfermethods.label }}:</label>
+                        {{ form.transfermethods }}
+                    </div>
+                </div>
+
+            <div class="mb-3 employee w-100" id="employee">
+                <label class="form-label fw-bold">Vendedor:</label>
+                {{ form.employee }}
+            </div>
+
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-file-invoice-dollar"></i> Generar Venta
+                </button>
+                <a href="{{ list_url }}" class="btn btn-danger">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Totales -->
+    <div class="col-12 card border p-3 mb-4 d-none">
+        <div class="row">
+            <div class="col-12 col-md mb-2">
+                <label class="form-label fw-bold w-100">{{ form.subtotal_0.label|upper }}</label>
+                {{ form.subtotal_0 }}
+            </div>
+            <div class="col-12 col-md mb-2">
+                <label class="form-label fw-bold w-100">{{ form.iva.label|upper }}</label>
+                {{ form.iva }}
+            </div>
+            <div class="col-12 col-md mb-2">
+                <label class="form-label fw-bold w-100">{{ form.total_iva.label|upper }}</label>
+                {{ form.total_iva }}
+            </div>
+            <div class="col-12 col-md mb-2">
+                <label class="form-label fw-bold w-100">{{ form.dscto.label|upper }}</label>
+                {{ form.dscto }}
+            </div>
+            <div class="col-12 col-md mb-2">
+                <label class="form-label fw-bold w-100">{{ form.total_dscto.label|upper }}</label>
+                {{ form.total_dscto }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block buttons %}
+<div class="d-none">
+
+</div>
+{% endblock %}
+
+{% block content_form_before %}    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{% static 'bar/admin/js/form.js' %}"></script>
+    <script type="application/javascript">
+        sale.detail.iva = {{ company.iva|safe }};
+        $(function () {
+            sale.listProducts();
+            {% if final_consumer %}
+                select_client.select2('trigger', 'select', {data: {{ final_consumer|safe }}});
+            {% endif %}
+            $('#search_product').focus();
+        });
+
+    </script>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends 'list.html' %}
+{% load static %}
+
+{% block assets_list %}
+    <script src="{% static 'lib/select2-4.0.13/js/select2.min.js' %}"></script>
+    <script src="{% static 'lib/select2-4.0.13/js/i18n/es.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2-bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2-bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/bootstrap-touchspin-4.2.5/css/jquery.bootstrap-touchspin.css' %}"/>
+    <script src="{% static 'lib/bootstrap-touchspin-4.2.5/js/jquery.bootstrap-touchspin.js' %}"></script>
+    <script src="{% static 'lib/bootstrap-daterangepicker-3.1/js/spanish.js' %}"></script>
+    <script src="{% static 'lib/bootstrap-daterangepicker-3.1/js/daterangepicker.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'lib/bootstrap-daterangepicker-3.1/css/daterangepicker.css' %}"/>
+    <script src="{% static 'order/js/form.js' %}"></script>
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="{% static 'lib/adminlte-3.2.0/plugins/toastr/toastr.min.css' %}">
+    <!-- Toastr JS -->
+    <script src="{% static 'lib/adminlte-3.2.0/plugins/toastr/toastr.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-4">
+
+        {% for table in tables %}
+        <div class="col">
+            <div class="card table-card h-100 shadow-sm border-0 position-relative"
+                data-url="{% url 'order_table' table.id %}"
+                style="border-radius: 20px;">
+                
+                <div class="position-absolute top-0 start-0 m-3">
+                    <span class="status-dot {% if table.has_order %}bg-danger{% else %}bg-success{% endif %}"></span>
+                </div>
+
+                {% if table.has_order %}
+                <div class="action-vertical-bar">
+                    <button type="button" class="btn btn-action-vertical btn-pay btn-open-table" 
+                        data-table-id="{{ table.id }}"
+                        data-total="{{ table.total }}"
+                        data-order-id="{{ table.order_id }}">
+                        <i class="fas fa-wallet"></i>
+                    </button>
+                    <button class="btn btn-action-vertical btn-delete btn-clear-table" data-table-id="{{ table.id }}">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+                {% endif %}
+
+                <div class="card-body d-flex flex-column align-items-center justify-content-center py-4">
+                    <div class="monitor-wrapper mb-3">
+                        <i class="fas fa-desktop fa-3x icon-blue"></i>
+                    </div>
+
+                    <h5 class="fw-bold text-dark mb-1">{{ table.name }}</h5>
+
+                    {% if table.has_order %}
+                        <div class="price-text text-dark">
+                            ${{ table.total|floatformat:0 }}
+                        </div>
+                        <div class="employee-label text-muted">
+                            <i class="far fa-user"></i> {{ table.employee }}
+                        </div>
+                    {% else %}
+                        <div class="price-text" style="visibility: hidden;">$0</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<div class="modal fade" tabindex="-1" id="myModalEdit">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fa fa-edit"></i> Recibir pago
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formEditSale">
+                        <!-- Totales Finales -->
+                         {% csrf_token %}
+                        <div class="col-12 col-lg-12 card border p-3 ms-auto mb-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">{{ sale_form.total.label|upper }}</label>
+                                {{ sale_form.total }}
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label class="form-label fw-bold">{{ sale_form.paymentmethod.label }}:</label>
+                                    {{ sale_form.paymentmethod }}
+                                </div>
+                                <div class="col">
+                                    <label class="form-label fw-bold">{{ sale_form.transfermethods.label }}:</label>
+                                    {{ sale_form.transfermethods }}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label class="form-label fw-bold">{{ sale_form.cash.label }}:</label>
+                                    {{ sale_form.cash }}
+                                </div>
+                                <div class="col">
+                                    <label class="form-label fw-bold">{{ sale_form.propina.label }}:</label>
+                                    {{ sale_form.propina }}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">{{ sale_form.change.label }}:</label>
+                                {{ sale_form.change }}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnSaveEdit">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+

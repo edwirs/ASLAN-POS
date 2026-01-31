@@ -1,0 +1,136 @@
+{% extends 'form.html' %}
+{% load widget_tweaks %}
+{% load static %}
+{% block assets_form %}
+    <link href="{% static 'css/style.css' %}" rel="stylesheet"></link>
+    <link rel="stylesheet" href="{% static 'lib/jquery-ui-1.12.1/jquery-ui.css' %}"/>
+    <script src="{% static 'lib/jquery-ui-1.12.1/jquery-ui.min.js' %}"></script>
+    <script src="{% static 'lib/select2-4.0.13/js/select2.min.js' %}"></script>
+    <script src="{% static 'lib/select2-4.0.13/js/i18n/es.js' %}"></script>
+    <script src="{% static 'lib/jquery-confirm-3.3.4/jquery-confirm.min.js' %}"></script>
+    <script src="{% static 'lib/jquery-loading-overlay-2.1.7/js/loadingoverlay.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2-bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/bootstrap-touchspin-4.2.5/css/jquery.bootstrap-touchspin.css' %}"/>
+    <script src="{% static 'lib/bootstrap-touchspin-4.2.5/js/jquery.bootstrap-touchspin.js' %}"></script>
+    <script src="{% static 'lib/tempusdominus-bootstrap-4.5.37.0/js/tempusdominus-bootstrap.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'lib/tempusdominus-bootstrap-4.5.37.0/css/tempusdominus-bootstrap.css' %}"/>
+{% endblock %}
+
+{% block form_fields %}
+<div class="row mb-4 d-none">
+    <div class="col-12 col-md-6 col-lg-4 mb-3">
+        <label class="form-label fw-bold">{{ form.date_joined.label }}:</label>
+        {{ form.date_joined }}
+    </div>
+    <div class="col-12 col-md-6 col-lg-8 mb-3">
+        <label class="form-label fw-bold">{{ form.client.label }}:</label>
+        <div class="input-group">
+            {{ form.client }}
+            <button class="btn btn-success btnAddClient" type="button">
+                <i class="fas fa-plus"></i> Crear cliente
+            </button>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" name="table_id" value="{{ table.id }}">
+<input type="hidden" name="order_id" value="{{ order.id }}">
+
+<div class="row gx-3 align-items-stretch">
+    <div class="col-lg-7">
+        <div class="card border p-3 mb-4 h-100">
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-5 g-3" id="product-list">
+                    {% for entry in products_grouped %}
+                        {% with product=entry.product %}
+                            <div class="col">
+                                <div class="card h-100 product_card card-outline card-success"
+                                    style="cursor: pointer;"
+                                    data-id="{{ product.id }}"
+                                    data-code="{{ product.code }}"
+                                    data-name="{{ product.name }}"
+                                    data-price="{{ product.pvp }}">
+                                    <div class="card-body" style="font-size: 13px;">
+                                        <h5 class="card-title">{{ product.code }}</h5>
+                                        <p class="card-text fw-bold">{{ product.name }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endwith %}
+                    {% endfor %}
+                </div>           
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card border p-3 mb-4 h-100">
+            <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
+                <table class="table table-bordered" id="tblProductsBarra">
+                    <thead>
+                    <tr style="border: none;">
+                        <th class="table-primary" style="width: 50%;">Producto</th>
+                        <th class="table-primary" style="width: 20%;">Cantidad</th>
+                        <th class="table-primary" style="width: 30%;">Precio</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label fw-bold">{{ frmBar.total.label|upper }}</label>
+                {{ frmBar.total|add_class:"form-control" }}
+            </div>
+
+            <div class="mb-3">
+                <button type="button"
+                        class="btn btn-primary btn-save-order">
+                    <i class="fas fa-file-invoice-dollar"></i> Guardar orden
+                </button>
+                <a href="{{ list_url }}" class="btn btn-danger">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Totales -->
+    <div class="col-12 card border p-3 mb-4 d-none">
+        <div class="row">
+            <div class="col-12 col-md mb-2">
+                <label class="form-label fw-bold w-100">{{ form.subtotal_0.label|upper }}</label>
+                {{ form.subtotal_0 }}
+            </div>
+            <div class="col-12 col-md mb-2">
+                <label class="form-label fw-bold w-100">{{ form.iva.label|upper }}</label>
+                {{ form.iva }}
+            </div>
+            <div class="col-12 col-md mb-2">
+                <label class="form-label fw-bold w-100">{{ form.total_iva.label|upper }}</label>
+                {{ form.total_iva }}
+            </div>
+            <div class="col-12 col-md mb-2">
+                <label class="form-label fw-bold w-100">{{ form.dscto.label|upper }}</label>
+                {{ form.dscto }}
+            </div>
+            <div class="col-12 col-md mb-2">
+                <label class="form-label fw-bold w-100">{{ form.total_dscto.label|upper }}</label>
+                {{ form.total_dscto }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block buttons %}
+<div class="d-none">
+
+</div>
+{% endblock %}
+
+{% block content_form_before %}    
+    <script>const ORDER_DETAILS = {{ order_details|default:"[]"|safe }};</script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{% static 'order/js/create.js' %}"></script>
+{% endblock %}

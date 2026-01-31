@@ -16,6 +16,7 @@ from core.pos.choices import SERVICE_TYPE
 from core.pos.choices import TYPETMETHODS
 from core.pos.choices import TIPO_CONTRATO
 from core.pos.choices import PERIODO_NOMINA
+from core.pos.choices import STATUS_CHOICES
 from core.user.models import User
 
 
@@ -290,9 +291,17 @@ class Sale(models.Model):
         permissions = (
             ('view_sale', 'Can view Venta'),
             ('add_sale', 'Can add Venta'),
+            ('add_bar', 'Can add Venta Barra'),
             ('delete_sale', 'Can delete Venta'),
             ('view_sale_client', 'Can view_sale_client Venta'),
             ('delivered_sale', 'Can delivered Venta'),
+            ('discounts_sale', 'Can discounts Venta'),
+            ('report_sales_menu', 'can view sales report'),
+            ('report_employee_menu', 'can view sales employee report'),
+            ('report_employee_debe', 'can view sales employee debe report'),
+            ('report_employee_gain', 'can view employee gain report'),
+            ('sale_by_product', 'can view sales by product report'),
+            ('list_employee', 'can view list employee'),
         )
 
 
@@ -786,3 +795,109 @@ class Payroll(models.Model):
     def save(self, *args, **kwargs):
         self.calculate_totals()
         super().save(*args, **kwargs)
+
+class InventoryGroup(models.Model):
+    name = models.CharField(max_length=50, unique=True, verbose_name='Grupo Inventario')
+
+    def __str__(self):
+        return self.name
+    
+class UserInventoryGroup(models.Model):
+    user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='Empleado')
+    group = models.ForeignKey(InventoryGroup, on_delete=models.CASCADE, verbose_name='Grupo Inventario')
+
+    def __str__(self):
+        return f'{self.user.username} - {self.group.name}'
+    
+class ProductInventoryGroupStock(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    group = models.ForeignKey(InventoryGroup, on_delete=models.CASCADE)
+    stock = models.IntegerField(default=0, verbose_name='Stock')
+
+    class Meta:
+        unique_together = ('product', 'group')
+
+    def __str__(self):
+        return f'{self.product.name} - {self.group.name} ({self.stock})'
+
+class Table(models.Model):
+    name = models.CharField(max_length=50, verbose_name='Nombre mesa')
+    capacity = models.PositiveIntegerField(default=1, verbose_name ='Capacidad')
+    is_active = models.BooleanField(default=True, verbose_name='Estado')
+
+    def toJSON(self):
+        item = model_to_dict(self)
+        return item
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Mesa'
+        verbose_name_plural = 'Mesas'
+
+class Order(models.Model):
+    table = models.ForeignKey(Table, on_delete=models.PROTECT)
+    employee = models.ForeignKey(User, on_delete=models.PROTECT)
+    client = models.ForeignKey(Client, null=True, blank=True, on_delete=models.PROTECT)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0], verbose_name='Estado')
+    total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def toJSON(self):
+        item = model_to_dict(self)
+        item['employee'] = self.employee.toJSON()
+        item['status_display'] = self.get_status_display()
+        item['created_at'] = self.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        return item
+    
+    def __str__(self):
+        return f'Orden #{self.id} - {self.get_status_display()}'
+
+    class Meta:
+        verbose_name = 'Orden'
+        verbose_name_plural = 'Órdenes'
+        default_permissions = ()
+        permissions = (
+            ('view_order', 'Puede ver órdenes'),
+            ('add_order', 'Puede crear órdenes'),
+            ('delete_order', 'Puede eliminar órdenes'),
+        )
+
+class OrderDetail(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.PROTECT, verbose_name='Producto')
+    cant = models.PositiveIntegerField(verbose_name='Cantidad')
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Precio unitario')
+    dscto = models.DecimalField(max_digits=5, decimal_places=2, default=0, verbose_name='Descuento (%)')
+
+    def subtotal(self):
+        return round(self.cant * self.price, 2)
+
+    def get_discount_value(self):
+        return round(self.get_subtotal() * (self.dscto / 100), 2)
+
+    def get_subtotal_with_discount(self):
+        return round(self.get_subtotal() - self.get_discount_value(), 2)
+
+    def get_iva_value(self):
+        return round(self.get_subtotal_with_discount() * (self.iva_rate / 100), 2)
+
+    def get_total(self):
+        return round(self.get_subtotal_with_discount() + self.get_iva_value(), 2)
+
+    def toJSON(self):
+        item = model_to_dict(self, exclude=['order'])
+        item['product'] = self.product.toJSON()
+        item['subtotal'] = float(self.get_subtotal())
+        item['discount_value'] = float(self.get_discount_value())
+        item['iva_value'] = float(self.get_iva_value())
+        item['total'] = float(self.get_total())
+        return item
+
+    def __str__(self):
+        return f'{self.product} x {self.cant}'
+
+    class Meta:
+        verbose_name = 'Detalle de orden'
+        verbose_name_plural = 'Detalles de orden'

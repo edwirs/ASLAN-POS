@@ -555,3 +555,179 @@ class PayrollForm(forms.ModelForm):
                 'data-target': '#period'
             }),
         }
+
+class BarForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None) 
+        super().__init__(*args, **kwargs)
+
+        self.fields['client'].queryset = Client.objects.none()
+
+        # Ordenar alfabéticamente por nombre (ajusta al campo correcto)
+        self.fields['employee'].queryset = User.objects.all().order_by('names')
+        
+        if user and user.has_perm('pos.list_employee'):  # cambia al permiso real
+            self.fields['employee'].initial = user.pk  # o user.id
+
+    class Meta:
+        model = Sale
+        fields = '__all__'
+        widgets = {
+            'client': forms.Select(attrs={'class': 'form-select select2'}),
+            'date_joined': forms.DateInput(format='%Y-%m-%d', attrs={
+                'class': 'form-control datetimepicker-input',
+                'id': 'date_joined',
+                'value': datetime.now().strftime('%Y-%m-%d'),
+                'data-toggle': 'datetimepicker',
+                'data-target': '#date_joined',
+                'disabled': True
+            }),
+            'subtotal_0': forms.TextInput(attrs={
+                'class': 'form-control',
+                'disabled': True,
+            }),
+            'subtotal_12': forms.TextInput(attrs={
+                'class': 'form-control',
+                'disabled': True
+            }),
+            'iva': forms.TextInput(attrs={
+                'class': 'form-control',
+                'disabled': True
+            }),
+            'total_iva': forms.TextInput(attrs={
+                'class': 'form-control',
+                'disabled': True
+            }),
+            'dscto': forms.TextInput(attrs={
+                'class': 'form-control',
+                'autocomplete': 'off'
+            }),
+            'total_dscto': forms.TextInput(attrs={
+                'class': 'form-control',
+                'disabled': True
+            }),
+            'total': forms.TextInput(attrs={
+                'class': 'form-control fw-bold',
+                'disabled': True,
+                'style': 'font-size: 30px;'
+            }),
+            'cash': forms.TextInput(attrs={
+                'class': 'form-control',
+                'autocomplete': 'off'
+            }),
+            'change': forms.TextInput(attrs={
+                'class': 'form-control',
+                'readonly': True
+            }),
+            'paymentmethod': forms.Select(attrs={
+                'class': 'select2',
+                'style': 'width: 100%'
+            }),
+            'transfermethods': forms.Select(attrs={
+                'class': 'select2',
+                'style': 'width: 100%'
+            }),
+            'autorization_discount': forms.Select(attrs={
+                'class': 'select2',
+                'style': 'width: 100%'
+            }),
+            'discount_value': forms.TextInput(attrs={
+                'class': 'form-control'
+            }),
+            'employee': forms.Select(attrs={
+                'class': 'form-select select2',
+                'style': 'width: 100%'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': 
+                'Ingrese una descripción', 
+                'rows': 2, 
+                'cols': 3
+            }),
+        }
+
+class InventoryGroupForm(forms.ModelForm):
+    class Meta:
+        model = InventoryGroup
+        fields = ['name']
+
+class UserInventoryGroupForm(forms.ModelForm):
+    class Meta:
+        model = UserInventoryGroup
+        fields = ['user', 'group']
+
+class ProductInventoryGroupStockForm(forms.ModelForm):
+    class Meta:
+        model = ProductInventoryGroupStock
+        fields = ['product', 'group', 'stock']
+
+class ProductAutoAddForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    class Meta:
+        model = ProductAutoAdd
+        fields = '__all__'
+        widgets = {
+            'trigger_product': forms.Select(
+                attrs={'class': 'form-control select2', 'style': 'width: 100%;'}
+            ),
+            'auto_product': forms.Select(
+                attrs={'class': 'form-control select2', 'style': 'width: 100%;'}
+            ),
+            'quantity': forms.TextInput(
+                attrs={
+                    'class': 'form-control touchspin',
+                    'autocomplete': 'off',
+                    'step': '0.01',   # permite 2 decimales
+                    'min': '0'
+                }
+            ),
+        }
+
+    def save(self, commit=True):
+        data = {}
+        try:
+            if self.is_valid():
+                super().save()
+            else:
+                data['error'] = self.errors
+        except Exception as e:
+            data['error'] = str(e)
+        return data
+
+class TableForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['name'].widget.attrs['autofocus'] = True
+
+    class Meta:
+        model = Table
+        fields = '__all__'
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Ingrese un nombre'}),
+        }
+
+    def save(self, commit=True):
+        data = {}
+        try:
+            if self.is_valid():
+                super().save()
+            else:
+                data['error'] = self.errors
+        except Exception as e:
+            data['error'] = str(e)
+        return data
+
+class OrderBarraForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['total']
+        widgets = {
+            'total': forms.TextInput(attrs={
+                'class': 'form-control fw-bold',
+                'disabled': True,
+                'style': 'font-size: 30px;'
+            }),
+        }

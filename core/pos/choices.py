@@ -46,3 +46,11 @@ PERIODO_NOMINA = [
         ('Q2', 'Segunda quincena'),
         ('M', 'Mensual'),
     ]
+
+STATUS_CHOICES = (
+        ('open', 'Abierto'),
+        ('sent', 'En preparación'),
+        ('ready', 'Listo'),
+        ('closed', 'Cerrado'),
+        ('cancelled', 'Cancelado'),
+    )

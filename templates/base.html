@@ -122,15 +122,28 @@
           class="nav-link"
         >Inicio</a>
       </li>
-      <li class="nav-item">
-        <a
-          class="nav-link"
-          href="{% url 'sale_admin_create' %}"
-        >
-          <i class="fas fa-cash-register"></i>
-          Venta
-        </a>
-      </li>
+
+      {% if perms.pos.view_sale %}
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="{% url 'sale_admin_create' %}"
+          >
+            <i class="fas fa-cash-register"></i>
+            Venta
+          </a>
+        </li>
+      {% endif %}
+      
+      {% if perms.pos.add_bar %}
+        <li class="nav-item">
+          <a href="{% url 'order_list' %}" class="nav-link" >
+            <i class="far fa-file-text"></i>
+            Ventas Rápidas
+          </a>
+        </li>
+      {% endif %}
+
       <li class="nav-item">
         <a
           class="nav-link"
@@ -140,15 +153,15 @@
           Factura Electrónica
         </a>
       </li>
-      <!--<li class="nav-item">
-        <a
-          class="nav-link"
-          href="{% url 'sale_admin_create' %}"
-        >
-          <i class="fas fa-cutlery"></i>
-          Mesas
-        </a>
-      </li> -->
+
+      <!--{% if perms.pos.add_bar %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'bar_admin_create' %}" >
+            <i class="fas fa-bars-progress"></i>
+            Barra
+          </a>
+        </li>
+      {% endif %}-->
     </ul>
 
     <!-- Right navbar links -->
@@ -269,6 +282,7 @@
           data-widget="treeview"
           role="menu"
         >
+        {% if perms.pos.view_client or perms.pos.view_provider %}
           <li class="nav-item">
             <a
               href="#"
@@ -282,28 +296,34 @@
             </a>
 
             <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a
-                  href="{% url 'client_list' %}"
-                  class="nav-link"
-                >
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Clientes</p>
-                </a>
-              </li>
+              {% if perms.pos.view_client %}
+                <li class="nav-item">
+                  <a
+                    href="{% url 'client_list' %}"
+                    class="nav-link"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Clientes</p>
+                  </a>
+                </li>
+              {% endif %}
 
-              <li class="nav-item">
-                <a
-                  href="{% url 'provider_list' %}"
-                  class="nav-link"
-                >
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Proveedores</p>
-                </a>
-              </li>
+              {% if perms.pos.view_provider %}
+                <li class="nav-item">
+                  <a
+                    href="{% url 'provider_list' %}"
+                    class="nav-link"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Proveedores</p>
+                  </a>
+                </li>
+              {% endif %}
             </ul>
           </li>
+        {% endif %}
 
+        {% if perms.pos.view_category or perms.pos.view_product %}
           <li class="nav-item">
             <a
               href="#"
@@ -317,38 +337,55 @@
             </a>
 
             <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a
-                  href="{% url 'category_list' %}"
-                  class="nav-link"
-                >
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Categorías</p>
-                </a>
-              </li>
+              {% if perms.pos.view_category %}
+                <li class="nav-item">
+                  <a
+                    href="{% url 'category_list' %}"
+                    class="nav-link"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Categorías</p>
+                  </a>
+                </li>
+              {% endif %}
 
-              <li class="nav-item">
-                <a
-                  href="{% url 'product_list' %}"
-                  class="nav-link"
-                >
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Productos</p>
-                </a>
-              </li>
+              {% if perms.pos.view_product %}
+                <li class="nav-item">
+                  <a
+                    href="{% url 'product_list' %}"
+                    class="nav-link"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Productos</p>
+                  </a>
+                </li>
+              {% endif %}
 
-              <li class="nav-item">
-                <a
-                  class="nav-link"
-                  href="{% url 'productautoadd_list' %}"
-                >
-                  <i class="far fa-circle nav-icon"></i>
-                  Productos descuento
-                </a>
-              </li>
+              {% if perms.pos.view_product %}
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    href="{% url 'productautoadd_list' %}"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+                    Productos descuento
+                  </a>
+                </li>
+              {% endif %}
+
+              {% if perms.pos.view_company %}
+                  <li class="nav-item">
+                    <a href="{% url 'inventory_management' %}" class="nav-link" >
+                      <i class="far fa-circle nav-icon"></i>
+                      <p>Administrador Inventario</p>
+                    </a>
+                  </li>
+                {% endif %}
             </ul>
           </li>
+        {% endif %}
 
+        {% if perms.pos.add_bar or perms.pos.view_sale or perms.pos.view_buy or perms.pos.view_price %}
           <li class="nav-item">
             <a
               href="#"
@@ -362,67 +399,109 @@
             </a>
 
             <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a
-                  href="{% url 'sale_admin_list' %}"
-                  class="nav-link"
-                >
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Ventas</p>
-                </a>
-              </li>
+              {% if perms.pos.add_bar %}
+                <li class="nav-item">
+                  <a href="{% url 'bar_admin_create' %}" class="nav-link" >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Barra</p>
+                  </a>
+                </li>
+              {% endif %}
 
-              <li class="nav-item">
-                <a
-                  href="{% url 'sale_Fe_admin_list' %}"
-                  class="nav-link"
-                >
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Factura Electrónica</p>
-                </a>
-              </li>
+              {% if perms.pos.view_sale %}
+                <li class="nav-item">
+                  <a
+                    href="{% url 'sale_admin_list' %}"
+                    class="nav-link"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Ventas</p>
+                  </a>
+                </li>
+              {% endif %}
 
-              <li class="nav-item">
-                <a
-                  href="{% url 'buy_admin_list' %}"
-                  class="nav-link"
-                >
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Compras</p>
-                </a>
-              </li>
+              {% if perms.pos.add_bar %}
+                <li class="nav-item">
+                  <a href="{% url 'order_list' %}" class="nav-link" >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Ventas Rápidas</p>
+                  </a>
+                </li>
+              {% endif %}
 
-              <li class="nav-item">
-                <a
-                  href="{% url 'price_admin_list' %}"
-                  class="nav-link"
-                >
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Cotizaciones</p>
-                </a>
-              </li>
+              {% if perms.pos.add_bar %}
+                <li class="nav-item">
+                  <a href="{% url 'kitchen_board' %}" class="nav-link" >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Cocina</p>
+                  </a>
+                </li>
+              {% endif %}
 
-              <li class="nav-item">
-                <a
-                  href="{% url 'expenses_list' %}"
-                  class="nav-link"
-                >
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Gastos</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a
-                  href="{% url 'sale_credit_report' %}"
-                  class="nav-link"
-                >
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Créditos</p>
-                </a>
-              </li>
+              {% if perms.pos.view_sale %}
+                <li class="nav-item">
+                  <a
+                    href="{% url 'sale_Fe_admin_list' %}"
+                    class="nav-link"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Factura Electrónica</p>
+                  </a>
+                </li>
+              {% endif %}
+
+              {% if perms.pos.view_buy %}
+                <li class="nav-item">
+                  <a
+                    href="{% url 'buy_admin_list' %}"
+                    class="nav-link"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Compras</p>
+                  </a>
+                </li>
+              {% endif %}
+
+              {% if perms.pos.view_price %}
+                <li class="nav-item">
+                  <a
+                    href="{% url 'price_admin_list' %}"
+                    class="nav-link"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Cotizaciones</p>
+                  </a>
+                </li>
+              {% endif %}
+
+              {% if perms.pos.view_bill %}
+                <li class="nav-item">
+                  <a
+                    href="{% url 'expenses_list' %}"
+                    class="nav-link"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Gastos</p>
+                  </a>
+                </li>
+              {% endif %}
+
+              {% if perms.pos.view_bill %}
+                <li class="nav-item">
+                  <a
+                    href="{% url 'sale_credit_report' %}"
+                    class="nav-link"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Créditos</p>
+                  </a>
+                </li>
+              {% endif %}
             </ul>
           </li>
+        {% endif %}
 
+        {% if perms.pos.add_bar or perms.pos.view_sale or perms.pos.view_buy or perms.pos.view_price %}
           <li class="nav-item">
             <a
               href="#"
@@ -435,32 +514,37 @@
               </p>
             </a>
 
-            <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a
-                  href="{% url 'employee_list' %}"
-                  class="nav-link"
-                >
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Empleados</p>
-                </a>
-              </li>
-            </ul>
+            {% if perms.pos.view_sale %}
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a
+                    href="{% url 'employee_list' %}"
+                    class="nav-link"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Empleados</p>
+                  </a>
+                </li>
+              </ul>
+            {% endif %}
 
-            <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a
-                  href="{% url 'payroll_list' %}"
-                  class="nav-link"
-                >
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Nóminas</p>
-                </a>
-              </li>
-            </ul>
-
+            {% if perms.pos.view_sale %}
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a
+                    href="{% url 'payroll_list' %}"
+                    class="nav-link"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Nóminas</p>
+                  </a>
+                </li>
+              </ul>
+            {% endif %}
           </li>
+        {% endif %}
 
+        {% if perms.pos.report_sales_menu or perms.pos.report_employee_menu or perms.pos.report_employee_debe or perms.pos.report_employee_gain %}
           <li class="nav-item">
             <a
               href="#"
@@ -509,7 +593,9 @@
               </li>
             </ul>
           </li>
+        {% endif %}
 
+        {% if perms.user.view_user or perms.security.view_user_access or perms.security.change_user %}
           <li class="nav-item">
             <a
               href="#"
@@ -523,37 +609,46 @@
             </a>
 
             <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a
-                  href="{% url 'user_list' %}"
-                  class="nav-link"
-                >
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Usuarios</p>
-                </a>
-              </li>
+              {% if perms.user.view_user %}
+                <li class="nav-item">
+                  <a
+                    href="{% url 'user_list' %}"
+                    class="nav-link"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Usuarios</p>
+                  </a>
+                </li>
+              {% endif %}
 
-              <li class="nav-item">
-                <a
-                  href="{% url 'user_access_list' %}"
-                  class="nav-link"
-                >
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Accesos</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a
-                  class="nav-link"
-                  href="{% url 'user_update_password' %}"
-                >
-                  <i class="far fa-circle nav-icon"></i>
-                  Actualizar Contraseña
-                </a>
-              </li>
+              {% if perms.security.view_user_access %}
+                <li class="nav-item">
+                  <a
+                    href="{% url 'user_access_list' %}"
+                    class="nav-link"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Accesos</p>
+                  </a>
+                </li>
+              {% endif %}
+
+              {% if perms.security.change_user %}
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    href="{% url 'user_update_password' %}"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+                    Actualizar Contraseña
+                  </a>
+                </li>
+              {% endif %}
             </ul>
           </li>
+        {% endif %}
 
+        {% if perms.pos.view_company or perms.security.view_dashboard or perms.user.view_user %}
           <li class="nav-item">
             <a
               href="#"
@@ -567,35 +662,53 @@
             </a>
 
             <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a
-                  href="{% url 'company_update' %}"
-                  class="nav-link"
-                >
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Compañia</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a
-                  href="{% url 'dashboard_update' %}"
-                  class="nav-link"
-                >
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Conf. Dashboard</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a
-                  class="nav-link"
-                  href="{% url 'user_update_profile' %}"
-                >
-                  <i class="far fa-circle nav-icon"></i>
-                  Actualizar Perfil
-                </a>
-              </li>
+                {% if perms.pos.view_table %}
+                  <li class="nav-item">
+                    <a href="{% url 'table_list' %}" class="nav-link" >
+                      <i class="far fa-circle nav-icon"></i>
+                      <p>Mesas</p>
+                    </a>
+                  </li>
+                {% endif %}
+
+                {% if perms.pos.view_table %}
+                  <li class="nav-item">
+                    <a
+                      href="{% url 'company_update' %}"
+                      class="nav-link"
+                    >
+                      <i class="far fa-circle nav-icon"></i>
+                      <p>Compañia</p>
+                    </a>
+                  </li>
+                {% endif %}
+
+                {% if perms.dashboard.view_dashboard %}
+                  <li class="nav-item">
+                    <a
+                      href="{% url 'dashboard_update' %}"
+                      class="nav-link"
+                    >
+                      <i class="far fa-circle nav-icon"></i>
+                      <p>Conf. Dashboard</p>
+                    </a>
+                  </li>
+                {% endif %}
+
+                {% if perms.user.view_user %}
+                  <li class="nav-item">
+                    <a
+                      class="nav-link"
+                      href="{% url 'user_update_profile' %}"
+                    >
+                      <i class="far fa-circle nav-icon"></i>
+                      Actualizar Perfil
+                    </a>
+                  </li>
+                {% endif %}
             </ul>
           </li>
+        {% endif %}
         </ul>
       </nav>
       <!-- /.sidebar-menu -->

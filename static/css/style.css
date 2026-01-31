@@ -63,6 +63,88 @@
     width: 100%;
 }
 
+#product-list .product_card:hover {
+    background-color: #28a745 !important;
+    color: white !important;
+    cursor: pointer !important;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Estados base del card */
+    .table-card {
+        background: #ffffff;
+        border: 1px solid #f2f4f7 !important;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .table-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 20px rgba(0,0,0,0.1) !important;
+    }
+
+    /* Punto de estado */
+    .status-dot {
+        height: 12px;
+        width: 12px;
+        border-radius: 50%;
+        display: block;
+        border: 2px solid white; /* Le da un borde para que resalte */
+    }
+
+    /* ESTE ES EL COLOR AZUL PARA EL ICONO */
+    .icon-blue {
+        color: #007bff !important; 
+    }
+
+    .monitor-wrapper {
+        background: #f0f7ff; /* Un fondo azul muy suave para resaltar el icono */
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 20px;
+    }
+
+    /* Estilo del Precio */
+    .price-text {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: #1a202c; /* Color oscuro profesional */
+    }
+
+    /* Barra de botones lateral */
+    .action-vertical-bar {
+        position: absolute;
+        right: 12px;
+        top: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .btn-action-vertical {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        border: none;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.2s;
+    }
+
+    .btn-pay { background: #007bff; }    /* Azul para pago */
+    .btn-view { background: #6c757d; }   /* Gris para ver */
+    .btn-delete { background: #dc3545; } /* Rojo para borrar */
+
+    .btn-action-vertical:hover {
+        transform: scale(1.1);
+        filter: brightness(1.1);
+        color: white;
+    }
+
 /* === Personalización ASLAN POS === */
 
 /* Color de fondo del menú lateral 
