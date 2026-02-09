@@ -127,6 +127,9 @@ class SaleCreateView(GroupPermissionMixin, CreateView):
                     sale.service_type = (request.POST['service_type'])
                     sale.propina = float(request.POST['propina'])
                     sale.save()
+                    # 🔥 ABRIR CAJÓN SOLO SI APLICA
+                    if sale.paymentmethod in ['cash', 'mixto']:
+                        printer.open_cash_drawer()
                     for i in json.loads(request.POST['products']):
                         product = Product.objects.get(pk=i['id'])
                         detail = SaleDetail()

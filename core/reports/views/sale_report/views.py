@@ -70,9 +70,23 @@ class SaleReportView(LoginRequiredMixin, FormView):
                     ),
                 },
                 {
+                    "name": "Propinas",
+                    "value": float(
+                        queryset.aggregate(
+                            total=Coalesce(Sum("propina", output_field=FloatField()), 0.0)
+                        )["total"]
+                    ),
+                },
+                {
                     "name": "Total",
                     "value": float(
-                        queryset.aggregate(total=Coalesce(Sum("total", output_field=FloatField()), 0.0))["total"]
+                        queryset.aggregate(
+                            total=Coalesce(
+                                Sum(F("total") + F("propina")),
+                                0.0,
+                                output_field=FloatField()
+                            )
+                        )["total"]
                     ),
                 },
             ]

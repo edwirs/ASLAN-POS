@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timedelta
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import FloatField, Sum
+from django.db.models import FloatField, Sum, F
 from django.db.models.functions import Coalesce, ExtractWeekDay, ExtractMonth, ExtractYear, ExtractWeek
 from django.http import HttpResponse
 from django.views.generic import TemplateView
@@ -28,7 +28,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 year = datetime.now().year
                 queryset = Sale.objects.filter(date_joined__year=year)
                 for m in range(1, 13):
-                    total = queryset.filter(date_joined__month=m).aggregate(result=Coalesce(Sum('total'), 0.00, output_field=FloatField())).get('result')
+                    total = queryset.filter(date_joined__month=m).aggregate(result=Coalesce(Sum(F('total') + F('propina')), 0.00, output_field=FloatField())).get('result')
                     data.append(float(total))
             elif action == 'get_graph_sales_products_year_month':
                 data = []
@@ -55,7 +55,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     queryset
                     .annotate(weekday=ExtractWeekDay('date_joined'))
                     .values('weekday')
-                    .annotate(total=Coalesce(Sum('total'), 0.0, output_field=FloatField()))
+                    .annotate(total=Coalesce(Sum(F('total') + F('propina')), 0.0, output_field=FloatField()))
                     .order_by('weekday')
                 )
 
@@ -91,7 +91,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     queryset
                     .annotate(week=ExtractWeek('date_joined'))
                     .values('week')
-                    .annotate(total=Coalesce(Sum('total'), 0.0, output_field=FloatField()))
+                    .annotate(total=Coalesce(Sum(F('total') + F('propina')), 0.0, output_field=FloatField()))
                     .order_by('week')
                 )
 
@@ -127,7 +127,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 total = (
                     Sale.objects
                     .filter(date_joined=today)
-                    .aggregate(total=Coalesce(Sum('total'), Decimal('0.00'), output_field=DecimalField()))['total']
+                    .aggregate(total=Coalesce(Sum(F('total') + F('propina')), Decimal('0.00'), output_field=DecimalField()))['total']
                 )
                 data = {'total': float(total)}
             elif action == 'get_sales_count_today':
