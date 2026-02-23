@@ -514,7 +514,7 @@
               </p>
             </a>
 
-            {% if perms.pos.view_sale %}
+            {% if perms.pos.view_employee%}
               <ul class="nav nav-treeview">
                 <li class="nav-item">
                   <a
@@ -523,6 +523,20 @@
                   >
                     <i class="far fa-circle nav-icon"></i>
                     <p>Empleados</p>
+                  </a>
+                </li>
+              </ul>
+            {% endif %}
+
+            {% if perms.pos.view_employee_transaction %}
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a
+                    href="{% url 'employee_transaction_list' %}"
+                    class="nav-link"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Transacciones</p>
                   </a>
                 </li>
               </ul>

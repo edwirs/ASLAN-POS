@@ -1,0 +1,18 @@
+{% extends 'list.html' %}
+{% load static %}
+{% block assets_list %}
+    <script src="{% static 'employee_transaction/js/list.js' %}"></script>
+{% endblock %}
+
+{% block columns %}
+    <th>Empleado</th>
+    <th>Tipo</th>
+    <th>Origen</th>
+    <th>Valor</th>
+    <th>Fecha</th>
+    <th>Opciones</th>
+{% endblock %}
+
+{% block javascript_list %}
+
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'form.html' %}
+{% load static %}
+{% block assets_form %}
+    <script src="{% static 'lib/select2-4.0.13/js/select2.min.js' %}"></script>
+    <script src="{% static 'lib/select2-4.0.13/js/i18n/es.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2-bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/bootstrap-touchspin-4.2.5/css/jquery.bootstrap-touchspin.css' %}"/>
+    <script src="{% static 'lib/bootstrap-touchspin-4.2.5/js/jquery.bootstrap-touchspin.js' %}"></script>
+    <script src="{% static 'lib/tempusdominus-bootstrap-4.5.37.0/js/tempusdominus-bootstrap.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'lib/tempusdominus-bootstrap-4.5.37.0/css/tempusdominus-bootstrap.css' %}"/>
+    <script src="{% static 'employee_transaction/js/form.js' %}"></script>
+{% endblock %}
+
+{% block form_fields %}
+<div class="row g-3">
+
+    <!-- EMPLEADO -->
+    <div class="col-md-6 col-lg-4">
+        <label class="form-label fw-bold">{{ form.employee.label }}</label>
+        {{ form.employee }}
+    </div>
+
+    <!-- TIPO -->
+    <div class="col-md-6 col-lg-4">
+        <label class="form-label fw-bold">{{ form.transaction_type.label }}</label>
+        {{ form.transaction_type }}
+    </div>
+
+    <!-- ORIGEN -->
+    <div class="col-md-6 col-lg-4">
+        <label class="form-label fw-bold">{{ form.source.label }}</label>
+        {{ form.source }}
+    </div>
+
+    <!-- VALOR -->
+    <div class="col-md-6 col-lg-4">
+        <label class="form-label fw-bold">{{ form.amount.label }}</label>
+        {{ form.amount }}
+    </div>
+
+    <!-- PRODUCTO -->
+    <div class="col-md-6 col-lg-4">
+        <label class="form-label fw-bold">{{ form.product.label }}</label>
+        {{ form.product }}
+    </div>
+
+    <!-- OBSERVACION -->
+    <div class="col-md-12">
+        <label class="form-label fw-bold">{{ form.description.label }}</label>
+        {{ form.description }}
+    </div>
+
+    <!-- PAGADO -->
+    <div class="col-md-4 d-flex justify-content-between align-items-center">
+        <label class="form-check-label fw-bold me-2 mb-0" for="{{ form.is_paid.id_for_label }}">
+            {{ form.is_paid.label }}
+        </label>
+        <div class="form-check form-switch mb-0">
+            {{ form.is_paid }}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

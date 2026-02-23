@@ -731,3 +731,87 @@ class OrderBarraForm(forms.ModelForm):
                 'style': 'font-size: 30px;'
             }),
         }
+
+class EmployeeTransactionForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
+
+        self.fields['employee'].widget.attrs['autofocus'] = True
+        self.fields['employee'].queryset = Employee.objects.filter(is_active=True)
+
+        # Ocultar producto si no es tipo product (JS lo controla)
+        self.fields['product'].required = False
+
+    class Meta:
+        model = EmployeeTransaction
+        fields = [
+            'employee',
+            'transaction_type',
+            'source',
+            'amount',
+            'product',
+            'description'
+        ]
+
+        widgets = {
+
+            'employee': forms.Select(attrs={
+                'class': 'select2',
+                'style': 'width:100%'
+            }),
+
+            'transaction_type': forms.Select(attrs={
+                'class': 'select2',
+                'style': 'width:100%'
+            }),
+
+            'source': forms.Select(attrs={
+                'class': 'select2',
+                'style': 'width:100%'
+            }),
+
+            'amount': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ingrese valor'
+            }),
+
+            'product': forms.Select(attrs={
+                'class': 'select2',
+                'style': 'width:100%'
+            }),
+
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Observación (opcional)'
+            }),
+        }
+
+    def clean(self):
+        cleaned = super().clean()
+        ttype = cleaned.get("transaction_type")
+        product = cleaned.get("product")
+
+        # validar producto obligatorio si tipo = producto
+        if ttype == "product" and not product:
+            raise forms.ValidationError("Debe seleccionar un producto.")
+
+        return cleaned
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+
+        # usuario que registra
+        if self.request:
+            instance.created_by = self.request.user
+
+        # saldo inicial
+        if not instance.balance:
+            instance.balance = instance.amount
+
+        if commit:
+            instance.save()
+
+        return instance

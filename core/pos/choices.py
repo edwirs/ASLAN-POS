@@ -27,6 +27,7 @@ TRANSFERMETHODS = (
 EXPENSES = (
     ('caja', 'Caja'),
     ('general', 'General'),
+    ('inventory', 'Inventario'),
 )
 
 SERVICE_TYPE = (
@@ -53,4 +54,11 @@ STATUS_CHOICES = (
         ('ready', 'Listo'),
         ('closed', 'Cerrado'),
         ('cancelled', 'Cancelado'),
+    )
+
+EMPLOYEE_TRANSACTION_CHOICES = (
+        ('loan', 'Préstamo'),
+        ('advance', 'Adelanto'),
+        ('product', 'Producto'),
+        ('other', 'Otro'),
     )

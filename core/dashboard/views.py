@@ -12,12 +12,73 @@ from decimal import Decimal
 from django.db.models import Count
 import calendar
 
-from core.pos.models import Sale, Product, SaleDetail
+from core.pos.models import Sale, Product, SaleDetail, EmployeeTransaction
 from core.security.models import Dashboard
-
 
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'panel.html'
+
+    def get_real_income(self, start_date=None, end_date=None):
+        from core.pos.models import SaleCreditPayment
+
+        sales_filter = {}
+        payments_filter = {}
+        transactions_filter = {}
+
+        if start_date and end_date:
+            sales_filter["date_joined__range"] = [start_date, end_date]
+            payments_filter["date_payment__range"] = [start_date, end_date]
+            transactions_filter["created_at__range"] = [start_date, end_date]
+
+        elif start_date:
+            sales_filter["date_joined"] = start_date
+            payments_filter["date_payment"] = start_date
+            transactions_filter["created_at__date"] = start_date
+
+        # ventas reales (no crédito)
+        sales_total = (
+            Sale.objects
+            .filter(**sales_filter)
+            .exclude(typemethods='credit')  # ajusta si tu valor real es otro
+            .aggregate(
+                total=Coalesce(
+                    Sum(F('total') + F('propina')),
+                    Decimal('0.00'),
+                    output_field=DecimalField()
+                )
+            )['total']
+        )
+
+        # pagos de créditos
+        credit_total = (
+            SaleCreditPayment.objects
+            .filter(**payments_filter)
+            .aggregate(
+                total=Coalesce(
+                    Sum('total'),
+                    Decimal('0.00'),
+                    output_field=DecimalField()
+                )
+            )['total']
+        )
+
+        # DESCUENTOS EMPLEADOS
+        discount_total = (
+            EmployeeTransaction.objects
+            .filter(
+                source__in=['caja', 'inventory'],
+                **transactions_filter
+            )
+            .aggregate(
+                total=Coalesce(
+                    Sum('amount'),
+                    Decimal('0.00'),
+                    output_field=DecimalField()
+                )
+            )['total']
+        )
+
+        return sales_total + credit_total - discount_total
 
     def post(self, request, *args, **kwargs):
         data = {}
@@ -33,102 +94,59 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             elif action == 'get_graph_sales_products_year_month':
                 data = []
                 year = datetime.now().year
-                month = datetime.now().month
-                queryset = SaleDetail.objects.filter(sale__date_joined__year=year, sale__date_joined__month=month)
-                for p in Product.objects.filter():
-                    total = queryset.filter(product_id=p.id).aggregate(result=Coalesce(Sum('total'), 0.00, output_field=FloatField())).get('result')
-                    if total:
-                        data.append({'name': p.name, 'y': float(total)})
+
+                for m in range(1, 13):
+                    start = datetime(year, m, 1).date()
+                    end = datetime(year, m, calendar.monthrange(year, m)[1]).date()
+
+                    total = self.get_real_income(start, end)
+                    data.append(float(total))
             elif action == 'get_graph_sales_weekday':
                 data = []
                 today = datetime.now().date()
 
-                # lunes de esta semana (weekday() → lunes=0, domingo=6)
                 start_week = today - timedelta(days=today.weekday())
                 end_week = start_week + timedelta(days=6)
 
-                # queryset solo de la semana actual
-                queryset = Sale.objects.filter(date_joined__range=[start_week, end_week])
+                days_map = {
+                    0: 'Lunes', 1: 'Martes', 2: 'Miércoles',
+                    3: 'Jueves', 4: 'Viernes', 5: 'Sábado', 6: 'Domingo'
+                }
 
-                # Agrupamos por día de la semana (1=domingo, 7=sábado en Django)
-                sales_by_day = (
-                    queryset
-                    .annotate(weekday=ExtractWeekDay('date_joined'))
-                    .values('weekday')
-                    .annotate(total=Coalesce(Sum(F('total') + F('propina')), 0.0, output_field=FloatField()))
-                    .order_by('weekday')
-                )
-
-                # Crear estructura fija para los 7 días
-                days_map = {1: 'Domingo', 2: 'Lunes', 3: 'Martes', 4: 'Miércoles', 5: 'Jueves', 6: 'Viernes', 7: 'Sábado'}
-                totals = {d: 0.0 for d in range(1, 8)}
-
-                for item in sales_by_day:
-                    weekday = item.get('weekday')
-                    total = item.get('total', 0.0)
-                    if weekday in totals:
-                        totals[weekday] = float(total)
-
-                # Si quieres devolver como lista ordenada
-                order = [2, 3, 4, 5, 6, 7, 1]  # Lunes → Domingo
-                data = [{'day': days_map[d], 'total': totals[d]} for d in order]
+                for i in range(7):
+                    day = start_week + timedelta(days=i)
+                    total = self.get_real_income(start_date=day)
+                    data.append({'day': days_map[i], 'total': float(total)})
             elif action == 'get_graph_sales_week':
                 data = []
                 today = datetime.now().date()
-
-                # mes y año actual
                 current_month = today.month
                 current_year = today.year
 
-                # queryset solo del mes actual
-                queryset = Sale.objects.filter(
-                    date_joined__year=current_year,
-                    date_joined__month=current_month
-                )
-
-                # agrupamos por semana ISO
-                sales_by_week = (
-                    queryset
-                    .annotate(week=ExtractWeek('date_joined'))
-                    .values('week')
-                    .annotate(total=Coalesce(Sum(F('total') + F('propina')), 0.0, output_field=FloatField()))
-                    .order_by('week')
-                )
-
-                # fechas del mes actual
                 first_day = datetime(current_year, current_month, 1).date()
                 last_day = datetime(current_year, current_month, calendar.monthrange(current_year, current_month)[1]).date()
 
-                # 🔹 generar todas las fechas del mes
-                dates_in_month = [
+                dates = [
                     first_day + timedelta(days=i)
                     for i in range((last_day - first_day).days + 1)
                 ]
 
-                # 🔹 semanas ISO únicas del mes (ordenadas)
-                weeks_in_month = sorted({d.isocalendar()[1] for d in dates_in_month})
+                weeks = sorted({d.isocalendar()[1] for d in dates})
 
-                # 🔹 inicializar todas las semanas en 0
-                totals = {w: 0.0 for w in weeks_in_month}
+                for w in weeks:
+                    week_days = [d for d in dates if d.isocalendar()[1] == w]
+                    start = min(week_days)
+                    end = max(week_days)
 
-                # 🔹 colocar valores reales donde existan ventas
-                for item in sales_by_week:
-                    week = item['week']
-                    if week in totals:
-                        totals[week] = float(item['total'])
+                    total = self.get_real_income(start, end)
 
-                # 🔹 construir la respuesta final para la gráfica
-                data = [
-                    {'week': f"Semana {w}", 'total': totals[w]}
-                    for w in weeks_in_month
-                ]
+                    data.append({
+                        'week': f"Semana {w}",
+                        'total': float(total)
+                    })
             elif action == 'get_sales_total_today':
                 today = datetime.now().date()
-                total = (
-                    Sale.objects
-                    .filter(date_joined=today)
-                    .aggregate(total=Coalesce(Sum(F('total') + F('propina')), Decimal('0.00'), output_field=DecimalField()))['total']
-                )
+                total = self.get_real_income(start_date=today)
                 data = {'total': float(total)}
             elif action == 'get_sales_count_today':
                 today = datetime.now().date()
@@ -169,7 +187,10 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             else:
                 data['error'] = 'No ha seleccionado ninguna opción'
         except Exception as e:
-            data['error'] = str(e)
+            return HttpResponse(
+                json.dumps({'error': str(e)}),
+                content_type='application/json'
+            )
         return HttpResponse(json.dumps(data), content_type='application/json')
 
     def get_context_data(self, **kwargs):

@@ -23,6 +23,7 @@ from core.pos.views.productAutoAdd.views import *
 from core.pos.views.table.views import *
 from core.pos.views.order.views import *
 from core.pos.views.kitchen_order.views import *
+from core.pos.views.employee_transaction.views import *
 
 urlpatterns = [
     # category
@@ -119,4 +120,9 @@ urlpatterns = [
     path('kitchen/', KitchenBoardView.as_view(), name='kitchen_board'),
     path('kitchen/orders/', kitchen_orders, name='kitchen_orders'),
     path('kitchen/order/<int:pk>/ready/', mark_order_ready, name='order_ready'),
+    # transacciones empleados
+    path('employeeTransaction', EmployeeTransactionListView.as_view(), name='employee_transaction_list'),
+    path('employeeTransaction/add/', EmployeeTransactionCreateView.as_view(), name='employee_transaction_create'),
+    path('employeeTransaction/update/<int:pk>/', EmployeeTransactionUpdateView.as_view(), name='employee_transaction_update'),
+    path('employeeTransaction/delete/<int:pk>/', EmployeeTransactionDeleteView.as_view(), name='employee_transaction_delete'),
 ]

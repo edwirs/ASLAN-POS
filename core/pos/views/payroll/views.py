@@ -1,30 +1,71 @@
 import json
-
-from django.http import HttpResponse
-from django.urls import reverse_lazy
-from django.views.generic import DeleteView, CreateView, UpdateView, TemplateView
-from django.db.models import Sum, Count
-from django.http import JsonResponse
+import calendar
+from datetime import date
 from decimal import Decimal
 
+from django.http import HttpResponse, JsonResponse
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, TemplateView
+from django.db.models import Sum, Count
+from django.db.models.functions import Coalesce
+
 from core.pos.forms import PayrollForm
-from core.pos.models import Payroll, Employee
+from core.pos.models import Payroll, Employee, EmployeeTransaction
 from core.security.mixins import GroupPermissionMixin
 
 MODULE_NAME = 'Nómina'
 
+
+# =========================================================
+# FUNCIONES AUXILIARES
+# =========================================================
+
+def get_period_range(period, period_type):
+    year, month = map(int, period.split('-'))
+
+    if period_type == 'Q1':
+        start = date(year, month, 1)
+        end = date(year, month, 15)
+
+    elif period_type == 'Q2':
+        start = date(year, month, 16)
+        end = date(year, month, calendar.monthrange(year, month)[1])
+
+    else:  # mensual
+        start = date(year, month, 1)
+        end = date(year, month, calendar.monthrange(year, month)[1])
+
+    return start, end
+
+
+def get_employee_deductions(employee, start_date, end_date):
+    return (
+        EmployeeTransaction.objects
+        .filter(
+            employee=employee,
+            is_paid=False,
+            created_at__date__range=[start_date, end_date]
+        )
+        .aggregate(
+            total=Coalesce(Sum('amount'), Decimal('0.00'))
+        )['total']
+    )
+
+
+# =========================================================
+# LISTADO DE NÓMINAS
+# =========================================================
 
 class PayrollListView(GroupPermissionMixin, TemplateView):
     template_name = 'payroll/list.html'
     permission_required = 'view_payroll'
 
     def post(self, request, *args, **kwargs):
-        data = {}
-        action = request.POST['action']
         try:
+            action = request.POST['action']
+
             if action == 'search':
-                items = []
-                # 🔹 Agrupar por periodo (mes + tipo de quincena)
+
                 queryset = (
                     Payroll.objects
                     .values('period', 'period_type')
@@ -36,8 +77,9 @@ class PayrollListView(GroupPermissionMixin, TemplateView):
                     .order_by('-period', '-period_type')
                 )
 
+                data = []
                 for i in queryset:
-                    items.append({
+                    data.append({
                         'period': i['period'].strftime('%Y-%m'),
                         'period_type': i['period_type'],
                         'period_type_display': (
@@ -50,12 +92,12 @@ class PayrollListView(GroupPermissionMixin, TemplateView):
                         'total_payable': float(i['total_payable'] or 0),
                     })
 
-                return HttpResponse(json.dumps(items), content_type='application/json')
-            else:
-                data['error'] = 'No ha seleccionado ninguna opción'
+                return JsonResponse(data, safe=False)
+
+            return JsonResponse({'error': 'Acción no válida'}, status=400)
+
         except Exception as e:
-            data['error'] = str(e)
-        return HttpResponse(json.dumps(data), content_type='application/json')
+            return JsonResponse({'error': str(e)}, status=500)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -64,7 +106,12 @@ class PayrollListView(GroupPermissionMixin, TemplateView):
         context['create_url'] = reverse_lazy('payroll_create')
         context['module_name'] = MODULE_NAME
         return context
-    
+
+
+# =========================================================
+# CREAR NÓMINA
+# =========================================================
+
 class PayrollCreateView(GroupPermissionMixin, CreateView):
     template_name = 'payroll/create.html'
     model = Payroll
@@ -73,41 +120,88 @@ class PayrollCreateView(GroupPermissionMixin, CreateView):
     permission_required = 'add_payroll'
 
     def post(self, request, *args, **kwargs):
-        action = request.POST.get('action', None)
+
+        action = request.POST.get('action')
+
         try:
+
+            # =====================================================
+            # LISTAR EMPLEADOS ACTIVOS
+            # =====================================================
             if action == 'search_employees':
+
                 employees = Employee.objects.filter(is_active=True)
-                data = []
-                for emp in employees:
-                    data.append({
+
+                data = [
+                    {
                         'id': emp.id,
                         'names': emp.names,
                         'salary': float(emp.salary),
                         'base_salary': float(emp.base_salary),
                         'social_security': emp.social_security
-                    })
-                return JsonResponse(data, safe=False)
+                    }
+                    for emp in employees
+                ]
 
+                return JsonResponse(data, safe=False)
+            elif action == 'get_deductions':
+                employee_id = request.POST.get('employee_id')
+                period = request.POST.get('period')
+
+                total = EmployeeTransaction.objects.filter(
+                    employee_id=employee_id,
+                    created_at__date__month=period.split('-')[1],
+                    created_at__date__year=period.split('-')[0],
+                    is_paid=False
+                ).aggregate(total=Sum('amount'))['total'] or 0
+
+                return JsonResponse({'deductions': float(total)})
+
+            # =====================================================
+            # GUARDAR NÓMINA
+            # =====================================================
             elif action == 'save_payroll':
+
                 payrolls = json.loads(request.POST.get('payrolls', '[]'))
+
                 for p in payrolls:
+
                     employee = Employee.objects.get(pk=p['employee_id'])
-                    Payroll.objects.create(
+                    period = p['period']
+                    period_type = p['period_type']
+
+                    start_date, end_date = get_period_range(period, period_type)
+
+                    # 🔹 calcular deducciones automáticas
+                    deductions = get_employee_deductions(
+                        employee,
+                        start_date,
+                        end_date
+                    )
+
+                    payroll = Payroll.objects.create(
                         employee=employee,
-                        period=p['period'],
-                        period_type=p['period_type'],
+                        period=period,
+                        period_type=period_type,
                         days_worked=int(p['days_worked']),
                         overtime_hours_value=Decimal(p['overtime_hours_value'] or 0),
                         other_earnings=Decimal(p['other_earnings'] or 0),
-                        deductions=Decimal(p['deductions'] or 0)
+                        deductions=deductions
                     )
+
+                    # 🔹 marcar préstamos como pagados
+                    EmployeeTransaction.objects.filter(
+                        employee=employee,
+                        is_paid=False,
+                        created_at__date__range=[start_date, end_date]
+                    ).update(is_paid=True)
+
                 return JsonResponse({'success': True})
 
-            else:
-                return JsonResponse({'error': 'Acción no reconocida'}, status=400)
+            return JsonResponse({'error': 'Acción no reconocida'}, status=400)
 
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            return JsonResponse({'error': str(e)}, status=500)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -117,6 +211,11 @@ class PayrollCreateView(GroupPermissionMixin, CreateView):
         context['module_name'] = MODULE_NAME
         return context
 
+
+# =========================================================
+# DETALLE DE NÓMINA
+# =========================================================
+
 class PayrollDetailView(GroupPermissionMixin, TemplateView):
     template_name = 'payroll/detail.html'
     permission_required = 'view_payroll'
@@ -124,10 +223,9 @@ class PayrollDetailView(GroupPermissionMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        period = self.kwargs['period']        # formato YYYY-MM
+        period = self.kwargs['period']
         period_type = self.kwargs['period_type']
 
-        # Filtrar nómina del periodo
         payrolls = Payroll.objects.filter(
             period__startswith=period,
             period_type=period_type

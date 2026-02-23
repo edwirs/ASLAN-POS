@@ -17,6 +17,7 @@ from core.pos.choices import TYPETMETHODS
 from core.pos.choices import TIPO_CONTRATO
 from core.pos.choices import PERIODO_NOMINA
 from core.pos.choices import STATUS_CHOICES
+from core.pos.choices import EMPLOYEE_TRANSACTION_CHOICES
 from core.user.models import User
 
 
@@ -901,3 +902,54 @@ class OrderDetail(models.Model):
     class Meta:
         verbose_name = 'Detalle de orden'
         verbose_name_plural = 'Detalles de orden'
+
+class EmployeeTransaction(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.PROTECT, verbose_name='Empleado')
+    transaction_type = models.CharField(max_length=20, choices=EMPLOYEE_TRANSACTION_CHOICES, verbose_name='Tipo')
+    source = models.CharField(max_length=20, choices=EXPENSES, verbose_name='Desde')
+    amount = models.DecimalField(max_digits=9, decimal_places=2, default=0, verbose_name='Valor')
+    product = models.ForeignKey(Product, null=True, blank=True, on_delete=models.PROTECT, verbose_name='Producto')
+    description = models.TextField(blank=True, verbose_name='Description')
+    created_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='created_transactions')
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_paid = models.BooleanField(default=False)
+    balance = models.DecimalField(max_digits=9, decimal_places=2, default=0)
+
+    def save(self, *args, **kwargs):
+        if not self.balance:
+            self.balance = self.amount
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.employee} - {self.get_transaction_type_display()} - {self.amount}"
+
+    def toJSON(self):
+        return {
+            "id": self.id,
+            "employee": self.employee.names,
+            "transaction_type": self.get_transaction_type_display(),
+            "source": self.get_source_display(),
+            "amount": float(self.amount),
+            "balance": float(self.balance),
+            "product": self.product.name if self.product else None,
+            "description": self.description,
+            "created_by": self.created_by.username,
+            "created_at": self.created_at.strftime("%Y-%m-%d %H:%M"),
+            "is_paid": self.is_paid
+        }
+
+    class Meta:
+        verbose_name = "Movimiento empleado"
+        verbose_name_plural = "Movimientos empleados"
+
+        default_permissions = ()
+
+        permissions = (
+            ("view_employee_transaction", "Puede ver movimientos empleados"),
+            ("add_employee_transaction", "Puede registrar movimientos empleados"),
+            ("change_employee_transaction", "Puede editar movimientos empleados"),
+            ("delete_employee_transaction", "Puede eliminar movimientos empleados"),
+            ("approve_employee_transaction", "Puede aprobar préstamos"),
+            ("pay_employee_transaction", "Puede registrar pagos"),
+            ("report_employee_transaction", "Puede ver reportes de movimientos"),
+        )
