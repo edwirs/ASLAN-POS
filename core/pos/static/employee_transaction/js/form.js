@@ -81,23 +81,54 @@ $(function () {
     /* =========================
        VALIDACIÓN
     ========================== */
-    $('form').on('submit', function(e){
 
-        var type = $('select[name="transaction_type"]').val();
-        var amount = $('input[name="amount"]').val();
-        var product = $('select[name="product"]').val();
+    $('#frmForm').off('submit').on('submit', function (e) {
+        e.preventDefault();
 
-        if(type !== 'product' && (!amount || parseFloat(amount) <= 0)){
-            e.preventDefault();
-            alert("Debe ingresar un monto válido");
-            return false;
+        let amount = parseFloat($('#id_amount').val()) || 0;
+
+        if (amount <= 0){
+            return message_error('El monto debe ser mayor a 0');
         }
 
-        if(type === 'product' && !product){
-            e.preventDefault();
-            alert("Debe seleccionar un producto");
-            return false;
-        }
+        let form = this;
+        let params = new FormData(form);
+        let url_refresh = $(this).attr('data-url');
+
+        submit_with_formdata({
+            params: params,
+            success: function(request){
+
+                let url_redirect = url_refresh;
+
+                let iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+
+                iframe.src = request.print_url;
+
+                let redirected = false; // evita doble redirect
+
+                function goBack(){
+                    if(!redirected){
+                        redirected = true;
+                        iframe.remove();
+                        toastr.success('Transacción guardada correctamente');
+                        location.href = url_redirect;
+                    }
+                }
+
+                iframe.onload = function(){
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+
+                    // si imprime
+                    iframe.contentWindow.onafterprint = goBack;
+
+                    // fallback si no dispara onafterprint
+                    setTimeout(goBack, 1500);
+                };
+            }
+        });
     });
-
 });

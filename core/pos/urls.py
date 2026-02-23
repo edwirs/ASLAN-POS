@@ -125,4 +125,5 @@ urlpatterns = [
     path('employeeTransaction/add/', EmployeeTransactionCreateView.as_view(), name='employee_transaction_create'),
     path('employeeTransaction/update/<int:pk>/', EmployeeTransactionUpdateView.as_view(), name='employee_transaction_update'),
     path('employeeTransaction/delete/<int:pk>/', EmployeeTransactionDeleteView.as_view(), name='employee_transaction_delete'),
+    path('employeeTransaction/print/transaction/<int:pk>/', EmployeeTransactionPrintView.as_view(), name='employee_transaction_print'),
 ]

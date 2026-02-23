@@ -3,7 +3,13 @@ import json
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import DeleteView, CreateView, UpdateView, TemplateView
+from django.shortcuts import render
+from django.utils.decorators import method_decorator
+from django.views.decorators.clickjacking import xframe_options_exempt
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views import View
 
+from core.pos.utilities import printer
 from core.pos.forms import EmployeeTransactionForm
 from core.pos.models import Employee, EmployeeTransaction
 from core.security.mixins import GroupPermissionMixin
@@ -59,7 +65,8 @@ class EmployeeTransactionCreateView(GroupPermissionMixin, CreateView):
 
                 if form.is_valid():
                     obj = form.save()
-                    data = {'success': True}
+                    #data = {'success': True}
+                    data = {'print_url': str(reverse_lazy('employee_transaction_print', kwargs={'pk': obj.id}))}
                 else:
                     data = {'error': form.errors}
             else:
@@ -135,3 +142,16 @@ class EmployeeTransactionDeleteView(GroupPermissionMixin, DeleteView):
         context['module_name'] = MODULE_NAME
         return context
 
+@method_decorator(xframe_options_exempt, name='dispatch')
+class EmployeeTransactionPrintView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        try:
+            transaction = EmployeeTransaction.objects.get(pk=self.kwargs['pk'])
+
+            context = {
+                'transaction': transaction,
+                'height': 500
+            }
+            return render(request, 'employee_transaction/ticket.html', context)
+        except EmployeeTransaction.DoesNotExist:
+            return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)

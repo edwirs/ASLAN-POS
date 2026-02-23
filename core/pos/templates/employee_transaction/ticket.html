@@ -1,0 +1,146 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="{% static 'lib/bootstrap-5.0.2/css/bootstrap.min.css' %}" rel="stylesheet">
+    <style>
+        @page {
+            size: 80mm auto;
+            margin: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 0;
+            margin: 0;
+            font-size: 10px;
+            color: black !important;
+            min-height: 100%;
+        }
+
+        .content {
+            width: 100%;
+            padding: 10px;
+        }
+
+        .head-name {
+            margin-top: 0;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 0;
+            text-align: center;
+        }
+
+        .head-voucher-number {
+            font-size: 10px;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 0;
+            font-weight: bold;
+        }
+
+        .head-details {
+            margin-top: 0;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .head-data {
+            text-align: left;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .table {
+            color: black;
+        }
+
+        #details thead tr th {
+            border-bottom: 1px outset black;
+        }
+
+        .table td, .table th {
+            padding: 0;
+            color: black;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .img-logo {
+            display: block;
+            margin: 0 auto 2px auto;
+            width: 60px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .dotted-separator {
+            border: none !important;
+            border-top: 1px dotted black !important;
+            margin: 5px 0;
+            color: black;
+            background-color: transparent !important;
+        }
+    </style>
+</head>
+<body>
+<div class="content">
+    <img alt="" src="{{ transaction.company.get_image }}" class="img-fluid d-block mx-auto img-logo">
+    <h1 class="head-name">{{ transaction.company.name|upper }}</h1>
+    <p class="text-center head-details">
+        Dirección: {{ transaction.company.address }}<br>
+        RUT: {{ transaction.company.ruc }}<br>
+        Teléfono: {{ transaction.company.phone }} / Celular: {{ transaction.company.mobile }}<br>
+        Email: {{ transaction.company.email }}
+    </p>
+
+    <p class="text-center head-voucher-number">TICKET N° {{ transaction.id }}</p>
+
+    <hr class="dotted-separator">
+
+    <p class="head-data">
+        <b>Fecha de registro:</b> {{ transaction.created_at|date:'c' }}<br>
+        <b>Transacción:</b> {{ transaction.id }}<br>
+        <b>Empleado:</b> {{ transaction.employee.names }}<br>
+        <b>Número de cédula:</b> {{ transaction.employee.dni }}<br>
+        <b>Tipo:</b> {{ transaction.get_type_display }}<br>
+        <b>Origen:</b> {{ transaction.source|upper }}<br>
+    </p>
+
+    <hr class="dotted-separator">
+
+    <!-- MONTO -->
+    <div class="amount">
+        $ {{ transaction.amount|floatformat:0|intcomma }}
+    </div>
+
+    <div class="separator"></div>
+
+    {% if transaction.description %}
+        <p>
+            <span class="label">Concepto:</span><br>
+            {{ transaction.description }}
+        </p>
+        <div class="separator"></div>
+    {% endif %}
+
+    <!-- FIRMA -->
+    <p class="subtitle">
+        _________________________<br>
+        Firma empleado
+    </p>
+
+    <p class="text-center head-details">
+        Elaborado por: ASLAN Tecnologia<br>
+        Tel: 3002308365
+    </p>
+</div>
+
+<iframe id="print_frame" style="display:none;"></iframe>
+</body>
+</html>
