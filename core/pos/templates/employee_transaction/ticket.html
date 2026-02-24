@@ -99,36 +99,27 @@
         Email: {{ transaction.company.email }}
     </p>
 
-    <p class="text-center head-voucher-number">TICKET N° {{ transaction.id }}</p>
+    <p class="text-center head-voucher-number">TRANSACCIÓN N° {{ transaction.id }}</p>
 
     <hr class="dotted-separator">
 
     <p class="head-data">
-        <b>Fecha de registro:</b> {{ transaction.created_at|date:'c' }}<br>
-        <b>Transacción:</b> {{ transaction.id }}<br>
-        <b>Empleado:</b> {{ transaction.employee.names }}<br>
-        <b>Número de cédula:</b> {{ transaction.employee.dni }}<br>
-        <b>Tipo:</b> {{ transaction.get_type_display }}<br>
-        <b>Origen:</b> {{ transaction.source|upper }}<br>
+        <b>Fecha de registro: </b> {{ transaction.created_at|date:"d/m/Y H:i" }}<br>
+        <b>Transacción: </b> {{ transaction.id }}<br>
+        <b>Empleado: </b> {{ transaction.employee.names }}<br>
+        <b>Número de cédula: </b> {{ transaction.employee.dni }}<br>
+        <b>Tipo: </b> {{ transaction.get_transaction_type_display }}<br>
+        <b>Origen: </b> {{ transaction.source|upper }}<br>
+        <b>Valor: </b> $ {{ transaction.amount|floatformat:0|intcomma }}<br>
+        {% if transaction.description %}
+            <b>Concepto: </b> {{ transaction.description }}
+        {% endif %}
     </p>
 
     <hr class="dotted-separator">
-
-    <!-- MONTO -->
-    <div class="amount">
-        $ {{ transaction.amount|floatformat:0|intcomma }}
-    </div>
-
-    <div class="separator"></div>
-
-    {% if transaction.description %}
-        <p>
-            <span class="label">Concepto:</span><br>
-            {{ transaction.description }}
-        </p>
-        <div class="separator"></div>
-    {% endif %}
-
+    <br>
+    <br>
+    <br>
     <!-- FIRMA -->
     <p class="subtitle">
         _________________________<br>

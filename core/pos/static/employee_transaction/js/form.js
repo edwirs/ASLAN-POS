@@ -93,13 +93,14 @@ $(function () {
 
         let form = this;
         let params = new FormData(form);
-        let url_refresh = $(this).attr('data-url');
+        let url_redirect = $(this).attr('data-url');
+
+        let btn = $(this).find('button[type="submit"]');
+        btn.prop('disabled', true);
 
         submit_with_formdata({
             params: params,
             success: function(request){
-
-                let url_redirect = url_refresh;
 
                 let iframe = document.createElement('iframe');
                 iframe.style.display = 'none';
@@ -107,26 +108,30 @@ $(function () {
 
                 iframe.src = request.print_url;
 
-                let redirected = false; // evita doble redirect
+                let redirected = false;
 
                 function goBack(){
                     if(!redirected){
                         redirected = true;
                         iframe.remove();
                         toastr.success('Transacción guardada correctamente');
+                        btn.prop('disabled', false);
                         location.href = url_redirect;
                     }
                 }
 
                 iframe.onload = function(){
+
                     iframe.contentWindow.focus();
                     iframe.contentWindow.print();
 
-                    // si imprime
-                    iframe.contentWindow.onafterprint = goBack;
+                    let printMonitor = setInterval(function() {
+                        if (document.hasFocus()) {
+                            clearInterval(printMonitor);
+                            goBack();
+                        }
+                    }, 500);
 
-                    // fallback si no dispara onafterprint
-                    setTimeout(goBack, 1500);
                 };
             }
         });
