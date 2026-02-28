@@ -175,11 +175,15 @@ class PayrollCreateView(GroupPermissionMixin, CreateView):
                     start_date, end_date = get_period_range(period, period_type)
 
                     # 🔹 calcular deducciones automáticas
-                    deductions = get_employee_deductions(
+                    auto_deductions = get_employee_deductions(
                         employee,
                         start_date,
                         end_date
                     )
+
+                    user_deductions = Decimal(p.get('deductions') or 0)
+
+                    deductions = user_deductions if user_deductions > 0 else auto_deductions
 
                     payroll = Payroll.objects.create(
                         employee=employee,
