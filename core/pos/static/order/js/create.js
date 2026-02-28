@@ -155,6 +155,30 @@ $(function () {
     input_discount_value = $('input[name="discount_value"]');
     input_description = $('input[name="description"]');
 
+    $('.btn-category').on('click', function () {
+
+        $('.btn-category')
+            .removeClass('btn-primary')
+            .addClass('btn-outline-primary');
+
+        $(this)
+            .removeClass('btn-outline-primary')
+            .addClass('btn-primary');
+
+        const cat = $(this).data('category');
+
+        $('.product_card').each(function () {
+            const productCat = $(this).data('category');
+
+            if (cat === "all" || productCat == cat) {
+                $(this).parent().show();
+            } else {
+                $(this).parent().hide();
+            }
+        });
+
+    });
+
     // Client
 
     $('select[name="gender"]').select2({

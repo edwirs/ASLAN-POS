@@ -135,7 +135,7 @@ class BarCreateView(GroupPermissionMixin, CreateView):
                 ids = json.loads(request.POST['ids'])
                 data = []
                 term = request.POST['term']
-                queryset = Product.objects.filter(Q(stock__gt=0) | Q(is_service=True)).exclude(id__in=ids).order_by('code')
+                queryset = Product.objects.filter(Q(stock__gt=0)).exclude(id__in=ids).order_by('code')
                 if len(term):
                     queryset = queryset.filter(Q(name__icontains=term) | Q(code__icontains=term))
                     queryset = queryset[:10]
@@ -178,6 +178,7 @@ class BarCreateView(GroupPermissionMixin, CreateView):
         context['title'] = 'Nuevo registro de una Venta de Barra'
         context['action'] = 'add'
         context['company'] = Company.objects.first()
+        context['categories'] = Category.objects.all().order_by('name')
         context['final_consumer'] = self.get_final_consumer()
         context['module_name'] = MODULE_NAME
 
@@ -187,20 +188,22 @@ class BarCreateView(GroupPermissionMixin, CreateView):
         user_groups = InventoryGroup.objects.filter(userinventorygroup__user=user)
 
         # Obtener los stocks por producto que estén en esos grupos
-        product_stocks = ProductInventoryGroupStock.objects.filter(group__in=user_groups).select_related('product', 'group').order_by('product__id')
-
+        # product_stocks = ProductInventoryGroupStock.objects.filter(group__in=user_groups).select_related('product', 'group').order_by('product__id')
+        product_stocks = Product.objects.filter(
+            is_active=True
+        ).select_related('category').order_by('id')
         # Crear una estructura tipo: { product_id: {'product': ..., 'total_stock': ..., 'by_group': [...] } }
         product_data = {}
         for ps in product_stocks:
-            pid = ps.product.id
+            pid = ps.id
             if pid not in product_data:
                 product_data[pid] = {
-                    'product': ps.product,
+                    'product': ps,
                     'total_stock': 0,
                     'by_group': []
                 }
             product_data[pid]['total_stock'] += ps.stock
-            product_data[pid]['by_group'].append({'group': ps.group.name, 'stock': ps.stock})
+            product_data[pid]['by_group'].append({'group': ps.name, 'stock': ps.stock})
 
         context['products_grouped'] = product_data.values()
 

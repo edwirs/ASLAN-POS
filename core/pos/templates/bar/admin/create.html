@@ -37,6 +37,16 @@
 <div class="row gx-3 align-items-stretch">
     <div class="col-lg-7">
         <div class="card border p-3 mb-4 h-100">
+            <!-- Categorías -->
+            <div class="mb-3 d-flex flex-wrap gap-2">
+                <button class="btn btn-sm btn-primary btn-category" data-category="all">Todos</button>
+                {% for cat in categories %}
+                    <button class="btn btn-sm btn-outline-primary btn-category"
+                            data-category="{{ cat.id }}">
+                        {{ cat.name }}
+                    </button>
+                {% endfor %}
+            </div>
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-5 g-3" id="product-list">
                     {% for entry in products_grouped %}
                         {% with product=entry.product %}
@@ -46,7 +56,8 @@
                                     data-id="{{ product.id }}"
                                     data-code="{{ product.code }}"
                                     data-name="{{ product.name }}"
-                                    data-price="{{ product.pvp }}">
+                                    data-price="{{ product.pvp }}"
+                                    data-category="{{ product.category_id }}">
                                     <div class="card-body" style="font-size: 13px;">
                                         <h5 class="card-title">{{ product.code }}</h5>
                                         <p class="card-text fw-bold">{{ product.name }}</p>

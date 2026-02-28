@@ -21,7 +21,9 @@ MODULE_NAME = 'Nómina'
 # =========================================================
 
 def get_period_range(period, period_type):
-    year, month = map(int, period.split('-'))
+    parts = period.split('-')
+    year = int(parts[0])
+    month = int(parts[1])
 
     if period_type == 'Q1':
         start = date(year, month, 1)

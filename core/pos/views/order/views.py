@@ -92,7 +92,7 @@ class OrderListView(LoginRequiredMixin, TemplateView):
                             auto_product = auto.auto_product
 
                             # Descontar del inventario general del producto automático
-                            auto_product.stock -= auto.quantity * int(i['cant'])
+                            auto_product.stock -= auto.quantity * int(det.cant)
                             auto_product.save()
 
                     # 3. Recalcular totales de la venta
@@ -150,8 +150,7 @@ class OrderBarraView(LoginRequiredMixin, TemplateView):
         user = self.request.user
         user_groups = InventoryGroup.objects.filter(userinventorygroup__user=user)
         product_stocks = Product.objects.filter(
-            is_active=True,
-            is_service=False
+            is_active=True
         ).select_related('category').order_by('id')
         
         product_data = []
@@ -167,6 +166,7 @@ class OrderBarraView(LoginRequiredMixin, TemplateView):
         context['title'] = f'Mesa # {table.id} / Cliente: {order.client}'
         context['action'] = 'add'
         context['company'] = Company.objects.first()
+        context['categories'] = Category.objects.all().order_by('name')
         context['final_consumer'] = self.get_final_consumer()
         context['frmBar'] = OrderBarraForm(instance=order)
         context['module_name'] = MODULE_NAME

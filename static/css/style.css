@@ -145,6 +145,27 @@
         color: white;
     }
 
+    button.btn-category,
+    .btn-category.btn {
+        background-color: #E68139;
+        border-color: #E68139;
+        color: #fff;
+        border-radius: 50px !important;
+        transition: all .2s ease;
+    }
+
+    .btn-category:hover {
+        background-color: #cf6e2f; /* tono más oscuro para hover */
+        border-color: #cf6e2f;
+        transform: scale(1.05);
+    }
+
+    .btn-category.btn-outline-primary {
+        background-color: transparent;
+        color: #E68139;
+        border-color: #E68139;
+    }
+
 /* === Personalización ASLAN POS === */
 
 /* Color de fondo del menú lateral 
