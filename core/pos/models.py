@@ -752,7 +752,7 @@ class Payroll(models.Model):
 
     days_worked = models.PositiveIntegerField(default=15, verbose_name='Dias trabajados')
     base_salary = models.DecimalField(max_digits=12, decimal_places=2, verbose_name='Salario base')
-    transportation_allowance = models.DecimalField(max_digits=12, decimal_places=2, default=81000.00, verbose_name='Auxilio transporte')
+    transportation_allowance = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Auxilio transporte')
 
     overtime_hours_value = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Valor horas extras')
     other_earnings = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Otros ingresos')
@@ -776,7 +776,7 @@ class Payroll(models.Model):
 
         # Proportional salary based on days worked
         # para este caso se calcula con el minimo por un acuerdo con empleados
-        proportional_salary = (employee.base_salary / Decimal('30')) * Decimal(self.days_worked)
+        proportional_salary = (employee.salary / Decimal('30')) * Decimal(self.days_worked)
 
         transportation = Decimal(self.transportation_allowance or 0)
         overtime = Decimal(self.overtime_hours_value or 0)
