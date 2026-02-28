@@ -760,6 +760,7 @@ class Payroll(models.Model):
 
     total_earned = models.DecimalField(max_digits=12, decimal_places=2, editable=False, verbose_name='Total devengado')
     total_payable = models.DecimalField(max_digits=12, decimal_places=2, editable=False, verbose_name='Total a pagar')
+    social_security = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Seguridad social')
 
     generated_at = models.DateTimeField(auto_now_add=True)
 
@@ -783,13 +784,23 @@ class Payroll(models.Model):
         others = Decimal(self.other_earnings or 0)
         deductions = Decimal(self.deductions or 0)
 
+        # SEGURIDAD SOCIAL
+        if employee.social_security:
+            eps = proportional_salary * Decimal('0.04')
+            afp = proportional_salary * Decimal('0.04')
+            arl = proportional_salary * Decimal('0.00522')
+            seguridad_social = eps + afp + arl
+        else:
+            seguridad_social = Decimal('0.00')
+
         # 🔹 Total devengado
         total_earned = proportional_salary + transportation + overtime + others
 
         # 🔹 Total a pagar
-        total_payable = total_earned - deductions
+        total_payable = total_earned - deductions - seguridad_social
 
         self.base_salary = proportional_salary.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        self.social_security = seguridad_social.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         self.total_earned = total_earned.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         self.total_payable = total_payable.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
