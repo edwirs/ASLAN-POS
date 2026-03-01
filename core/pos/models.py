@@ -786,9 +786,9 @@ class Payroll(models.Model):
 
         # SEGURIDAD SOCIAL
         if employee.social_security:
-            eps = proportional_salary * Decimal('0.04')
-            afp = proportional_salary * Decimal('0.04')
-            arl = proportional_salary * Decimal('0.00522')
+            eps = employee.base_salary * Decimal('0.04')
+            afp = employee.base_salary * Decimal('0.04')
+            arl = employee.base_salary * Decimal('0.00522')
             seguridad_social = eps + afp + arl
         else:
             seguridad_social = Decimal('0.00')
