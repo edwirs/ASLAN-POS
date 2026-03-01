@@ -120,7 +120,7 @@ var payroll = {
                         seguridad_social = eps + afp + arl;
                     }
 
-                    let total = (base_neto + overtime + others) - (deductions + seguridad_social);
+                    let total = (base_neto + overtime + others) - (deductions);
 
                     seguridad_social = Math.round(seguridad_social);
                     total = Math.round(total);
