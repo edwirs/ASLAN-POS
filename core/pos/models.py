@@ -786,7 +786,7 @@ class Payroll(models.Model):
         deductions = Decimal(self.deductions or 0)
 
         # 🔹 IBC (Ingreso Base Cotización)
-        ibc = proportional_salary
+        ibc = (employee.base_salary / Decimal('30')) * Decimal(self.days_worked)
 
         # 🔹 Seguridad social sobre IBC
         if employee.social_security:
