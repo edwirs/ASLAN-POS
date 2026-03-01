@@ -772,11 +772,12 @@ class Payroll(models.Model):
     def __str__(self):
         return f"Payroll {self.get_period_type_display()} {self.period.strftime('%Y-%m')} - {self.employee.first_name}"
 
+    from decimal import Decimal, ROUND_HALF_UP
+
     def calculate_totals(self):
         employee = self.employee
 
-        # Proportional salary based on days worked
-        # para este caso se calcula con el minimo por un acuerdo con empleados
+        # 🔹 salario proporcional real según días trabajados
         proportional_salary = (employee.salary / Decimal('30')) * Decimal(self.days_worked)
 
         transportation = Decimal(self.transportation_allowance or 0)
@@ -784,11 +785,14 @@ class Payroll(models.Model):
         others = Decimal(self.other_earnings or 0)
         deductions = Decimal(self.deductions or 0)
 
-        # SEGURIDAD SOCIAL
+        # 🔹 IBC (Ingreso Base Cotización)
+        ibc = proportional_salary
+
+        # 🔹 Seguridad social sobre IBC
         if employee.social_security:
-            eps = employee.base_salary * Decimal('0.04')
-            afp = employee.base_salary * Decimal('0.04')
-            arl = employee.base_salary * Decimal('0.00522')
+            eps = ibc * Decimal('0.04')
+            afp = ibc * Decimal('0.04')
+            arl = ibc * Decimal('0.00522')
             seguridad_social = eps + afp + arl
         else:
             seguridad_social = Decimal('0.00')
@@ -799,6 +803,7 @@ class Payroll(models.Model):
         # 🔹 Total a pagar
         total_payable = total_earned - deductions - seguridad_social
 
+        # 🔹 Guardar valores redondeados
         self.base_salary = proportional_salary.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         self.social_security = seguridad_social.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         self.total_earned = total_earned.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
