@@ -55,7 +55,9 @@ class BarCreateView(GroupPermissionMixin, CreateView):
                     else:
                         sale.autorization_discount = None
                         
-                    sale.description = (request.POST['description'])
+                    description = request.POST.get('description', '')
+                    if description:
+                        sale.description = description
                     sale.save()
                     for i in json.loads(request.POST['products']):
                         product = Product.objects.get(pk=i['id'])
