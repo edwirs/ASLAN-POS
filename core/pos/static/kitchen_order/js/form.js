@@ -157,45 +157,40 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 document.addEventListener('click', function (e) {
-    if (e.target.classList.contains('btn-ready')) {
+    const btn = e.target.closest('.btn-ready');
+    if (!btn) return;
 
-        e.preventDefault();
-        e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
 
-        const btn = e.target;
-        const orderId = btn.dataset.id;
+    const orderId = btn.dataset.id;
 
-        btn.disabled = true;
-        btn.innerHTML = '⏳';
+    btn.disabled = true;
+    btn.innerHTML = '⏳';
 
-        fetch(`/pos/kitchen/order/${orderId}/ready/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCSRFToken(),
-            }
-        })
-        .then(res => {
-            if (!res.ok) {
-                throw new Error('Respuesta no válida');
-            }
-            return res.json(); // 👈 solo si es OK
-        })
-        .then(data => {
-            if (data.success) {
-                toastr.success('Pedido listo 🍽️');
-                loadKitchen();
-            } else {
-                toastr.error(data.message || 'No se pudo marcar el pedido');
-                btn.disabled = false;
-                btn.innerHTML = '✔ listo';
-            }
-        })
-        .catch(() => {
-            toastr.error('Error al marcar pedido');
-            btn.disabled = false;
-            btn.innerHTML = '✔ listo';
-        });
-    }
+    fetch(`/pos/kitchen/order/${orderId}/ready/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+        }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Respuesta no válida');
+        return res.json();
+    })
+    .then(data => {
+        if (data.success) {
+            toastr.success('Pedido listo 🍽️');
+            loadKitchen();
+        } else {
+            throw new Error(data.message);
+        }
+    })
+    .catch(() => {
+        //toastr.error('Error al marcar pedido');
+        btn.disabled = false;
+        btn.innerHTML = '✔ listo';
+    });
 });
 
 function getCSRFToken() {

@@ -166,6 +166,92 @@
         border-color: #E68139;
     }
 
+    /*tabla modulo barra*/
+
+.table-header-pos th{
+    background-color:#E68139;
+    color:white;
+    font-weight:600;
+}
+
+/* contenedor con scroll */
+.table-container{
+    height:260px;
+    overflow-y:auto;
+    border:1px solid #dee2e6;
+    border-radius:6px;
+}
+
+/* header fijo */
+#tblProductsBarra thead th{
+    position: sticky;
+    top:0;
+    z-index:1;
+}
+#tblProductsBarra tbody tr{
+    font-size:14px;
+}
+
+#tblProductsBarra tbody tr:hover{
+    background:#f2f6ff;
+}
+
+#tblProductsBarra td{
+    padding:8px;
+}
+
+.display-6 input{
+    border:none;
+    background:transparent;
+    text-align:center;
+    font-weight:bold;
+    font-size:32px;
+    color:#198754;
+}
+
+/* scroll SOLO para productos */
+.products-scroll{
+    max-height:55vh;
+    overflow-y:auto;
+    padding-right:5px;
+}
+
+/* scrollbar mas suave */
+.products-scroll::-webkit-scrollbar{
+    width:6px;
+}
+
+.products-scroll::-webkit-scrollbar-thumb{
+    background:#cfcfcf;
+    border-radius:10px;
+}
+
+/* efecto hover en productos */
+.product_card:hover{
+    transform:scale(1.03);
+    box-shadow:0 4px 10px rgba(0,0,0,0.15);
+    transition:0.2s;
+}
+
+/* Card sin stock */
+.card-no-stock {
+    background-color: #ffe5e5; /* rojo claro */
+    border: 1px solid #ffb3b3;
+    opacity: 0.85;
+    cursor: not-allowed !important;
+}
+
+/* Texto dentro del card */
+.card-no-stock .card-title,
+.card-no-stock .card-text {
+    color: #a94442;
+}
+
+/* Hover desactivado */
+.card-no-stock:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
 /* === Personalización ASLAN POS === */
 
 /* Color de fondo del menú lateral 

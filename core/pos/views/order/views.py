@@ -74,6 +74,12 @@ class OrderListView(LoginRequiredMixin, TemplateView):
                     # 2. Crear Detalles de Venta desde la Orden
                     for det in order.orderdetail_set.all():
                         product = det.product
+                        qty = det.cant
+                        # VALIDAR STOCK
+                        if not product.is_service:
+                            if product.stock < qty:
+                                raise Exception(f"No hay suficiente stock del producto '{product.name}'. Stock disponible: {product.stock}")
+
                         sd = SaleDetail()
                         sd.sale = sale
                         sd.product = det.product
@@ -187,6 +193,13 @@ class OrderCreateView(GroupPermissionMixin, CreateView):
                     order.orderdetail_set.all().delete()
                     total = 0
                     for item in products:
+                        product = Product.objects.get(id=item['id'])
+                        qty = int(item['cant'])
+                        # VALIDAR STOCK
+                        if not product.is_service:
+                            if product.stock < qty:
+                                raise Exception(f"No hay suficiente stock del producto '{product.name}'. Stock disponible: {product.stock}")
+
                         subtotal = item['cant'] * item['pvp']
                         total += subtotal
                         OrderDetail.objects.create(

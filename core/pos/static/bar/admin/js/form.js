@@ -1,4 +1,3 @@
-var select_client;
 var select_paymentmethod;
 var select_transfermethods;
 var select_autorization_discount;
@@ -140,7 +139,6 @@ var sale = {
 };
 
 $(function () {
-    select_client = $('select[name="client"]');
     input_cash = $('input[name="cash"]');
     input_total = $('input[name="total"]');
     input_change = $('input[name="change"]');
@@ -154,6 +152,44 @@ $(function () {
     select_switch_cortesia = $('#switchCortesia');
     input_discount_value = $('input[name="discount_value"]');
     input_description = $('input[name="description"]');
+
+    if ($('#search_barcode').length) {
+        $('#search_barcode').focus();
+        $('#search_barcode').on('keypress', function(e) {
+
+            if (e.which === 13) {
+
+                e.preventDefault();
+
+                let barcode = $(this).val().trim();
+
+                if (barcode === '') {
+                    return;
+                }
+
+                $.ajax({
+                    url: pathname,
+                    type: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    data: {
+                        action: 'search_product_barcode',
+                        barcode: barcode
+                    },
+                    success: function(product) {
+
+                        if (product.error) {
+                            message_error('Producto no encontrado');
+                            return;
+                        }
+                        addProductToBarra(product);
+                    }
+                });
+                $(this).val('').focus();
+            }
+        });
+    }
 
     $('.btn-category').on('click', function () {
 
@@ -226,16 +262,51 @@ $(function () {
         with: '100%'
     });
 
+    // referencias
+    const nequiGroup = $('input[name="nequi_value"]').closest('.col');
+    const daviplataGroup = $('input[name="daviplata_value"]').closest('.col');
+    nequiGroup.hide();
+    daviplataGroup.hide();
+    // helper
+    function toggleMixtoFields(show) {
+        if (show) {
+            nequiGroup.show();
+            daviplataGroup.show();
+        } else {
+            nequiGroup.hide();
+            daviplataGroup.hide();
+        }
+    }
+
     select_transfermethods.parent().hide(); 
-    
+
     select_paymentmethod.on('change', function(){
         const selectedValue = $(this).val();
+        select_transfermethods.empty();
         if (selectedValue === 'transfer') {
+            select_transfermethods.append('<option value="nequi">Nequi</option>');
+            select_transfermethods.append('<option value="daviplata">Daviplata</option>');
             select_transfermethods.parent().show();
-        } else if (selectedValue === 'mixed') {
+            toggleMixtoFields(false);
+        } else if (selectedValue === 'mixto') {
+            select_transfermethods.append('<option value="mixto1">Nequi + Efectivo</option>');
+            select_transfermethods.append('<option value="mixto2">Daviplata + Efectivo</option>');
+            select_transfermethods.append('<option value="mixto3">Nequi + Daviplata</option>');
             select_transfermethods.parent().show();
+            toggleMixtoFields(true);
         } else {
             select_transfermethods.parent().hide();
+            toggleMixtoFields(false);
+        }
+
+        // Si la forma de pago es transferencia o tarjeta, llenar cash con el total
+        if (['transfer', 'debitCard', 'creditCard', 'mixto'].includes(selectedValue)) {
+            var totalStr = $('input[name="total"]').val();
+            totalStr = totalStr.replace(/\./g, '').replace(',', '.');
+            var total = parseFloat(totalStr) || 0;
+            input_cash.val(total).trigger('change');
+        } else {
+            input_cash.val('0.00').trigger('change');
         }
     });
 
@@ -273,56 +344,6 @@ $(function () {
     select_switch_discount.trigger('change');
     select_switch_cortesia.trigger('change');
 
-    select_client.select2({
-        theme: "bootstrap4",
-        language: 'es',
-        allowClear: true,
-        ajax: {
-            delay: 250,
-            type: 'POST',
-            headers: {
-                'X-CSRFToken': csrftoken
-            },
-            url: pathname,
-            data: function (params) {
-                return {
-                    term: params.term,
-                    action: 'search_client'
-                };
-            },
-            processResults: function (data) {
-                return {
-                    results: data
-                };
-            },
-        },
-        placeholder: 'Ingrese un nombre o número de cedula de un cliente',
-        minimumInputLength: 1,
-    });
-
-    $('.btnAddClient').on('click', function () {
-        input_birthdate.datetimepicker('date', new Date());
-        $('#myModalClient').modal('show');
-    });
-
-    $('#myModalClient').on('hidden.bs.modal', function (event) {
-        $('#frmClient')[0].reset();
-    });
-
-    $('#frmClient').on('submit', function (e) {
-        e.preventDefault();
-        var form = $(this)[0];
-        var params = new FormData(form);
-        params.append('action', 'create_client');
-        var args = {
-            'params': params,
-            'success': function (request) {
-                select_client.select2('trigger', 'select', {data: request});
-                $('#myModalClient').modal('hide');
-            }
-        };
-        submit_with_formdata(args);
-    });
 
     $('input[name="names"]')
         .on('keypress', function (e) {
@@ -466,10 +487,25 @@ $(function () {
             tblSearchProducts.row(tr.row).remove().draw();
         });
 
-    $('.product_card').on('click', function() {
+    $(document).on('click', '.product_card', function() {
         const productId = $(this).data('id');
         const name = $(this).data('name');
         const unitPrice = parseFloat($(this).data('price'));
+        let stock = parseInt($(this).data('stock')) || 0;
+
+        // BLOQUEAR SI NO HAY STOCK
+        if (stock <= 0) {
+            console.log('Producto sin stock bloqueado');
+
+            // Opcional: mostrar alerta bonita
+            $.alert({
+                title: 'Sin stock',
+                content: 'Este producto no tiene stock disponible',
+                type: 'red'
+            });
+
+            return;
+        }
         
         // Evitar agregar el mismo producto varias veces (opcional)
         const existingRow = $('#tblProductsBarra tbody tr').filter(function() {
@@ -540,6 +576,65 @@ $(function () {
             total += price;
         });
         $('#id_total').val(formatPrice(total));
+    }
+
+    function addProductToBarra(product){
+
+        const productId = product.id;
+        const name = product.name;
+        const unitPrice = parseFloat(product.pvp);
+
+        const existingRow = $('#tblProductsBarra tbody tr').filter(function(){
+            return $(this).data('id') == productId;
+        });
+
+        if(existingRow.length > 0){
+            let qtyInput = existingRow.find('.input-qty');
+            qtyInput.val(parseInt(qtyInput.val()) + 1).trigger('change');
+            return;
+        }
+
+        const row = $(`
+            <tr data-id="${productId}" data-price="${unitPrice}">
+                <td>${name}</td>
+                <td style="width:80px;">
+                    <input type="number" class="form-control form-control-sm input-qty" value="1" min="1">
+                </td>
+                <td>
+                    <span class="price-display">${formatPrice(unitPrice)}</span>
+                    <button class="btn btn-sm btn-danger ms-2 btn-delete">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            </tr>
+        `);
+
+        $('#tblProductsBarra tbody').append(row);
+
+        row.find('.input-qty').on('change', function(){
+
+            let qty = parseInt($(this).val());
+
+            if(isNaN(qty) || qty < 1){
+                qty = 1;
+                $(this).val(qty);
+            }
+
+            const tr = $(this).closest('tr');
+            const pricePerUnit = parseFloat(tr.data('price'));
+            const totalPrice = qty * pricePerUnit;
+
+            tr.find('.price-display').text(formatPrice(totalPrice));
+
+            updateTotal();
+        });
+
+        row.find('.btn-delete').on('click', function(){
+            row.remove();
+            updateTotal();
+        });
+
+        updateTotal();
     }
     
     // Detail products

@@ -44,6 +44,7 @@ class ProductForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control','placeholder': 'Ingrese un nombre'}),
             'code': forms.TextInput(attrs={'class': 'form-control','placeholder': 'Ingrese un código'}),
+            'barcode': forms.TextInput(attrs={'class': 'form-control','placeholder': 'Escanee o ingrese código de barras'}),
             'description': forms.Textarea(attrs={'class': 'form-control','rows': 1,'placeholder': 'Ingrese una descripción', 'rows': 3, 'cols': 3}),
             'category': forms.Select(attrs={'class': 'form-control select2', 'style': 'width: 100%;'}),
             'price': forms.TextInput(attrs={'name': 'price'}),
@@ -84,7 +85,8 @@ class CompanyForm(forms.ModelForm):
             'website': forms.TextInput(attrs={'placeholder': 'Ingrese una dirección web'}),
             'description': forms.TextInput(attrs={'placeholder': 'Ingrese una descripción'}),
             'iva': forms.TextInput(),
-            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'})
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'enable_barcode_reader': forms.CheckboxInput(attrs={'class': 'form-check-input'})
         }
 
     def save(self, commit=True):
@@ -741,9 +743,6 @@ class EmployeeTransactionForm(forms.ModelForm):
         self.fields['employee'].widget.attrs['autofocus'] = True
         self.fields['employee'].queryset = Employee.objects.filter(is_active=True)
 
-        # Ocultar producto si no es tipo product (JS lo controla)
-        self.fields['product'].required = False
-
     class Meta:
         model = EmployeeTransaction
         fields = [
@@ -751,8 +750,8 @@ class EmployeeTransactionForm(forms.ModelForm):
             'transaction_type',
             'source',
             'amount',
-            'product',
-            'description'
+            'description',
+            'is_paid'
         ]
 
         widgets = {
@@ -777,26 +776,23 @@ class EmployeeTransactionForm(forms.ModelForm):
                 'placeholder': 'Ingrese valor'
             }),
 
-            'product': forms.Select(attrs={
-                'class': 'select2',
-                'style': 'width:100%'
-            }),
-
             'description': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 3,
                 'placeholder': 'Observación (opcional)'
             }),
+
+            'is_paid': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
         }
 
     def clean(self):
         cleaned = super().clean()
-        ttype = cleaned.get("transaction_type")
-        product = cleaned.get("product")
+        amount = cleaned.get("amount")
 
-        # validar producto obligatorio si tipo = producto
-        if ttype == "product" and not product:
-            raise forms.ValidationError("Debe seleccionar un producto.")
+        if amount is not None and amount <= 0:
+            raise forms.ValidationError("El monto debe ser mayor a 0.")
 
         return cleaned
 

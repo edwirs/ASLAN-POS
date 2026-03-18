@@ -12,13 +12,17 @@
 
 {% block form_fields %}
 <div class="row g-3">
-    <div class="col-md-6 col-lg-4">
+    <div class="col-md-12 col-lg-12">
         <label class="form-label fw-bold">{{ form.name.label }}</label>
         {{ form.name }}
     </div>
     <div class="col-md-6 col-lg-4">
         <label class="form-label fw-bold">{{ form.code.label }}</label>
         {{ form.code }}
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <label class="form-label fw-bold">{{ form.barcode.label }}</label>
+        {{ form.barcode }}
     </div>
     <div class="col-md-6 col-lg-4">
         <label class="form-label fw-bold">{{ form.category.label }}</label>

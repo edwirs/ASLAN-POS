@@ -18,6 +18,7 @@ from core.pos.choices import TIPO_CONTRATO
 from core.pos.choices import PERIODO_NOMINA
 from core.pos.choices import STATUS_CHOICES
 from core.pos.choices import EMPLOYEE_TRANSACTION_CHOICES
+from core.pos.choices import AUTORIZATION_DISCOUNT
 from core.user.models import User
 
 
@@ -41,7 +42,8 @@ class Category(models.Model):
 class Product(models.Model):
     name = models.CharField(max_length=100, verbose_name='Nombre')
     code = models.CharField(max_length=20, unique=True, verbose_name='Código')
-    description = models.CharField(max_length=500, null=True, blank=True, verbose_name='Descripción')
+    barcode = models.CharField(max_length=50, null=True, blank=True, verbose_name='Código de Barras')
+    description = models.CharField(max_length=500, null=True, blank=True, db_index=True, verbose_name='Descripción')
     category = models.ForeignKey(Category, on_delete=models.PROTECT, verbose_name='Categoría')
     price = models.DecimalField(max_digits=9, decimal_places=2, default=0.00, verbose_name='Precio de Compra')
     pvp = models.DecimalField(max_digits=9, decimal_places=2, default=0.00, verbose_name='Precio de Venta')
@@ -93,6 +95,10 @@ class Company(models.Model):
     iva = models.DecimalField(default=0.00, decimal_places=2, max_digits=9, verbose_name='IVA')
     image = models.ImageField(null=True, blank=True, upload_to='company/%Y/%m/%d', verbose_name='Logotipo de la empresa')
     is_active = models.BooleanField(default=True, verbose_name='Estado')
+    enable_barcode_reader = models.BooleanField(
+        default=False,
+        verbose_name='Activar lector de código de barras'
+    )
 
     def __str__(self):
         return self.name
@@ -194,12 +200,15 @@ class Sale(models.Model):
     paymentmethod = models.CharField(max_length=50, choices=PAYMENTMETHODS, default=PAYMENTMETHODS[0][0], verbose_name='Método de pago')
     transfermethods = models.CharField(max_length=50, choices=TRANSFERMETHODS, default=TRANSFERMETHODS[0][0], verbose_name='Tipo transferencia', null=True)
     typemethods = models.CharField(max_length=50, choices=TYPETMETHODS, default=TYPETMETHODS[0][0], verbose_name='Tipo pago', null=True)
+    autorization_discount = models.CharField(max_length=50, choices=AUTORIZATION_DISCOUNT, default=AUTORIZATION_DISCOUNT[0][0], verbose_name='Autorización Descuento', null=True)
+    discount_value = models.DecimalField(max_digits=9, decimal_places=2, default=0.00, verbose_name='Valor Descuento', null = True)
     expiration_date = models.DateField(null = True, blank=True , verbose_name='Fecha de vencimiento')
     service_type = models.CharField(max_length=50, choices=SERVICE_TYPE, default=SERVICE_TYPE[0][0], verbose_name='Tipo Servicio', null=True)
     delivered = models.BooleanField(default=False, verbose_name='Entregado')
     propina = models.DecimalField(max_digits=9, decimal_places=2, default=0.00, verbose_name='Propina')
     nequi_value = models.DecimalField(max_digits=9, decimal_places=2, default=0.00, verbose_name='Valor Nequi')
     daviplata_value = models.DecimalField(max_digits=9, decimal_places=2, default=0.00, verbose_name='Valor Daviplata')
+    description = models.CharField(max_length=500, null=True, blank=True, verbose_name='Descripción')
     is_active = models.BooleanField(default=True, verbose_name='Estado')
     # campos para integrar con Factus
     factus_invoice_id = models.CharField(max_length=50, null=True, blank=True)
@@ -265,6 +274,8 @@ class Sale(models.Model):
         item['change'] = float(self.change)
         item['paymentmethod'] = {'id': self.paymentmethod, 'name': self.get_paymentmethod_display()}
         item['transfermethods'] = {'id': self.transfermethods, 'name': self.get_transfermethods_display()}
+        item['autorization_discount'] = {'id': self.autorization_discount, 'name': self.get_autorization_discount_display()}
+        item['discount_value'] = float(self.discount_value or 0)
         item['typemethods'] = {'id': self.typemethods, 'name': self.get_typemethods_display()}
         item['expiration_date'] = (self.expiration_date.strftime('%Y-%m-%d') if self.expiration_date else None)
         item['service_type'] = {'id': self.service_type, 'name': self.get_service_type_display()}
@@ -924,7 +935,6 @@ class EmployeeTransaction(models.Model):
     transaction_type = models.CharField(max_length=20, choices=EMPLOYEE_TRANSACTION_CHOICES, verbose_name='Tipo')
     source = models.CharField(max_length=20, choices=EXPENSES, verbose_name='Desde')
     amount = models.DecimalField(max_digits=9, decimal_places=2, default=0, verbose_name='Valor')
-    product = models.ForeignKey(Product, null=True, blank=True, on_delete=models.PROTECT, verbose_name='Producto')
     description = models.TextField(blank=True, verbose_name='Description')
     created_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='created_transactions')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -947,7 +957,12 @@ class EmployeeTransaction(models.Model):
             "source": self.get_source_display(),
             "amount": float(self.amount),
             "balance": float(self.balance),
-            "product": self.product.name if self.product else None,
+            "products": [
+                {
+                    "name": d.product.name,
+                    "quantity": d.quantity
+                } for d in self.employeetransactiondetail_set.all()
+            ],
             "description": self.description,
             "created_by": self.created_by.username,
             "created_at": self.created_at.strftime("%Y-%m-%d %H:%M"),
@@ -969,3 +984,19 @@ class EmployeeTransaction(models.Model):
             ("pay_employee_transaction", "Puede registrar pagos"),
             ("report_employee_transaction", "Puede ver reportes de movimientos"),
         )
+
+class EmployeeTransactionDetail(models.Model):
+    transaction = models.ForeignKey(EmployeeTransaction, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.PROTECT, verbose_name='Producto')
+    quantity = models.IntegerField(default=1, verbose_name='Cantidad')
+
+    def save(self, *args, **kwargs):
+        # Validar stock
+        if self.product.stock < self.quantity:
+            raise Exception(f"No hay suficiente stock de {self.product.name}")
+
+        # Descontar stock
+        self.product.stock -= self.quantity
+        self.product.save()
+
+        super().save(*args, **kwargs)

@@ -8,10 +8,13 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
+from django.db import transaction
 
 from core.pos.utilities import printer
 from core.pos.forms import EmployeeTransactionForm
 from core.pos.models import Employee, EmployeeTransaction
+from core.pos.models import EmployeeTransactionDetail
+from core.pos.models import Product
 from core.security.mixins import GroupPermissionMixin
 
 MODULE_NAME = 'Transacciones Empleados'
@@ -64,15 +67,47 @@ class EmployeeTransactionCreateView(GroupPermissionMixin, CreateView):
                 form = self.get_form()
 
                 if form.is_valid():
-                    obj = form.save()
-                    #data = {'success': True}
-                    data = {'print_url': str(reverse_lazy('employee_transaction_print', kwargs={'pk': obj.id}))}
+
+                    transaction_type = request.POST.get('transaction_type')
+                    products = json.loads(request.POST.get('products', '[]'))
+
+                    if transaction_type == 'product':
+                        if not products:
+                            return JsonResponse(
+                                {'error': 'Debe seleccionar al menos un producto'},
+                                status=400
+                            )
+
+                    with transaction.atomic():
+                        obj = form.save()
+
+                        for item in products:
+                            product = Product.objects.get(id=item['id'])
+
+                            if product.stock < int(item['quantity']):
+                                raise Exception(f"Stock insuficiente para {product.name}")
+
+                            product.stock -= int(item['quantity'])
+                            product.save()
+
+                            EmployeeTransactionDetail.objects.create(
+                                transaction=obj,
+                                product_id=item['id'],
+                                quantity=int(item['quantity'])
+                            )
+
+                    data = {
+                        'print_url': str(reverse_lazy('employee_transaction_print', kwargs={'pk': obj.id}))
+                    }
+
                 else:
                     data = {'error': form.errors}
             else:
                 data['error'] = 'No ha seleccionado ninguna opción'
+
         except Exception as e:
             data['error'] = str(e)
+
         return HttpResponse(json.dumps(data), content_type='application/json')
 
     def get_context_data(self, **kwargs):
@@ -81,6 +116,7 @@ class EmployeeTransactionCreateView(GroupPermissionMixin, CreateView):
         context['list_url'] = self.success_url
         context['action'] = 'add'
         context['module_name'] = MODULE_NAME
+        context['products'] = Product.objects.all()
         return context
 
 class EmployeeTransactionUpdateView(GroupPermissionMixin, UpdateView):
@@ -97,19 +133,66 @@ class EmployeeTransactionUpdateView(GroupPermissionMixin, UpdateView):
     def post(self, request, *args, **kwargs):
         data = {}
         action = request.POST['action']
+
         try:
             if action == 'edit':
                 form = self.get_form()
 
                 if form.is_valid():
-                    obj = form.save()
+
+                    transaction_type = request.POST.get('transaction_type')
+                    products = json.loads(request.POST.get('products', '[]'))
+
+                    if transaction_type == 'product':
+                        if not products:
+                            return JsonResponse(
+                                {'error': 'Debe seleccionar al menos un producto'},
+                                status=400
+                            )
+
+                    with transaction.atomic():
+
+                        obj = self.get_object()
+
+                        # 🔥 1. DEVOLVER STOCK ANTERIOR
+                        for detail in obj.employeetransactiondetail_set.all():
+                            product = detail.product
+                            product.stock += detail.quantity
+                            product.save()
+
+                        # 🔥 2. BORRAR DETALLES
+                        obj.employeetransactiondetail_set.all().delete()
+
+                        # 🔥 3. GUARDAR TRANSACCIÓN
+                        obj = form.save()
+
+                        # 🔥 4. CREAR NUEVOS DETALLES
+                        for item in products:
+
+                            product = Product.objects.get(id=item['id'])
+
+                            if product.stock < int(item['quantity']):
+                                raise Exception(f"Stock insuficiente para {product.name}")
+
+                            product.stock -= int(item['quantity'])
+                            product.save()
+
+                            EmployeeTransactionDetail.objects.create(
+                                transaction=obj,
+                                product_id=item['id'],
+                                quantity=int(item['quantity'])
+                            )
+
                     data = {'success': True}
+
                 else:
                     data = {'error': form.errors}
             else:
                 data['error'] = 'No ha seleccionado ninguna opción'
+
         except Exception as e:
             data['error'] = str(e)
+
         return HttpResponse(json.dumps(data), content_type='application/json')
 
     def get_context_data(self, **kwargs):
@@ -118,6 +201,15 @@ class EmployeeTransactionUpdateView(GroupPermissionMixin, UpdateView):
         context['list_url'] = self.success_url
         context['action'] = 'edit'
         context['module_name'] = MODULE_NAME
+        context['details_json'] = json.dumps([
+            {
+                'id': d.product.id,
+                'name': d.product.name,
+                'price': float(d.product.price),
+                'quantity': d.quantity
+            }
+            for d in self.object.employeetransactiondetail_set.all()
+        ])
         return context
 
 

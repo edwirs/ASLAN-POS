@@ -466,10 +466,25 @@ $(function () {
             tblSearchProducts.row(tr.row).remove().draw();
         });
 
-    $('.product_card').on('click', function() {
+    $(document).on('click', '.product_card', function() {
         const productId = $(this).data('id');
         const name = $(this).data('name');
         const unitPrice = parseFloat($(this).data('price'));
+        let stock = parseInt($(this).data('stock')) || 0;
+
+        // BLOQUEAR SI NO HAY STOCK
+        if (stock <= 0) {
+            console.log('Producto sin stock bloqueado');
+
+            // Opcional: mostrar alerta bonita
+            $.alert({
+                title: 'Sin stock',
+                content: 'Este producto no tiene stock disponible',
+                type: 'red'
+            });
+
+            return;
+        }
         
         // Evitar agregar el mismo producto varias veces (opcional)
         const existingRow = $('#tblProductsBarra tbody tr').filter(function() {
@@ -628,7 +643,8 @@ $(function () {
         keepOpen: false,
     });
 
-    $(document).on('click', '.btn-save-order', function () {
+    $(document).on('click', '.btn-save-order', function (e) {
+        e.preventDefault();
         saveOrder();
     });
 

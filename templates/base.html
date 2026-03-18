@@ -98,7 +98,7 @@
 
 {% block body %}
 
-<body class="hold-transition sidebar-mini layout-fixed">
+<body class="hold-transition sidebar-mini layout-fixed {% block body_class %}{% endblock %}">
   <!-- Navbar -->
 
   <nav class="main-header navbar navbar-expand navbar-white navbar-light">
@@ -138,21 +138,20 @@
       {% if perms.pos.add_bar %}
         <li class="nav-item">
           <a href="{% url 'order_list' %}" class="nav-link" >
-            <i class="far fa-file-text"></i>
-            Ventas Rápidas
+            <i class="fas fa-clipboard-list"></i>
+            Pedidos Mesas
           </a>
         </li>
       {% endif %}
 
-      <li class="nav-item">
-        <a
-          class="nav-link"
-          href="{% url 'sale_Fe_admin_create' %}"
-        >
-          <i class="fas fa-file-invoice-dollar"></i>
-          Factura Electrónica
-        </a>
-      </li>
+      {% if perms.pos.add_bar %}
+        <li class="nav-item">
+          <a href="{% url 'bar_admin_create' %}" class="nav-link" >
+            <i class="fas fa-bolt"></i>
+            Ventas Rápidas
+          </a>
+        </li>
+      {% endif %}
 
       <!--{% if perms.pos.add_bar %}
         <li class="nav-item">
@@ -372,15 +371,6 @@
                   </a>
                 </li>
               {% endif %}
-
-              {% if perms.pos.view_company %}
-                  <li class="nav-item">
-                    <a href="{% url 'inventory_management' %}" class="nav-link" >
-                      <i class="far fa-circle nav-icon"></i>
-                      <p>Administrador Inventario</p>
-                    </a>
-                  </li>
-                {% endif %}
             </ul>
           </li>
         {% endif %}
@@ -393,20 +383,12 @@
             >
               <i class="fas fa-file-text"></i>
               <p>
-                Facturación
+                Ventas
                 <i class="fas fa-angle-left right"></i>
               </p>
             </a>
 
             <ul class="nav nav-treeview">
-              {% if perms.pos.add_bar %}
-                <li class="nav-item">
-                  <a href="{% url 'bar_admin_create' %}" class="nav-link" >
-                    <i class="far fa-circle nav-icon"></i>
-                    <p>Barra</p>
-                  </a>
-                </li>
-              {% endif %}
 
               {% if perms.pos.view_sale %}
                 <li class="nav-item">
@@ -415,25 +397,7 @@
                     class="nav-link"
                   >
                     <i class="far fa-circle nav-icon"></i>
-                    <p>Ventas</p>
-                  </a>
-                </li>
-              {% endif %}
-
-              {% if perms.pos.add_bar %}
-                <li class="nav-item">
-                  <a href="{% url 'order_list' %}" class="nav-link" >
-                    <i class="far fa-circle nav-icon"></i>
-                    <p>Ventas Rápidas</p>
-                  </a>
-                </li>
-              {% endif %}
-
-              {% if perms.pos.add_bar %}
-                <li class="nav-item">
-                  <a href="{% url 'kitchen_board' %}" class="nav-link" >
-                    <i class="far fa-circle nav-icon"></i>
-                    <p>Cocina</p>
+                    <p>Facturas</p>
                   </a>
                 </li>
               {% endif %}
@@ -445,19 +409,7 @@
                     class="nav-link"
                   >
                     <i class="far fa-circle nav-icon"></i>
-                    <p>Factura Electrónica</p>
-                  </a>
-                </li>
-              {% endif %}
-
-              {% if perms.pos.view_buy %}
-                <li class="nav-item">
-                  <a
-                    href="{% url 'buy_admin_list' %}"
-                    class="nav-link"
-                  >
-                    <i class="far fa-circle nav-icon"></i>
-                    <p>Compras</p>
+                    <p>Facturas Electrónicas</p>
                   </a>
                 </li>
               {% endif %}
@@ -472,6 +424,88 @@
                     <p>Cotizaciones</p>
                   </a>
                 </li>
+              {% endif %}
+            </ul>
+          </li>
+        {% endif %}
+
+        {% if perms.pos.add_bar or perms.pos.view_sale or perms.pos.view_buy or perms.pos.view_price %}
+          <li class="nav-item">
+            <a
+              href="#"
+              class="nav-link"
+            >
+              <i class="fas fa-utensils"></i>
+              <p>
+                Operaciones
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+
+            <ul class="nav nav-treeview">
+              {% if perms.pos.add_bar %}
+                <li class="nav-item">
+                  <a href="{% url 'bar_admin_create' %}" class="nav-link" >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Ventas Rápidas</p>
+                  </a>
+                </li>
+              {% endif %}
+
+              {% if perms.pos.add_bar %}
+                <li class="nav-item">
+                  <a href="{% url 'order_list' %}" class="nav-link" >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Ventas Mesas</p>
+                  </a>
+                </li>
+              {% endif %}
+
+              {% if perms.pos.add_bar %}
+                <li class="nav-item">
+                  <a href="{% url 'kitchen_board' %}" class="nav-link" >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Cocina</p>
+                  </a>
+                </li>
+              {% endif %}
+            </ul>
+          </li>
+        {% endif %}
+
+        {% if perms.pos.add_bar or perms.pos.view_sale or perms.pos.view_buy or perms.pos.view_price %}
+          <li class="nav-item">
+            <a
+              href="#"
+              class="nav-link"
+            >
+              <i class="fas fa-warehouse"></i>
+              <p>
+                Inventario
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+
+            <ul class="nav nav-treeview">
+              {% if perms.pos.view_buy %}
+                <li class="nav-item">
+                  <a
+                    href="{% url 'buy_admin_list' %}"
+                    class="nav-link"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Compras</p>
+                  </a>
+                </li>
+              {% endif %}
+
+              {% if perms.pos.view_company %}
+                  <li class="nav-item">
+                    <a href="{% url 'inventory_management' %}" class="nav-link" >
+                      <i class="far fa-circle nav-icon"></i>
+                      <p>Administrador Inventario</p>
+                    </a>
+                  </li>
               {% endif %}
 
               {% if perms.pos.view_bill %}

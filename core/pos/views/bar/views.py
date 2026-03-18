@@ -14,7 +14,7 @@ from core.pos.utilities import printer
 from core.reports.forms import ReportForm
 from core.security.mixins import GroupPermissionMixin
 
-MODULE_NAME = 'Barra'
+MODULE_NAME = 'Ventas Rápidas'
 
 class BarCreateView(GroupPermissionMixin, CreateView):
     model = Sale
@@ -37,7 +37,7 @@ class BarCreateView(GroupPermissionMixin, CreateView):
                         sale.employee_id = request.POST.get('employee')
                     else:
                         sale.employee_id = request.user.id
-                    sale.client_id = int(request.POST['client'])
+                    sale.client = Client.objects.get(dni='222222222222')
                     sale.iva = iva
                     sale.dscto = float(request.POST['dscto']) / 100
                     sale.cash = float(0)
@@ -60,18 +60,11 @@ class BarCreateView(GroupPermissionMixin, CreateView):
                     for i in json.loads(request.POST['products']):
                         product = Product.objects.get(pk=i['id'])
 
-                        # Obtener el grupo del usuario
-                        try:
-                            user_group = UserInventoryGroup.objects.get(user=request.user).group
-                        except UserInventoryGroup.DoesNotExist:
-                            raise Exception("Este usuario no tiene un grupo de inventario asignado.")
-                        
-                        # Obtener stock asignado a ese grupo
-                        group_stock = ProductInventoryGroupStock.objects.get(product=product, group=user_group)
-
-                        # Validar que haya stock suficiente en el grupo
-                        if group_stock.stock < int(i['cant']):
-                            raise Exception(f"No hay suficiente stock del producto '{product.name}' en tu grupo.")
+                        qty = int(i['cant'])
+                        # VALIDAR STOCK
+                        if not product.is_service:
+                            if product.stock < qty:
+                                raise Exception(f"No hay suficiente stock del producto '{product.name}'. Stock disponible: {product.stock}")
 
                         # Crear detalle de venta
                         detail = SaleDetail()
@@ -84,10 +77,6 @@ class BarCreateView(GroupPermissionMixin, CreateView):
 
                         sale.calculate_detail()
 
-                        # Descontar del stock del grupo
-                        group_stock.stock -= detail.cant
-                        group_stock.save()
-
                         # Descontar del inventario general
                         product.stock -= detail.cant
                         product.save()
@@ -97,27 +86,8 @@ class BarCreateView(GroupPermissionMixin, CreateView):
                         for auto in auto_products:
                             auto_product = auto.auto_product
 
-                            # Obtener stock del producto autoasociado en el grupo
-                            auto_group_stock = ProductInventoryGroupStock.objects.get(product=auto_product, group=user_group)
-
-                            if auto_group_stock.stock < auto.quantity:
-                                raise Exception(f"No hay suficiente stock del producto automático '{auto_product.name}' en tu grupo.")
-
-                            extra_detail = SaleDetail()
-                            extra_detail.sale_id = sale.id
-                            extra_detail.product_id = auto_product.id
-                            extra_detail.cant = auto.quantity
-                            extra_detail.price = 0
-                            extra_detail.dscto = 0
-                            extra_detail.save()
-                            sale.calculate_detail()
-
-                            # Descontar del stock del grupo para producto automático
-                            auto_group_stock.stock -= auto.quantity
-                            auto_group_stock.save()
-
                             # Descontar del inventario general del producto automático
-                            auto_product.stock -= auto.quantity
+                            auto_product.stock -= auto.quantity * int(i['cant'])
                             auto_product.save()
                     sale.calculate_invoice()
                     # Aplicar descuento personalizado (después de calcular total)
@@ -146,6 +116,14 @@ class BarCreateView(GroupPermissionMixin, CreateView):
                     item['dscto'] = '0.00'
                     item['total_dscto'] = '0.00'
                     data.append(item)
+            elif action == 'search_product_barcode':
+                barcode = request.POST.get('barcode')
+
+                try:
+                    product = Product.objects.get(barcode=barcode)
+                    return JsonResponse(product.toJSON(), safe=False)
+                except Product.DoesNotExist:
+                    return JsonResponse({'error': 'Producto no encontrado'})
             elif action == 'search_client':
                 data = []
                 term = request.POST['term']
@@ -159,12 +137,6 @@ class BarCreateView(GroupPermissionMixin, CreateView):
         except Exception as e:
             data['error'] = str(e)
         return HttpResponse(json.dumps(data), content_type='application/json')
-
-    def get_final_consumer(self):
-        queryset = Client.objects.filter(dni='2222222222')
-        if queryset.exists():
-            return json.dumps(queryset[0].toJSON())
-        return {}
     
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -175,11 +147,10 @@ class BarCreateView(GroupPermissionMixin, CreateView):
         context = super().get_context_data()
         context['frmClient'] = ClientForm()
         context['list_url'] = self.success_url
-        context['title'] = 'Nuevo registro de una Venta de Barra'
+        context['title'] = 'Nuevo registro de una Venta'
         context['action'] = 'add'
         context['company'] = Company.objects.first()
         context['categories'] = Category.objects.all().order_by('name')
-        context['final_consumer'] = self.get_final_consumer()
         context['module_name'] = MODULE_NAME
 
         user = self.request.user

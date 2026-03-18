@@ -62,3 +62,10 @@ EMPLOYEE_TRANSACTION_CHOICES = (
         ('product', 'Producto'),
         ('other', 'Otro'),
     )
+
+AUTORIZATION_DISCOUNT = (
+    ('cristian', 'Cristian Barragan'),
+    ('randol', 'Randol Barragan'),
+    ('diego', 'Diego Barragan'),
+    ('steven', 'Steven Monroy'),
+)

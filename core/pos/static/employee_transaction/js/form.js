@@ -1,106 +1,229 @@
-var input_date, input_due_date;
+var products = [];
+
+if (typeof initial_products !== 'undefined') {
+    try {
+        products = typeof initial_products === 'string'
+            ? JSON.parse(initial_products)
+            : initial_products;
+    } catch (e) {
+        products = [];
+    }
+}
 
 $(function () {
 
-    /* =========================
-       DATE PICKERS
-    ========================== */
-    input_date = $('input[name="date"]');
-    input_due_date = $('input[name="due_date"]');
-
-    input_date.datetimepicker({
-        format: 'YYYY-MM-DD HH:mm',
-        locale: 'es',
-        sideBySide: true
-    });
-
-    input_due_date.datetimepicker({
-        format: 'YYYY-MM-DD',
-        locale: 'es'
-    });
-
-
-    /* =========================
-       SELECT2
-    ========================== */
     $('.select2').select2({
         theme: 'bootstrap4',
         language: 'es'
     });
 
-
-    /* =========================
-       MONTO
-    ========================== */
     $('input[name="amount"]').TouchSpin({
         min: 0,
         max: 100000000,
         step: 100,
         decimals: 0,
-        prefix: '$',
-        boostat: 5,
-        maxboostedstep: 10
-    }).on('keypress', function (e) {
-        return validate_text_box({
-            event: e,
-            type: 'decimals'
+        prefix: '$'
+    });
+
+    // 🔥 FORZAR VALOR INICIAL
+    setTimeout(function () {
+        let amount = $('#id_amount').attr('value');
+        if (amount !== undefined && amount !== '') {
+            $('#id_amount').val(parseFloat(amount)).trigger('change');
+        }
+    }, 100);
+
+    /* =========================
+       AGREGAR PRODUCTO
+    ========================== */
+    $('#select_product').on('change', function () {
+
+        let option = $("#select_product option:selected");
+        let id = option.val();
+
+        if (!id) return;
+
+        let text = option.text();
+        let price = parseFloat(option.data('price')) || 0;
+
+        let exists = products.find(p => p.id == id);
+
+        if (exists) {
+            exists.quantity++;
+        } else {
+            products.push({
+                id: id,
+                name: text,
+                price: price,
+                quantity: 1
+            });
+        }
+
+        renderProducts();
+        calculateTotal();
+
+        $(this).val(null).trigger('change');
+    });
+
+    /* =========================
+       RENDER TABLA
+    ========================== */
+    function renderProducts() {
+
+        let tbody = $('#tblProducts tbody');
+        tbody.empty();
+
+        products.forEach((p, index) => {
+
+            let subtotal = p.price * p.quantity;
+
+            tbody.append(`
+                <tr>
+                    <td>${p.name}</td>
+
+                    <td>
+                        <input type="number" min="1" value="${p.quantity}" 
+                        class="form-control form-control-sm qty" data-index="${index}">
+                    </td>
+
+                    <td>$${formatMoney(p.price)}</td>
+
+                    <td>$${formatMoney(subtotal)}</td>
+
+                    <td>
+                        <button class="btn btn-danger btn-sm remove" data-index="${index}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `);
         });
-    });
-
-
-    /* =========================
-       CANTIDAD PRODUCTO
-    ========================== */
-    $('input[name="quantity"]').TouchSpin({
-        min: 1,
-        max: 1000,
-        step: 1
-    });
-
+    }
 
     /* =========================
-       MOSTRAR CAMPOS DINÁMICOS
+       FORMATO DINERO
     ========================== */
-    $('select[name="transaction_type"]').on('change', function () {
+    function formatMoney(value) {
+        return new Intl.NumberFormat('es-CO').format(value);
+    }
 
-        var type = $(this).val();
+    /* =========================
+       CALCULAR TOTAL
+    ========================== */
+    function calculateTotal() {
 
-        // reset
-        $('.field-product').hide();
-        $('.field-amount').hide();
+        let total = 0;
 
-        if(type === 'product'){
-            $('.field-product').fadeIn();
+        products.forEach(p => {
+            total += p.price * p.quantity;
+        });
+
+        // input real (backend)
+        $('#id_amount').val(total).trigger('change');
+
+        // visual
+        $('#total_amount').text(formatMoney(total));
+    }
+
+    /* =========================
+       CAMBIAR CANTIDAD
+    ========================== */
+    $(document).on('change', '.qty', function () {
+
+        let index = $(this).data('index');
+        let value = parseInt($(this).val());
+
+        if (value < 1) value = 1;
+
+        products[index].quantity = value;
+
+        renderProducts();
+        calculateTotal();
+    });
+
+    /* =========================
+       ELIMINAR PRODUCTO
+    ========================== */
+    $(document).on('click', '.remove', function () {
+
+        let index = $(this).data('index');
+        products.splice(index, 1);
+
+        renderProducts();
+        calculateTotal();
+    });
+
+    /* =========================
+       CONTROL POR TIPO
+    ========================== */
+    $('#id_transaction_type').on('change', function () {
+        toggleTransactionType();
+    });
+
+    function toggleTransactionType() {
+
+        let type = $('#id_transaction_type').val();
+
+        let source = $('#id_source');
+        let productsCard = $('#card-products');
+        let amount = $('#id_amount');
+
+        if (type === 'product') {
+
+            source.val('inventory').trigger('change');
+            source.prop('disabled', true);
+
+            productsCard.show();
+
+            // 🔒 bloquear edición manual
+            amount.prop('readonly', true);
+
+        } else {
+
+            source.prop('disabled', false);
+
+            productsCard.hide();
+
+            products = [];
+            renderProducts();
+
+            // 🔓 permitir edición
+            amount.prop('readonly', false);
         }
-        else{
-            $('.field-amount').fadeIn();
-        }
-    });
+    }
 
+    if (products.length > 0) {
+        $('#id_transaction_type').val('product').trigger('change');
+    } else {
+        toggleTransactionType();
+    }
 
     /* =========================
-       VALIDACIÓN
+       SUBMIT
     ========================== */
-
     $('#frmForm').off('submit').on('submit', function (e) {
         e.preventDefault();
 
-        let amount = parseFloat($('#id_amount').val()) || 0;
+        $('#id_transaction_type').trigger('change');
+        let type = $('#id_transaction_type option:selected').val();
 
-        if (amount <= 0){
-            return message_error('El monto debe ser mayor a 0');
+        if (type === 'product' && products.length === 0) {
+            return message_error('Debe agregar al menos un producto');
         }
 
         let form = this;
         let params = new FormData(form);
         let url_redirect = $(this).attr('data-url');
+        params.append('source', $('#id_source').val());
+
+        params.append('products', JSON.stringify(products));
 
         let btn = $(this).find('button[type="submit"]');
         btn.prop('disabled', true);
 
         submit_with_formdata({
             params: params,
-            success: function(request){
+            success: function (request) {
 
                 let iframe = document.createElement('iframe');
                 iframe.style.display = 'none';
@@ -110,8 +233,8 @@ $(function () {
 
                 let redirected = false;
 
-                function goBack(){
-                    if(!redirected){
+                function goBack() {
+                    if (!redirected) {
                         redirected = true;
                         iframe.remove();
                         toastr.success('Transacción guardada correctamente');
@@ -120,12 +243,12 @@ $(function () {
                     }
                 }
 
-                iframe.onload = function(){
+                iframe.onload = function () {
 
                     iframe.contentWindow.focus();
                     iframe.contentWindow.print();
 
-                    let printMonitor = setInterval(function() {
+                    let printMonitor = setInterval(function () {
                         if (document.hasFocus()) {
                             clearInterval(printMonitor);
                             goBack();
@@ -136,4 +259,18 @@ $(function () {
             }
         });
     });
+    if (products.length > 0) {
+        renderProducts();
+
+        // 🔥 SOLO recalcula si NO hay valor previo
+        let currentAmount = parseFloat($('#id_amount').val()) || 0;
+
+        if (currentAmount === 0) {
+            calculateTotal();
+        }
+    } else {
+        // 🔥 mantener valor existente
+        let currentAmount = parseFloat($('#id_amount').val()) || 0;
+        $('#id_amount').val(currentAmount).trigger('change');
+    }
 });
