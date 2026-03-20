@@ -62,7 +62,7 @@
             <select id="select_product" class="form-control select2">
                 <option value="">Buscar producto...</option>
                 {% for p in products %}
-                    <option value="{{ p.id }}" data-price="{{ p.price }}">
+                    <option value="{{ p.id }}" data-pvp="{{ p.pvp }}">
                         {{ p.name }}
                     </option>
                 {% endfor %}

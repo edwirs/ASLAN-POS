@@ -205,7 +205,7 @@ class EmployeeTransactionUpdateView(GroupPermissionMixin, UpdateView):
             {
                 'id': d.product.id,
                 'name': d.product.name,
-                'price': float(d.product.price),
+                'pvp': float(d.product.pvp),
                 'quantity': d.quantity
             }
             for d in self.object.employeetransactiondetail_set.all()

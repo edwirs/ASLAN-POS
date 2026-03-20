@@ -44,7 +44,7 @@ $(function () {
         if (!id) return;
 
         let text = option.text();
-        let price = parseFloat(option.data('price')) || 0;
+        let pvp = parseFloat(option.data('pvp')) || 0;
 
         let exists = products.find(p => p.id == id);
 
@@ -54,7 +54,7 @@ $(function () {
             products.push({
                 id: id,
                 name: text,
-                price: price,
+                pvp: pvp,
                 quantity: 1
             });
         }
@@ -75,7 +75,7 @@ $(function () {
 
         products.forEach((p, index) => {
 
-            let subtotal = p.price * p.quantity;
+            let subtotal = p.pvp * p.quantity;
 
             tbody.append(`
                 <tr>
@@ -86,7 +86,7 @@ $(function () {
                         class="form-control form-control-sm qty" data-index="${index}">
                     </td>
 
-                    <td>$${formatMoney(p.price)}</td>
+                    <td>$${formatMoney(p.pvp)}</td>
 
                     <td>$${formatMoney(subtotal)}</td>
 
@@ -115,7 +115,7 @@ $(function () {
         let total = 0;
 
         products.forEach(p => {
-            total += p.price * p.quantity;
+            total += p.pvp * p.quantity;
         });
 
         // input real (backend)
