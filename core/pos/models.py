@@ -991,12 +991,12 @@ class EmployeeTransactionDetail(models.Model):
     quantity = models.IntegerField(default=1, verbose_name='Cantidad')
 
     def save(self, *args, **kwargs):
-        # Validar stock
-        if self.product.stock < self.quantity:
-            raise Exception(f"No hay suficiente stock de {self.product.name}")
 
-        # Descontar stock
-        self.product.stock -= self.quantity
-        self.product.save()
+        if not self.product.is_service:
+            if self.product.stock < self.quantity:
+                raise Exception(f"No hay suficiente stock de {self.product.name}")
+
+            self.product.stock -= self.quantity
+            self.product.save()
 
         super().save(*args, **kwargs)

@@ -14,7 +14,7 @@ from core.pos.utilities import printer
 from core.pos.forms import EmployeeTransactionForm
 from core.pos.models import Employee, EmployeeTransaction
 from core.pos.models import EmployeeTransactionDetail
-from core.pos.models import Product
+from core.pos.models import Product, ProductAutoAdd
 from core.security.mixins import GroupPermissionMixin
 
 MODULE_NAME = 'Transacciones Empleados'
@@ -83,18 +83,30 @@ class EmployeeTransactionCreateView(GroupPermissionMixin, CreateView):
 
                         for item in products:
                             product = Product.objects.get(id=item['id'])
+                            quantity = int(item['quantity'])
 
-                            if product.stock < int(item['quantity']):
-                                raise Exception(f"Stock insuficiente para {product.name}")
+                            if not product.is_service:
+                                if product.stock < quantity:
+                                    raise Exception(f"Stock insuficiente para {product.name}")
 
-                            product.stock -= int(item['quantity'])
-                            product.save()
+                                product.stock -= quantity
+                                product.save()
 
                             EmployeeTransactionDetail.objects.create(
                                 transaction=obj,
                                 product_id=item['id'],
                                 quantity=int(item['quantity'])
                             )
+
+                            # ✅ PRODUCTOS AUTOMÁTICOS
+                            auto_products = ProductAutoAdd.objects.filter(trigger_product=product)
+
+                            for auto in auto_products:
+                                auto_product = auto.auto_product
+
+                                if not auto_product.is_service:
+                                    auto_product.stock -= auto.quantity * quantity
+                                    auto_product.save()
 
                     data = {
                         'print_url': str(reverse_lazy('employee_transaction_print', kwargs={'pk': obj.id}))
@@ -170,12 +182,14 @@ class EmployeeTransactionUpdateView(GroupPermissionMixin, UpdateView):
                         for item in products:
 
                             product = Product.objects.get(id=item['id'])
+                            quantity = int(item['quantity'])
 
-                            if product.stock < int(item['quantity']):
-                                raise Exception(f"Stock insuficiente para {product.name}")
+                            if not product.is_service:
+                                if product.stock < quantity:
+                                    raise Exception(f"Stock insuficiente para {product.name}")
 
-                            product.stock -= int(item['quantity'])
-                            product.save()
+                                product.stock -= quantity
+                                product.save()
 
                             EmployeeTransactionDetail.objects.create(
                                 transaction=obj,
