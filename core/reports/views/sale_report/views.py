@@ -40,6 +40,11 @@ class SaleReportView(LoginRequiredMixin, FormView):
                     "value": float(
                         queryset.filter(paymentmethod="cash", transfermethods__isnull=True)
                         .aggregate(total=Coalesce(Sum("total", output_field=FloatField()), 0.0))["total"]
+                    )
+                    +
+                    (
+                        queryset.filter(paymentmethod="mixto")
+                        .aggregate(total=Coalesce(Sum("cash", output_field=FloatField()), 0.0))["total"]
                     ),
                 },
                 {
@@ -65,7 +70,10 @@ class SaleReportView(LoginRequiredMixin, FormView):
                 {
                     "name": "Total Tarjetas",
                     "value": float(
-                        queryset.filter(paymentmethod="creditcard", transfermethods__isnull=True)
+                        queryset.filter(
+                            paymentmethod__in=["creditcard", "debitcard"],
+                            transfermethods__isnull=True
+                        )
                         .aggregate(total=Coalesce(Sum("total", output_field=FloatField()), 0.0))["total"]
                     ),
                 },
