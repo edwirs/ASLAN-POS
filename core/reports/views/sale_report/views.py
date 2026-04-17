@@ -71,7 +71,7 @@ class SaleReportView(LoginRequiredMixin, FormView):
                     "name": "Total Tarjetas",
                     "value": float(
                         queryset.filter(
-                            paymentmethod__in=["creditcard", "debitcard"],
+                            paymentmethod__in=["creditCard", "debitCard"],
                             transfermethods__isnull=True
                         )
                         .aggregate(total=Coalesce(Sum("total", output_field=FloatField()), 0.0))["total"]
