@@ -37,7 +37,7 @@ var sale = {
                 {data: "id"},
                 {data: "client.names"},
                 {data: "employee.names"},
-                {data: "date_joined"},
+                {data: "datetime_full"},
                 {data: "total_dscto"},
                 {data: "total"},    
                 {data: "propina"},    
