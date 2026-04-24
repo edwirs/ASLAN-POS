@@ -6,6 +6,8 @@ from django.db.models import Sum, FloatField
 from django.db.models.functions import Coalesce
 from django.forms import model_to_dict
 from decimal import Decimal, ROUND_HALF_UP
+from zoneinfo import ZoneInfo
+from django.utils import timezone
 
 from config import settings
 from core.pos.choices import GENDER
@@ -20,7 +22,6 @@ from core.pos.choices import STATUS_CHOICES
 from core.pos.choices import EMPLOYEE_TRANSACTION_CHOICES
 from core.pos.choices import AUTORIZATION_DISCOUNT
 from core.user.models import User
-
 
 class Category(models.Model):
     name = models.CharField(max_length=50, unique=True, verbose_name='Nombre')
@@ -262,8 +263,9 @@ class Sale(models.Model):
         item['employee'] = self.employee.toJSON()
         item['date_joined'] = self.date_joined.strftime('%Y-%m-%d')
         item['date_joined'] = self.date_joined.strftime('%Y-%m-%d')
-        item['creation_time'] = self.creation_date.strftime('%H:%M:%S')
-        item['datetime_full'] = self.creation_date.strftime('%Y-%m-%d %I:%M:%S %p')
+        local_date = self.creation_date.astimezone(ZoneInfo("America/Bogota"))
+        item['creation_time'] = local_date.strftime('%I:%M:%S %p')
+        item['datetime_full'] = local_date.strftime('%Y-%m-%d %I:%M %p')
         item['subtotal_12'] = float(self.subtotal_12)
         item['subtotal_12_sin_iva'] = float(self.subtotal_12_sin_iva)
         item['subtotal_0'] = float(self.subtotal_0)
