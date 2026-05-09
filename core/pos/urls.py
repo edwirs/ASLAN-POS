@@ -24,6 +24,7 @@ from core.pos.views.table.views import *
 from core.pos.views.order.views import *
 from core.pos.views.kitchen_order.views import *
 from core.pos.views.employee_transaction.views import *
+from core.pos.views.cashClosing.views import *
 
 urlpatterns = [
     # category
@@ -126,4 +127,11 @@ urlpatterns = [
     path('employeeTransaction/update/<int:pk>/', EmployeeTransactionUpdateView.as_view(), name='employee_transaction_update'),
     path('employeeTransaction/delete/<int:pk>/', EmployeeTransactionDeleteView.as_view(), name='employee_transaction_delete'),
     path('employeeTransaction/print/transaction/<int:pk>/', EmployeeTransactionPrintView.as_view(), name='employee_transaction_print'),
+    # cierre de caja
+    path('cashClosing', CashClosingListView.as_view(), name='cashClosing_list'),
+    path('cashClosing/add/', CashClosingCreateView.as_view(), name='cashClosing_create'),
+    path('cashClosing/update/<int:pk>/', EmployeeTransactionUpdateView.as_view(), name='cashClosing_update'),
+    path('cashClosing/delete/<int:pk>/', EmployeeTransactionDeleteView.as_view(), name='cashClosing_delete'),
+    path('cashClosing/print/transaction/<int:pk>/', EmployeeTransactionPrintView.as_view(), name='cashClosing_print'),
+    
 ]

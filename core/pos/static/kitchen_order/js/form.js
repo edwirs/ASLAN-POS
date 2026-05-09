@@ -135,6 +135,18 @@ document.addEventListener('DOMContentLoaded', function () {
                                     ${itemsHTML}
                                 </div>
 
+                                ${order.observations ? `
+                                    <div class="kitchen-note">
+                                        <div class="kitchen-note-label">
+                                            📝 Observaciones
+                                        </div>
+
+                                        <div class="kitchen-note-text">
+                                            ${order.observations}
+                                        </div>
+                                    </div>
+                                ` : ''}
+
                                 <!-- 👇 SIEMPRE ABAJO -->
                                 <div class="kitchen-actions mt-auto pt-3">
                                     <button 

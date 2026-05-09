@@ -187,6 +187,7 @@ class OrderCreateView(GroupPermissionMixin, CreateView):
             if action == 'update_order':
                 with transaction.atomic():
                     order_id = request.POST.get('order_id')
+                    observations = request.POST.get('observations', '')
                     products = json.loads(request.POST.get('products'))
                     order = Order.objects.get(id=order_id)
 
@@ -209,6 +210,7 @@ class OrderCreateView(GroupPermissionMixin, CreateView):
                             price=item['pvp']
                         )
                     order.total = total
+                    order.observations = observations
                     order.save()
                     data['redirect'] = reverse('order_list')
             else:

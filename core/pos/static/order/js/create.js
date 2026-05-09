@@ -714,6 +714,7 @@ function saveOrder() {
     params.append('action', 'update_order'); // 🔥 CLAVE
     params.append('order_id', $('input[name="order_id"]').val()); // 🔥 CLAVE
     params.append('products', JSON.stringify(products));
+    params.append('observations',$('textarea[name="observations"]').val());
     params.append('csrfmiddlewaretoken', csrftoken);
 
     $.ajax({

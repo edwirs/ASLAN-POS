@@ -876,6 +876,7 @@ class Order(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0], verbose_name='Estado')
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    observations = models.TextField(null=True,blank=True,verbose_name='Observaciones')
 
     def toJSON(self):
         item = model_to_dict(self)
@@ -1005,3 +1006,51 @@ class EmployeeTransactionDetail(models.Model):
             self.product.save()
 
         super().save(*args, **kwargs)
+        
+class CashClosing(models.Model):
+
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now_add=True)
+    total_sales = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    cash_sales = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    credit_sales = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    debit_sales = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    transfer_sales = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    expected_cash = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    base_cash = models.DecimalField(max_digits=9,decimal_places=2,default=0.00,verbose_name='Base Inicial')
+    real_cash = models.DecimalField(max_digits=10, decimal_places=2)
+    difference = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    observations = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        self.difference = self.real_cash - self.expected_cash
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'Cierre #{self.id} - {self.user.username}'
+
+    def toJSON(self):
+        item = model_to_dict(self)
+        item['user'] = {
+            'id': self.user.id,
+            'names': self.user.names
+        }
+        item['created_at'] = self.created_at.strftime('%Y-%m-%d %H:%M')
+        item['total_sales'] = float(self.total_sales)
+        item['cash_sales'] = float(self.cash_sales)
+        item['credit_sales'] = float(self.credit_sales)
+        item['debit_sales'] = float(self.debit_sales)
+        item['transfer_sales'] = float(self.transfer_sales)
+        item['expenses'] = float(self.expenses)
+        item['expected_cash'] = float(self.expected_cash)
+        item['base_cash'] = float(self.base_cash)
+        item['real_cash'] = float(self.real_cash)
+        item['difference'] = float(self.difference)
+        return item
+
+    class Meta:
+        verbose_name = 'Cierre de Caja'
+        verbose_name_plural = 'Cierres de Caja'
+        ordering = ['-created_at']

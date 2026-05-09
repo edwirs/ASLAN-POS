@@ -725,12 +725,17 @@ class TableForm(forms.ModelForm):
 class OrderBarraForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ['total']
+        fields = ['total', 'observations']
         widgets = {
             'total': forms.TextInput(attrs={
                 'class': 'form-control fw-bold',
                 'disabled': True,
                 'style': 'font-size: 30px;'
+            }),
+            'observations': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2,
+                'placeholder': 'Ej: Sin cebolla, término medio, cumpleaños, etc.'
             }),
         }
 
@@ -811,3 +816,58 @@ class EmployeeTransactionForm(forms.ModelForm):
             instance.save()
 
         return instance
+
+class CashClosingForm(forms.ModelForm):
+
+    real_cash = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        label='Efectivo real en caja',
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control',
+                'placeholder': 'Ingrese el efectivo contado',
+                'step': '0.01',
+                'autocomplete': 'off'
+            }
+        )
+    )
+
+    observations = forms.CharField(
+        required=False,
+        label='Observaciones',
+        widget=forms.Textarea(
+            attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Observaciones del cierre'
+            }
+        )
+    )
+
+    class Meta:
+        model = CashClosing
+        fields = [
+            'real_cash',
+            'observations'
+        ]
+
+    def save(self, commit=True):
+        data = {}
+
+        try:
+            if self.is_valid():
+                data = super().save(commit=False)
+
+                # calcular diferencia
+                data.difference = data.real_cash - data.expected_cash
+
+                if commit:
+                    data.save()
+            else:
+                data['error'] = self.errors
+
+        except Exception as e:
+            data['error'] = str(e)
+
+        return data

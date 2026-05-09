@@ -1,0 +1,318 @@
+{% extends 'form.html' %}
+
+{% block body_class %}
+sidebar-collapse
+{% endblock %}
+
+{% load widget_tweaks %}
+{% load static %}
+{% block assets_form %}
+    <link href="{% static 'css/style.css' %}" rel="stylesheet"></link>
+    <link rel="stylesheet" href="{% static 'lib/jquery-ui-1.12.1/jquery-ui.css' %}"/>
+    <script src="{% static 'lib/jquery-ui-1.12.1/jquery-ui.min.js' %}"></script>
+    <script src="{% static 'lib/select2-4.0.13/js/select2.min.js' %}"></script>
+    <script src="{% static 'lib/select2-4.0.13/js/i18n/es.js' %}"></script>
+    <script src="{% static 'lib/jquery-confirm-3.3.4/jquery-confirm.min.js' %}"></script>
+    <script src="{% static 'lib/jquery-loading-overlay-2.1.7/js/loadingoverlay.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/select2-4.0.13/css/select2-bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/bootstrap-touchspin-4.2.5/css/jquery.bootstrap-touchspin.css' %}"/>
+    <script src="{% static 'lib/bootstrap-touchspin-4.2.5/js/jquery.bootstrap-touchspin.js' %}"></script>
+    <script src="{% static 'lib/tempusdominus-bootstrap-4.5.37.0/js/tempusdominus-bootstrap.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'lib/tempusdominus-bootstrap-4.5.37.0/css/tempusdominus-bootstrap.css' %}"/>
+{% endblock %}
+
+{% block form_fields %}
+<form method="post" id="frmForm">
+    {% csrf_token %}
+
+    <input type="hidden"
+           name="action"
+           value="{{ action }}">
+
+    <input type="hidden"
+           name="expected_cash_raw"
+           value="{{ expected_cash }}">
+
+    <div class="card border-0 shadow rounded-4 overflow-hidden">
+
+        <!-- HEADER -->
+        <div class="card-header border-0 py-4 px-4 text-white"
+             style="background:linear-gradient(135deg,#0d47a1,#1565c0);">
+
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+
+                <div>
+                    <h3 class="fw-bold mb-1">
+                        <i class="fas fa-cash-register me-2"></i>
+                        Cierre de caja
+                    </h3>
+
+                    <small class="opacity-75">
+                        Resumen de ventas desde el último cierre
+                    </small>
+                </div>
+
+                <div class="text-end">
+
+                    <small class="d-block text-uppercase opacity-75">
+                        Estado
+                    </small>
+
+                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">
+                        Caja activa
+                    </span>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- BODY -->
+        <div class="card-body bg-light p-4">
+
+            <div class="row g-4">
+
+                <!-- RESUMEN -->
+                <div class="col-lg-6">
+
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                        <div class="card-body p-4">
+
+                            <h5 class="fw-bold mb-4 text-primary">
+                                Resumen de ingresos
+                            </h5>
+
+                            <div class="cash-row">
+                                <span>Efectivo</span>
+                                <strong class="text-success">
+                                    $ {{ cash_sales }}
+                                </strong>
+                            </div>
+
+                            <div class="cash-row">
+                                <span>Crédito</span>
+                                <strong>
+                                    $ {{ credit_sales }}
+                                </strong>
+                            </div>
+
+                            <div class="cash-row">
+                                <span>Débito</span>
+                                <strong>
+                                    $ {{ debit_sales }}
+                                </strong>
+                            </div>
+
+                            <div class="cash-row">
+                                <span>Transferencias</span>
+                                <strong>
+                                    $ {{ transfer_sales }}
+                                </strong>
+                            </div>
+
+                            <div class="cash-row">
+                                <span class="text-danger fw-bold">
+                                    Egresos
+                                </span>
+
+                                <strong class="text-danger">
+                                    $ {{ expenses }}
+                                </strong>
+                            </div>
+
+                            <div class="cash-row border-0 pt-4">
+
+                                <span class="fw-bold fs-5 text-dark">
+                                    Total ventas
+                                </span>
+
+                                <strong class="fs-3 text-primary">
+                                    $ {{ total_sales }}
+                                </strong>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CIERRE -->
+                <div class="col-lg-6">
+
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                        <div class="card-body p-4">
+
+                            <!-- ESPERADO -->
+                            <div class="expected-box mb-4">
+
+                                <small class="text-uppercase fw-bold d-block mb-2 opacity-75">
+                                    Dinero esperado en caja
+                                </small>
+
+                                <div class="expected-value" id="expectedCashFormatted">
+                                    $ {{ expected_cash }}
+                                </div>
+
+                            </div>
+
+                            <!-- BASE -->
+                            <div class="mb-4">
+
+                                <label class="form-label fw-bold">
+                                    Base inicial
+                                </label>
+
+                                <input type="text"
+                                    class="form-control form-control-lg text-center fw-bold"
+                                    name="base_cash"
+                                    value="0"
+                                    autocomplete="off">
+
+                            </div>
+
+                            <!-- REAL -->
+                            <div class="mb-4">
+
+                                <label class="form-label fw-bold">
+                                    Dinero real en caja
+                                </label>
+
+                                {{ form.real_cash|add_class:'form-control form-control-lg text-center fw-bold' }}
+
+                            </div>
+
+                            <!-- DIFERENCIA -->
+                            <div id="cashDifference"
+                                 class="text-center mb-4">
+                            </div>
+
+                            <!-- OBS -->
+                            <div class="mb-4">
+
+                                <label class="form-label fw-bold">
+                                    Observaciones
+                                </label>
+
+                                {{ form.observations|add_class:'form-control' }}
+
+                            </div>
+
+                            <!-- BOTONES -->
+                            <div class="d-flex justify-content-end gap-3 pt-3">
+
+                                <a href="{{ list_url }}"
+                                   class="btn btn-light rounded-pill px-4">
+
+                                    <i class="fas fa-times me-2"></i>
+                                    Cancelar
+
+                                </a>
+
+                                <button type="submit"
+                                        class="btn btnSave rounded-pill px-5 text-white"
+                                        style="background:#ff6f00; border:none;">
+
+                                    <i class="fas fa-save me-2"></i>
+                                    Guardar cierre
+
+                                </button>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</form>
+
+<style>
+
+body{
+    background:#f4f6f9;
+}
+
+.card{
+    border:none !important;
+}
+
+.cash-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 0;
+    border-bottom:1px solid #ececec;
+    font-size:1.2rem;
+}
+
+.cash-row span{
+    font-weight:600;
+    color:#343a40;
+}
+
+.cash-row strong{
+    font-size:1.5rem;
+}
+
+.expected-box{
+    background:linear-gradient(135deg,#198754,#20c997);
+    border-radius:24px;
+    padding:30px;
+    color:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 10px 30px rgba(25,135,84,.25);
+}
+
+.expected-value{
+    font-size:2.4rem;
+    font-weight:800;
+}
+
+.form-control{
+    min-height:58px;
+    border:1px solid #dee2e6;
+    box-shadow:none !important;
+}
+
+.form-control:focus{
+    border-color:#198754;
+    box-shadow:0 0 0 .20rem rgba(25,135,84,.15) !important;
+}
+
+textarea.form-control{
+    min-height:140px;
+}
+
+.btn{
+    font-weight:700;
+}
+
+.shadow-sm{
+    box-shadow:0 .25rem .8rem rgba(0,0,0,.06)!important;
+}
+
+.shadow{
+    box-shadow:0 .5rem 1.5rem rgba(0,0,0,.15)!important;
+}
+
+</style>
+{% endblock %}
+
+
+{% block buttons %}
+<div class="d-none">
+
+</div>
+{% endblock %}
+
+{% block content_form_before %}    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{% static 'cashClosing/admin/js/form.js' %}"></script>
+{% endblock %}

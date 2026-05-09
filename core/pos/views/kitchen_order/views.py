@@ -30,6 +30,7 @@ def kitchen_orders(request):
             'order_id': order.id,
             'table': order.table.name,
             'created_at': order.created_at.isoformat(),
+            'observations': order.observations or '', 
             'items': items
         })
 
