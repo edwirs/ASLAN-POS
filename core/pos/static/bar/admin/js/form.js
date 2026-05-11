@@ -492,9 +492,10 @@ $(function () {
         const name = $(this).data('name');
         const unitPrice = parseFloat($(this).data('price'));
         let stock = parseInt($(this).data('stock')) || 0;
+        let is_service = $(this).data('is_service');
 
         // BLOQUEAR SI NO HAY STOCK
-        if (stock <= 0) {
+        if (!is_service && stock <= 0) {
             console.log('Producto sin stock bloqueado');
 
             // Opcional: mostrar alerta bonita
