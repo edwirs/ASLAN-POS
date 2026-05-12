@@ -76,15 +76,14 @@ def update_sale(request, pk):
         nequi_value = float(request.POST.get('nequi_value') or 0)
         daviplata_value = float(request.POST.get('daviplata_value') or 0)
 
-        if sale.paymentmethod == 'transfer':
-            sale.transfermethods = (request.POST['transfermethods'])
+        if sale.paymentmethod in ['transfer', 'mixto']:
+            sale.transfermethods = request.POST.get('transfermethods')
         else:
             sale.transfermethods = None
 
-        if nequi_value > 0:
-            sale.nequi_value = nequi_value
-        if daviplata_value > 0:
-            sale.daviplata_value = daviplata_value
+        # siempre actualizar valores
+        sale.nequi_value = nequi_value
+        sale.daviplata_value = daviplata_value
 
         sale.total = request.POST.get('total')
         sale.cash = request.POST.get('cash')

@@ -355,7 +355,126 @@ $(function () {
         } else {
             input_cash.val('0.00').trigger('change');
         }
+
+        // limpiar todos primero
+        $('#id_nequi_value').val(0);
+        $('#id_daviplata_value').val(0);
+        $('#id_cash').val(0);
+        $('#id_change').val(0);
+
+        calculateChange();
     });
+
+    function calculateChange() {
+
+        let total = parseFloat($('#id_total').val()) || 0;
+        let cash = parseFloat($('#id_cash').val()) || 0;
+        let nequi = parseFloat($('#id_nequi_value').val()) || 0;
+        let daviplata = parseFloat($('#id_daviplata_value').val()) || 0;
+
+        let paymentMethod = $('#id_paymentmethod').val();
+        let transferMethod = $('#id_transfermethods').val();
+
+        let totalReceived = 0;
+
+        // =========================
+        // EFECTIVO
+        // =========================
+        if (paymentMethod === 'cash') {
+            totalReceived = cash;
+        }
+
+        // =========================
+        // TRANSFERENCIA
+        // =========================
+        else if (paymentMethod === 'transfer') {
+
+            if (transferMethod === 'nequi') {
+
+                totalReceived = nequi;
+                $('#id_cash').val(0);
+            }
+
+            else if (transferMethod === 'daviplata') {
+
+                totalReceived = daviplata;
+                $('#id_cash').val(0);
+            }
+        }
+
+        // =========================
+        // MIXTO
+        // =========================
+        else if (paymentMethod === 'mixto') {
+
+            // Nequi + efectivo
+            if (transferMethod === 'mixto1') {
+
+                // limpiar daviplata
+                $('#id_daviplata_value').val(0);
+
+                let faltante = total - nequi;
+
+                if (faltante < 0) {
+                    faltante = 0;
+                }
+
+                $('#id_cash').val(faltante.toFixed(2));
+
+                totalReceived = nequi + faltante;
+            }
+
+            // Daviplata + efectivo
+            else if (transferMethod === 'mixto2') {
+
+                // limpiar nequi
+                $('#id_nequi_value').val(0);
+
+                let faltante = total - daviplata;
+
+                if (faltante < 0) {
+                    faltante = 0;
+                }
+
+                $('#id_cash').val(faltante.toFixed(2));
+
+                totalReceived = daviplata + faltante;
+            }
+
+            // Nequi + Daviplata
+            else if (transferMethod === 'mixto3') {
+
+                // no hay efectivo
+                $('#id_cash').val(0);
+
+                totalReceived = nequi + daviplata;
+            }
+        }
+
+        // =========================
+        // TARJETAS
+        // =========================
+        else if (
+            paymentMethod === 'debitCard' ||
+            paymentMethod === 'creditCard'
+        ) {
+
+            $('#id_cash').val(total.toFixed(2));
+
+            totalReceived = total;
+        }
+
+        // =========================
+        // CAMBIO
+        // =========================
+        let change = totalReceived - total;
+
+        if (change < 0) {
+            change = 0;
+        }
+
+        $('#id_change').val(change.toFixed(2));
+    }
 
     input_cash
         .TouchSpin({
@@ -368,17 +487,7 @@ $(function () {
         })
         .off('change')
         .on('change touchspin.on.min touchspin.on.max', function () {
-            let cash = parseFloat($(this).val()) || 0;              // lo que el usuario digitó
-            let total = $('#myModalEdit #id_total').val() || 0; // el total de la venta
-            let change = cash - total;                              // diferencia
-
-            // Si el cambio es negativo, lo dejamos en 0 (opcional)
-            if (change < 0) {
-                change = 0;
-            }
-
-            // Asignar valor al campo change
-            $('#myModalEdit #id_change').val(change);
+            calculateChange();
         })
         .on('keypress', function (e) {
             return validate_text_box({'event': e, 'type': 'decimals'});
@@ -412,10 +521,7 @@ $(function () {
         })
         .off('change')
         .on('change touchspin.on.min touchspin.on.max', function () {
-            sale.calculateInvoice();
-        })
-        .on('keypress', function (e) {
-            return validate_text_box({'event': e, 'type': 'decimals'});
+            calculateChange();
         });
 
     input_daviplata_value
@@ -429,10 +535,7 @@ $(function () {
         })
         .off('change')
         .on('change touchspin.on.min touchspin.on.max', function () {
-            sale.calculateInvoice();
-        })
-        .on('keypress', function (e) {
-            return validate_text_box({'event': e, 'type': 'decimals'});
+            calculateChange();
         });
 
 });

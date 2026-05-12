@@ -50,9 +50,111 @@ var sale = {
         $('input[name="total"]').val(this.detail.total.toLocaleString('es-CL')); 
         $('input[name="cash"]').val(this.detail.total); 
 
-        var cash = parseFloat(input_cash.val());
-        var change = cash - sale.detail.total;
-        input_change.val(change);
+        sale.calculateChange();
+    },
+    calculateChange: function () {
+
+        let total = parseFloat(sale.detail.total) || 0;
+        let cash = parseFloat(input_cash.val()) || 0;
+        let nequi = parseFloat(input_nequi_value.val()) || 0;
+        let daviplata = parseFloat(input_daviplata_value.val()) || 0;
+
+        let paymentMethod = select_paymentmethod.val();
+        let transferMethod = select_transfermethods.val();
+
+        let totalReceived = 0;
+
+        // =========================
+        // EFECTIVO
+        // =========================
+        if (paymentMethod === 'cash') {
+
+            totalReceived = cash;
+        }
+
+        // =========================
+        // TRANSFERENCIA
+        // =========================
+        else if (paymentMethod === 'transfer') {
+
+            if (transferMethod === 'nequi') {
+
+                totalReceived = nequi;
+                input_cash.val(0);
+            }
+
+            else if (transferMethod === 'daviplata') {
+
+                totalReceived = daviplata;
+                input_cash.val(0);
+            }
+        }
+
+        // =========================
+        // MIXTO
+        // =========================
+        else if (paymentMethod === 'mixto') {
+
+            // Nequi + efectivo
+            if (transferMethod === 'mixto1') {
+
+                let faltante = total - nequi;
+
+                if (faltante < 0) {
+                    faltante = 0;
+                }
+
+                input_cash.val(faltante.toFixed(2));
+
+                totalReceived = nequi + faltante;
+            }
+
+            // Daviplata + efectivo
+            else if (transferMethod === 'mixto2') {
+
+                let faltante = total - daviplata;
+
+                if (faltante < 0) {
+                    faltante = 0;
+                }
+
+                input_cash.val(faltante.toFixed(2));
+
+                totalReceived = daviplata + faltante;
+            }
+
+            // Nequi + Daviplata
+            else if (transferMethod === 'mixto3') {
+
+                input_cash.val(0);
+
+                totalReceived = nequi + daviplata;
+            }
+        }
+
+        // =========================
+        // TARJETAS
+        // =========================
+        else if (
+            paymentMethod === 'debitCard' ||
+            paymentMethod === 'creditCard'
+        ) {
+
+            input_cash.val(total.toFixed(2));
+
+            totalReceived = total;
+        }
+
+        // =========================
+        // CAMBIO
+        // =========================
+        let change = totalReceived - total;
+
+        if (change < 0) {
+            change = 0;
+        }
+
+        input_change.val(change.toFixed(2));
     },
     addProduct: function (item) {
         this.detail.products.push(item);
@@ -545,9 +647,7 @@ $(function () {
         })
         .off('change')
         .on('change touchspin.on.min touchspin.on.max', function () {
-            var cash = parseFloat(input_cash.val());
-            var change = cash - sale.detail.total;
-            input_change.val(change);
+            sale.calculateChange();
         })
         .on('keypress', function (e) {
             return validate_text_box({'event': e, 'type': 'decimals'});
@@ -595,7 +695,7 @@ $(function () {
         })
         .off('change')
         .on('change touchspin.on.min touchspin.on.max', function () {
-            sale.calculateInvoice();
+            sale.calculateChange();
         })
         .on('keypress', function (e) {
             return validate_text_box({'event': e, 'type': 'decimals'});
@@ -612,7 +712,7 @@ $(function () {
         })
         .off('change')
         .on('change touchspin.on.min touchspin.on.max', function () {
-            sale.calculateInvoice();
+            sale.calculateChange();
         })
         .on('keypress', function (e) {
             return validate_text_box({'event': e, 'type': 'decimals'});
@@ -633,7 +733,7 @@ $(function () {
             return message_error('Debe tener al menos 1 producto en su detalle');
         }
         if (parseFloat(input_change.val()) < 0.00) {
-            return message_error('El efectivo debe ser mayor o igual al total de la venta');
+            return message_error('El valor recibido debe ser mayor o igual al total de la venta');
         }
         var form = $(this)[0];
         var params = new FormData(form);
