@@ -11,7 +11,7 @@ class KitchenBoardView(LoginRequiredMixin, TemplateView):
 def kitchen_orders(request):
     orders = (
         Order.objects
-        .filter(status='open')
+        .filter(status__in=['open', 'sent'])
         .order_by('created_at')
         .prefetch_related('orderdetail_set__product')
     )

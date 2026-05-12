@@ -131,7 +131,10 @@ class OrderBarraView(LoginRequiredMixin, TemplateView):
         table = Table.objects.get(id=table_id)
         details = []
 
-        order = Order.objects.filter(table=table, status='open').first()
+        order = Order.objects.filter(
+            table=table,
+            status__in=['open', 'sent', 'ready']
+        ).order_by('-id').first()
         if not order:
             order = Order.objects.create(
                 table=table,
@@ -211,6 +214,9 @@ class OrderCreateView(GroupPermissionMixin, CreateView):
                         )
                     order.total = total
                     order.observations = observations
+                    # Reenviar a cocina si estaba lista
+                    if order.status == 'ready':
+                        order.status = 'sent'
                     order.save()
                     data['redirect'] = reverse('order_list')
             else:
