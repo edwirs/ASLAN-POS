@@ -134,7 +134,7 @@ class CashClosingCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateV
         if last_closing:
 
             queryset = queryset.filter(
-                created_at__gte=last_closing.created_at.date()
+                created_at__gt=last_closing.created_at
             )
 
         return queryset
