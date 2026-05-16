@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, FormView
@@ -209,11 +209,25 @@ class CashClosingCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateV
                     result=Sum('total')
                 )['result'] or Decimal('0.00')
 
-                transfer_sales = sales_queryset.filter(
-                    paymentmethod='transfer'
-                ).aggregate(
-                    result=Sum('total')
-                )['result'] or Decimal('0.00')
+                transfer_sales = (
+                    sales_queryset.filter(
+                        paymentmethod='transfer'
+                    ).aggregate(
+                        result=Sum('total')
+                    )['result'] or Decimal('0.00')
+                ) + (
+                    sales_queryset.filter(
+                        paymentmethod='mixto'
+                    ).aggregate(
+                        result=Sum('nequi_value')
+                    )['result'] or Decimal('0.00')
+                ) + (
+                    sales_queryset.filter(
+                        paymentmethod='mixto'
+                    ).aggregate(
+                        result=Sum('daviplata_value')
+                    )['result'] or Decimal('0.00')
+                )
 
                 # =====================================
                 # GASTOS
