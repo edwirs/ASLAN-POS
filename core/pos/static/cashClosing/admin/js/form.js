@@ -535,9 +535,25 @@ $(function () {
         });
     });
 
+        /* =====================================================
+     * SOLO LECTURA
+     * ===================================================== */
+    if ($('input[name="action"]').val() === 'view') {
+
+        // Deshabilitar todos los inputs
+        $('#frmForm')
+            .find('input, textarea, select, button')
+            .prop('disabled', true);
+
+        // Mantener habilitado el botón volver/cancelar
+        $('a.btn').removeClass('disabled');
+
+        // Ocultar botón guardar
+        $('.btnSave').hide();
+    }
+
     /* =====================================================
      * INICIALIZAR DIFERENCIA
      * ===================================================== */
     calculateDifference();
-
 });

@@ -6,7 +6,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, FormView
+from django.views.generic import CreateView, FormView, DetailView
 
 from core.pos.forms import CashClosingForm
 from core.pos.models import CashClosing, Sale, Expenses
@@ -413,5 +413,44 @@ class CashClosingCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateV
         context['expenses'] = expenses
         context['total_sales'] = total_sales
         context['expected_cash'] = expected_cash
+
+        return context
+
+# =========================================================
+# DETALLE CIERRE DE CAJA
+# =========================================================
+class CashClosingDetailView(
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+    DetailView
+):
+
+    model = CashClosing
+    template_name = 'cashClosing/admin/create.html'
+    context_object_name = 'cash_closing'
+
+    permission_required = 'pos.view_cashclosing'
+
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+
+        obj = self.get_object()
+
+        context['title'] = 'Detalle cierre de caja'
+        context['entity'] = 'Detalle cierre'
+        context['list_url'] = reverse_lazy('cashClosing_list')
+        context['module_name'] = MODULE_NAME
+
+        context['readonly'] = True
+
+        context['cash_sales'] = obj.cash_sales
+        context['credit_sales'] = obj.credit_sales
+        context['debit_sales'] = obj.debit_sales
+        context['transfer_sales'] = obj.transfer_sales
+
+        context['expenses'] = obj.expenses
+        context['total_sales'] = obj.total_sales
+        context['expected_cash'] = obj.expected_cash
 
         return context

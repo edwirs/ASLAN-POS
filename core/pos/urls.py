@@ -130,8 +130,7 @@ urlpatterns = [
     # cierre de caja
     path('cashClosing', CashClosingListView.as_view(), name='cashClosing_list'),
     path('cashClosing/add/', CashClosingCreateView.as_view(), name='cashClosing_create'),
-    path('cashClosing/update/<int:pk>/', EmployeeTransactionUpdateView.as_view(), name='cashClosing_update'),
-    path('cashClosing/delete/<int:pk>/', EmployeeTransactionDeleteView.as_view(), name='cashClosing_delete'),
+    path('cashClosing/detail/<int:pk>/', CashClosingDetailView.as_view(), name='cashClosing_detail'),
     path('cashClosing/print/transaction/<int:pk>/', EmployeeTransactionPrintView.as_view(), name='cashClosing_print'),
     
 ]

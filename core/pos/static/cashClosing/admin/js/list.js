@@ -108,7 +108,7 @@ var cashCloshing = {
                         `;
 
                         buttons += `
-                            <a href="/cashClosing/detail/${row.id}/"
+                            <a href="/pos/cashClosing/detail/${row.id}/"
                             class="btn btn-link text-primary p-1">
 
                                 <i class="fas fa-eye fa-lg"></i>
