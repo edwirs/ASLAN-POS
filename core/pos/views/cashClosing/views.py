@@ -443,7 +443,7 @@ class CashClosingDetailView(
         context['module_name'] = MODULE_NAME
 
         context['readonly'] = True
-
+        context['action'] = 'view'
         context['cash_sales'] = obj.cash_sales
         context['credit_sales'] = obj.credit_sales
         context['debit_sales'] = obj.debit_sales

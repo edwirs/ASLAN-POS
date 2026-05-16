@@ -403,7 +403,12 @@ $(function () {
             real.replace(/\./g, '')
         ) || 0;
 
-        expected = expected + baseCash;
+        let isView =
+            $('input[name="action"]').val() === 'view';
+
+        if (!isView) {
+            expected = expected + baseCash;
+        }
 
         $('#expectedCashFormatted').html(
             formatCurrency(expected)
