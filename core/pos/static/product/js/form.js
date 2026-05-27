@@ -13,7 +13,7 @@ $(function () {
     $('input[name="stock"]')
         .TouchSpin({
             min: 0,
-            max: 1000000,
+            max: 100000000,
             step: 1,
         })
         .on('keypress', function (e) {
@@ -23,7 +23,7 @@ $(function () {
     $('input[name="price"]')
         .TouchSpin({
             min: 0.01,
-            max: 1000000,
+            max: 100000000,
             step: 0.01,
             decimals: 2,
             boostat: 5,
@@ -40,7 +40,7 @@ $(function () {
     $('input[name="pvp"]')
         .TouchSpin({
             min: 0.01,
-            max: 1000000,
+            max: 100000000,
             step: 0.01,
             decimals: 2,
             boostat: 5,
