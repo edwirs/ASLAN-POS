@@ -89,6 +89,12 @@
     href="{% static 'lib/adminlte-3.2.0/css/adminlte.min.css'%}"
   ></link>
 
+  <!-- Tema oscuro (ajustes de los componentes propios) -->
+  <link
+    rel="stylesheet"
+    href="{% static 'css/dark-mode.css' %}"
+  ></link>
+
   <!-- Theme js -->
   <link
     rel="stylesheet"
@@ -99,6 +105,7 @@
 {% block body %}
 
 <body class="hold-transition sidebar-mini layout-fixed {% block body_class %}{% endblock %}">
+  <script>try { if (localStorage.getItem('aslan-theme') === 'dark') { document.documentElement.setAttribute('data-bs-theme', 'dark'); document.body.classList.add('dark-mode'); } } catch (e) {}</script>
   <!-- Navbar -->
 
   <nav class="main-header navbar navbar-expand navbar-white navbar-light">
@@ -165,7 +172,13 @@
 
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
-      
+
+      <li class="nav-item">
+        <a class="nav-link" href="#" id="themeToggle" role="button" title="Cambiar a tema oscuro">
+          <i class="fas fa-moon"></i>
+        </a>
+      </li>
+
       <!--{% if request.user.has_at_least_one_group %}
       <li class="nav-item dropdown">
         <a
@@ -277,7 +290,7 @@
       <!-- Sidebar Menu -->
       <nav class="mt-2">
         <ul
-          class="nav nav-pills nav-sidebar flex-column"
+          class="nav nav-pills nav-sidebar flex-column nav-child-indent"
           data-widget="treeview"
           role="menu"
         >
@@ -287,7 +300,7 @@
               href="#"
               class="nav-link"
             >
-              <i class="fas fa-users"></i>
+              <i class="fas fa-users nav-icon"></i>
               <p>
                 Personas
                 <i class="fas fa-angle-left right"></i>
@@ -328,7 +341,7 @@
               href="#"
               class="nav-link"
             >
-              <i class="fas fa-boxes"></i>
+              <i class="fas fa-boxes nav-icon"></i>
               <p>
                 Bodega
                 <i class="fas fa-angle-left right"></i>
@@ -381,7 +394,7 @@
               href="#"
               class="nav-link"
             >
-              <i class="fas fa-file-text"></i>
+              <i class="fas fa-file-invoice nav-icon"></i>
               <p>
                 Ventas
                 <i class="fas fa-angle-left right"></i>
@@ -435,7 +448,7 @@
               href="#"
               class="nav-link"
             >
-              <i class="fas fa-utensils"></i>
+              <i class="fas fa-utensils nav-icon"></i>
               <p>
                 Operaciones
                 <i class="fas fa-angle-left right"></i>
@@ -488,7 +501,7 @@
               href="#"
               class="nav-link"
             >
-              <i class="fas fa-warehouse"></i>
+              <i class="fas fa-warehouse nav-icon"></i>
               <p>
                 Inventario
                 <i class="fas fa-angle-left right"></i>
@@ -550,7 +563,7 @@
               href="#"
               class="nav-link"
             >
-              <i class="fas fa-hand-holding-usd"></i>
+              <i class="fas fa-hand-holding-usd nav-icon"></i>
               <p>
                 Nómina
                 <i class="fas fa-angle-left right"></i>
@@ -607,7 +620,7 @@
               href="#"
               class="nav-link"
             >
-              <i class="fas fa-chart-pie"></i>
+              <i class="fas fa-chart-pie nav-icon"></i>
               <p>
                 Reportes
                 <i class="fas fa-angle-left right"></i>
@@ -658,7 +671,7 @@
               href="#"
               class="nav-link"
             >
-              <i class="fas fa-lock"></i>
+              <i class="fas fa-lock nav-icon"></i>
               <p>
                 Seguridad
                 <i class="fas fa-angle-left right"></i>
@@ -711,7 +724,7 @@
               href="#"
               class="nav-link"
             >
-              <i class="fas fa-wrench"></i>
+              <i class="fas fa-wrench nav-icon"></i>
               <p>
                 Configuraciones
                 <i class="fas fa-angle-left right"></i>
@@ -800,6 +813,7 @@
   <!-- utils -->
   <script src="{% static 'js/main.js' %}"></script>
   <script src="{% static 'js/functions.js' %}"></script>
+  <script src="{% static 'js/theme.js' %}"></script>
   <!-- REQUIRED SCRIPTS -->
 
   <!-- AdminLTE App -->
