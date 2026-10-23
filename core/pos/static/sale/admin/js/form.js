@@ -766,9 +766,16 @@ $(function () {
                     },
                     'cancel': function () {
                         toastr.success('La factura se guardó exitosamente');
-                        setTimeout(function() {
+                        var goBack = function () {
                             location.href = url_refresh;
-                        }, 1000);
+                        };
+                        // Sin ticket: se abre el cajón. Si falla (QZ Tray apagado) se da tiempo de leer el aviso.
+                        if (typeof CashDrawer === 'undefined') {
+                            return setTimeout(goBack, 1000);
+                        }
+                        CashDrawer.open('sale').then(function (opened) {
+                            setTimeout(goBack, opened ? 1000 : 2500);
+                        });
                     }
                 });
             }
